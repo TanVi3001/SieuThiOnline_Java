@@ -73,5 +73,3 @@ public class CategoryDAO implements DAOInterface<Category> {
     @Override
     public Category selectById(String id) { return null; }
 }
-
-// Bang Code
