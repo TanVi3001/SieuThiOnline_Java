@@ -1,2 +1,5 @@
-com\mycompany\sieuthionline\database\JDBCUtil.class
+com\mycompany\sieuthionline\dao\CategoryDAO.class
+com\mycompany\sieuthionline\model\Category.class
 com\mycompany\sieuthionline\SieuThiOnline.class
+com\mycompany\sieuthionline\dao\DAOInterface.class
+com\mycompany\sieuthionline\database\JDBCUtil.class
