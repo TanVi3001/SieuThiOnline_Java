@@ -3,12 +3,6 @@
 Dự án Đồ án môn học: Xây dựng ứng dụng quản lý hệ thống Siêu thị Online. 
 Sử dụng kiến trúc **MVC (Model - View - Controller)** kết hợp với **DAO (Data Access Object)**.
 
-## 👨‍💻 Thành viên nhóm (Nhóm X)
-1. **[Tên Họ Của Vĩ]** - Nhóm trưởng (Core Architect, Database, Kho bãi & Vận chuyển)
-2. **[Tên Họ Của Nguyên]** - Thành viên (Hệ thống, Phân quyền & Nhân sự)
-3. **[Tên Họ Của Tùng]** - Thành viên (Hàng hóa, Sản phẩm & Khuyến mãi)
-4. **[Tên Họ Của Quỳnh]** - Thành viên (Bán hàng, Đơn hàng & Khách hàng)
-
 ## 🛠 Công nghệ sử dụng
 * **Ngôn ngữ:** Java (JDK 17+)
 * **Giao diện:** Java Swing
