@@ -1,9 +1,13 @@
+com\mycompany\sieuthionline\model\Supplier.class
 com\mycompany\sieuthionline\dao\CategoryDAO.class
-com\mycompany\sieuthionline\dao\DeliveryDAO.class
 com\mycompany\sieuthionline\dao\StoreDAO.class
-com\mycompany\sieuthionline\model\Category.class
 com\mycompany\sieuthionline\dao\DAOInterface.class
-com\mycompany\sieuthionline\model\Store.class
+com\mycompany\sieuthionline\model\DeliveryManagement.class
+com\mycompany\sieuthionline\dao\DeliveryManagementDAO.class
 com\mycompany\sieuthionline\SieuThiOnline.class
-com\mycompany\sieuthionline\model\Delivery.class
+com\mycompany\sieuthionline\model\Inventory.class
+com\mycompany\sieuthionline\model\Category.class
+com\mycompany\sieuthionline\dao\InventoryDAO.class
+com\mycompany\sieuthionline\model\Store.class
+com\mycompany\sieuthionline\dao\SupplierDAO.class
 com\mycompany\sieuthionline\database\JDBCUtil.class
