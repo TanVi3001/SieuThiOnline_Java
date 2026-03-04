@@ -79,7 +79,7 @@ public class CategoryDAO implements DAOInterface<Category> {
             
             ketQua = pst.executeUpdate();
             JDBCUtil.closeConnection(con);
-        } catch (Exception e) {
+        } catch (SQLException e) { 
             e.printStackTrace();
         }
         return ketQua;
