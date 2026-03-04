@@ -5,6 +5,7 @@ import com.mycompany.sieuthionline.model.Category;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class CategoryDAO implements DAOInterface<Category> {
@@ -30,7 +31,7 @@ public class CategoryDAO implements DAOInterface<Category> {
             ketQua = pst.executeUpdate();
             
             JDBCUtil.closeConnection(con);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return ketQua;
@@ -57,21 +58,75 @@ public class CategoryDAO implements DAOInterface<Category> {
                 ketQua.add(c);
             }
             JDBCUtil.closeConnection(con);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ketQua;
+    }
+
+    @Override
+    public int update(Category t) { 
+        int ketQua = 0;
+        try {
+            Connection con = JDBCUtil.getConnection();
+            String sql = "UPDATE CATEGORIES SET category_name = ?, description = ?, is_deleted = ? WHERE category_id = ?";
+            
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setString(1, t.getCategoryName());
+            pst.setString(2, t.getDescription());
+            pst.setInt(3, t.getIsDeleted());
+            pst.setString(4, t.getCategoryId());
+            
+            ketQua = pst.executeUpdate();
+            JDBCUtil.closeConnection(con);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return ketQua;
     }
 
-    // Các hàm update, delete, selectById bạn tạo sườn trống return 0 hoặc null trước
     @Override
-    public int update(Category t) { return 0; }
+    public int delete(String id) { 
+        int ketQua = 0;
+        try {
+            Connection con = JDBCUtil.getConnection();
+            // Xóa mềm: Chuyển is_deleted = 1
+            String sql = "UPDATE CATEGORIES SET is_deleted = 1 WHERE category_id = ?";
+            
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setString(1, id);
+            
+            ketQua = pst.executeUpdate();
+            JDBCUtil.closeConnection(con);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ketQua;
+    }
 
     @Override
-    public int delete(String id) { return 0; }
-
-    @Override
-    public Category selectById(String id) { return null; }
+    public Category selectById(String id) { 
+        Category ketQua = null;
+        try {
+            Connection con = JDBCUtil.getConnection();
+            String sql = "SELECT * FROM CATEGORIES WHERE category_id = ?";
+            
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setString(1, id);
+            ResultSet rs = pst.executeQuery();
+            
+            if (rs.next()) {
+                String catId = rs.getString("category_id");
+                String name = rs.getString("category_name");
+                String desc = rs.getString("description");
+                int isDel = rs.getInt("is_deleted");
+                
+                ketQua = new Category(catId, name, desc, isDel);
+            }
+            JDBCUtil.closeConnection(con);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ketQua;
+    }
 }
-
-// Bang Code
