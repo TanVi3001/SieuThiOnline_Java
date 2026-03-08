@@ -28,5 +28,5 @@
 | :--- | :--- | :--- | :--- | :--- | 
 | 1 | 24521985 | Lê Tấn Vĩ | https://github.com/TanVi3001 | 24521985@gm.uit.edu.vn |
 | 2 | 24521949 | Nguyễn Đinh Tùng | https://github.com/DeeTung | 24521949@gm.uit.edu.vn |
-| 3 | [Nhập MSSV] | [Họ Tên] Tùng | [Link Git của Tùng] | [Nhập Email của Tùng] | 
+| 3 | 24521176 | Hoàng Khôi Nguyên | https://github.com/Paulhoang8326 | 24521176@gm.uit.edu.vn | 
 | 4 | [Nhập MSSV] | [Họ Tên] Quỳnh | [Link Git của Quỳnh] | [Nhập Email của Quỳnh] | 
