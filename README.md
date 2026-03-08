@@ -18,7 +18,7 @@
 
 **Database & Tools**
 
-* [Oracle / MySQL / SQL Server] - Hệ quản trị cơ sở dữ liệu *(Ông đang dùng cái nào thì giữ cái đó, xóa 2 cái kia đi)*
+* [Oracle] - Hệ quản trị cơ sở dữ liệu 
 * [JDBC](https://docs.oracle.com/javase/8/docs/technotes/guides/jdbc/) - Công cụ kết nối và truy cập dữ liệu
 * [NetBeans](https://netbeans.apache.org/) - IDE phát triển chính
 * [GitHub](https://github.com/) - Quản lý mã nguồn và làm việc nhóm
