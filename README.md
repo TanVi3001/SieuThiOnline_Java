@@ -1,6 +1,5 @@
-<p align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_UIT_updated.svg/1200px-Logo_UIT_updated.svg.png" width="400" alt="UIT Logo">
-</p>
+<img width="454" height="126" alt="image" src="https://github.com/user-attachments/assets/a952ced1-8359-4774-8b27-ba99a473af9a" />
+
 
 ## GIỚI THIỆU ĐỒ ÁN
 
