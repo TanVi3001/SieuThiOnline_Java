@@ -1,36 +1,32 @@
-# 🛒 Phần mềm Quản lý Siêu thị Online (Java Desktop)
+<p align="center"><img width="454" height="126" alt="image" src="https://github.com/user-attachments/assets/2036c003-62d1-42f1-9817-6cca86de0fc8" /> </p>
 
-Dự án Đồ án môn học: Xây dựng ứng dụng quản lý hệ thống Siêu thị Online. 
-Sử dụng kiến trúc **MVC (Model - View - Controller)** kết hợp với **DAO (Data Access Object)**.
 
-## 🛠 Công nghệ sử dụng
-* **Ngôn ngữ:** Java (JDK 17+)
-* **Giao diện:** Java Swing
-* **Cơ sở dữ liệu:** Oracle Database 21c (hoặc phiên bản tương đương)
-* **Kết nối CSDL:** JDBC (ojdbc8.jar)
-* **IDE khuyên dùng:** Apache NetBeans / IntelliJ IDEA
+## GIỚI THIỆU ĐỒ ÁN
 
-## 📁 Cấu trúc thư mục (MVC Pattern)
-* `model`: Chứa các lớp đối tượng thực thể (User, Product, Order...).
-* `dao`: Chứa các giao thức thao tác dữ liệu với Oracle (Insert, Update, Delete, Select).
-* `view`: Chứa các lớp giao diện kéo thả (JFrame, JPanel).
-* `controller`: Chứa các bộ xử lý logic và bắt sự kiện từ giao diện.
-* `database`: Chứa lớp `JDBCUtil.java` đảm nhận việc kết nối CSDL.
+* **Đề tài:** Xây dựng phần mềm quản lý Siêu thị Online
+* **Repository:** [LẬP TRÌNH JAVA - SIÊU THỊ ONLINE](https://github.com/TanVi3001/SieuThiOnline_Java)
+* **Mô tả:** Đề tài "Xây dựng phần mềm quản lý Siêu thị Online" là một đồ án môn học được thực hiện với mục tiêu xây dựng một hệ thống phần mềm Desktop hỗ trợ công tác quản lý bán hàng, nhập kho, và thông tin khách hàng tại siêu thị một cách hiệu quả và dễ sử dụng. Hệ thống được thiết kế theo mô hình kiến trúc N-Tier chuẩn mực, bao gồm các chức năng chính như quản lý sản phẩm, nhân viên, khách hàng, tạo hóa đơn và thống kê báo cáo. Trong quá trình triển khai, nhóm đã vận dụng các kiến thức về lập trình hướng đối tượng (OOP), phân tích thiết kế hệ thống thông tin, kết hợp với kỹ năng làm việc nhóm qua Git để hoàn thiện sản phẩm.
 
-## 🚀 Hướng dẫn cài đặt và chạy dự án (Dành cho thành viên)
+## CÔNG NGHỆ VÀ CÔNG CỤ SỬ DỤNG
 
-**Bước 1: Khởi tạo Database**
-1. Mở Oracle SQL Developer hoặc DataGrip.
-2. Chạy toàn bộ file script `KhoiTaoCacBang.sql` để tạo cấu trúc các bảng.
+**Application Development**
 
-**Bước 2: Cài đặt dự án**
-1. Clone dự án về máy: `git clone https://github.com/TanVi3001/SieuThiOnline_Java.git`
-2. Mở dự án bằng NetBeans / IntelliJ.
-3. Đảm bảo file `pom.xml` đã tải thành công thư viện `ojdbc8` (Nếu dùng Maven).
+* [Java](https://www.java.com/) - Ngôn ngữ lập trình chính
+* [Java Swing](https://docs.oracle.com/javase/tutorial/uiswing/) - Thư viện xây dựng giao diện người dùng (GUI)
+* [N-Tier Architecture](https://en.wikipedia.org/wiki/Multitier_architecture) - Kiến trúc phân tầng dự án (common, business, model, view, controller)
 
-**Bước 3: Cấu hình kết nối CSDL**
-1. Mở file `src/main/java/com/mycompany/sieuthionline/database/JDBCUtil.java`.
-2. Sửa thông tin `username` và `password` khớp với tài khoản Oracle trên máy cá nhân của bạn:
-   ```java
-   String username = "TÊN_USER_ORACLE_CỦA_BẠN"; 
-   String password = "MẬT_KHẨU_ORACLE_CỦA_BẠN";
+**Database & Tools**
+
+* [Oracle] - Hệ quản trị cơ sở dữ liệu 
+* [JDBC](https://docs.oracle.com/javase/8/docs/technotes/guides/jdbc/) - Công cụ kết nối và truy cập dữ liệu
+* [NetBeans](https://netbeans.apache.org/) - IDE phát triển chính
+* [GitHub](https://github.com/) - Quản lý mã nguồn và làm việc nhóm
+
+## THÀNH VIÊN NHÓM
+
+| STT | MSSV | Họ và Tên | GitHub | Email | 
+| :--- | :--- | :--- | :--- | :--- | 
+| 1 | 24521985 | Lê Tấn Vĩ | https://github.com/TanVi3001 | 24521985@gm.uit.edu.vn |
+| 2 | 24521949 | Nguyễn Đinh Tùng | https://github.com/DeeTung | 24521949@gm.uit.edu.vn |
+| 3 | 24521176 | Hoàng Khôi Nguyên | https://github.com/Paulhoang8326 | 24521176@gm.uit.edu.vn | 
+| 4 | [Nhập MSSV] | [Họ Tên] Quỳnh | [Link Git của Quỳnh] | [Nhập Email của Quỳnh] | 
