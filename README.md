@@ -26,7 +26,7 @@
 
 | STT | MSSV | Họ và Tên | GitHub | Email | 
 | :--- | :--- | :--- | :--- | :--- | 
-| 1 | [Nhập MSSV] | [Họ Tên] Vĩ | [Link Git của Vĩ] | [Nhập Email của Vĩ] |
+| 1 | Lê Tấn Vĩ | Lê Tấn Vĩ | https://github.com/TanVi3001 | 24521985@gm.uit.edu.vn |
 | 2 | [Nhập MSSV] | [Họ Tên] Nguyên | [Link Git của Nguyên] | [Nhập Email của Nguyên] |
 | 3 | [Nhập MSSV] | [Họ Tên] Tùng | [Link Git của Tùng] | [Nhập Email của Tùng] | 
 | 4 | [Nhập MSSV] | [Họ Tên] Quỳnh | [Link Git của Quỳnh] | [Nhập Email của Quỳnh] | 
