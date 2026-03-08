@@ -25,9 +25,9 @@
 
 ## THÀNH VIÊN NHÓM
 
-| STT | MSSV | Họ và Tên | GitHub | Email | Nhiệm vụ chính |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| 1 | [Nhập MSSV] | [Họ Tên] Vĩ | [Link Git của Vĩ] | [Nhập Email của Vĩ] | Nhóm trưởng, Git, Setup khung N-Tier & `common.db` |
-| 2 | [Nhập MSSV] | [Họ Tên] Nguyên | [Link Git của Nguyên] | [Nhập Email của Nguyên] | Thiết kế CSDL, tạo script SQL & các lớp `model` |
-| 3 | [Nhập MSSV] | [Họ Tên] Tùng | [Link Git của Tùng] | [Nhập Email của Tùng] | Xử lý lõi logic (`business.main`) & lệnh (`business.sql`) |
-| 4 | [Nhập MSSV] | [Họ Tên] Quỳnh | [Link Git của Quỳnh] | [Nhập Email của Quỳnh] | Thiết kế giao diện GUI (`view`) & tài nguyên (`resource`) |
+| STT | MSSV | Họ và Tên | GitHub | Email | 
+| :--- | :--- | :--- | :--- | :--- | 
+| 1 | [Nhập MSSV] | [Họ Tên] Vĩ | [Link Git của Vĩ] | [Nhập Email của Vĩ] |
+| 2 | [Nhập MSSV] | [Họ Tên] Nguyên | [Link Git của Nguyên] | [Nhập Email của Nguyên] |
+| 3 | [Nhập MSSV] | [Họ Tên] Tùng | [Link Git của Tùng] | [Nhập Email của Tùng] | 
+| 4 | [Nhập MSSV] | [Họ Tên] Quỳnh | [Link Git của Quỳnh] | [Nhập Email của Quỳnh] | 
