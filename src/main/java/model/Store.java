@@ -1,4 +1,4 @@
-package com.mycompany.sieuthionline.model;
+package model;
 
 public class Store {
     private String storeId;

@@ -1,4 +1,4 @@
-package com.mycompany.sieuthionline.dao;
+package business.sql;
 
 import java.util.ArrayList;
 

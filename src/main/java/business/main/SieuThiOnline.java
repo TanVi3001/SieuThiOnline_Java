@@ -1,19 +1,19 @@
-package com.mycompany.sieuthionline;
+package business.main;
 
 // Import thư viện kết nối DB
-import com.mycompany.sieuthionline.database.JDBCUtil;
+import common.db.JDBCUtil;
 import java.sql.Connection;
 
 // Import đầy đủ 4 Model & DAO của mảng Đối tác, Kho bãi & Giao hàng
-import com.mycompany.sieuthionline.dao.SupplierDAO;
-import com.mycompany.sieuthionline.dao.StoreDAO;
-import com.mycompany.sieuthionline.dao.InventoryDAO;
-import com.mycompany.sieuthionline.dao.DeliveryManagementDAO;
+import business.sql.SupplierDAO;
+import business.sql.StoreDAO;
+import business.sql.InventoryDAO;
+import business.sql.DeliveryManagementDAO;
 
-import com.mycompany.sieuthionline.model.Supplier;
-import com.mycompany.sieuthionline.model.Store;
-import com.mycompany.sieuthionline.model.Inventory;
-import com.mycompany.sieuthionline.model.DeliveryManagement;
+import model.Supplier;
+import model.Store;
+import model.Inventory;
+import model.DeliveryManagement;
 
 public class SieuThiOnline {
 

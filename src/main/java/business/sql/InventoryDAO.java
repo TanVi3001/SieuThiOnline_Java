@@ -1,7 +1,7 @@
-package com.mycompany.sieuthionline.dao;
+package business.sql;
 
-import com.mycompany.sieuthionline.database.JDBCUtil;
-import com.mycompany.sieuthionline.model.Inventory;
+import common.db.JDBCUtil;
+import model.Inventory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

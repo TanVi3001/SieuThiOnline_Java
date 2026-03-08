@@ -1,4 +1,4 @@
-package com.mycompany.sieuthionline.model;
+package model;
 
 public class Supplier {
     private String supplierId;

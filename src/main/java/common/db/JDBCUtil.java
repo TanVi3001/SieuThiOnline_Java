@@ -1,4 +1,4 @@
-package com.mycompany.sieuthionline.database;
+package common.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

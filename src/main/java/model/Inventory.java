@@ -1,4 +1,4 @@
-package com.mycompany.sieuthionline.model;
+package model;
 
 import java.sql.Date; // Nhớ import đúng java.sql.Date
 
