@@ -1,6 +1,6 @@
 package business.sql;
 
-import common.db.JDBCUtil;
+import common.db.DatabaseConnection;
 import model.Supplier;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,18 +8,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class SupplierDAO implements DAOInterface<Supplier> {
+public class SupplierSql implements SqlInterface<Supplier> {
 
     // Áp dụng Singleton Pattern
-    public static SupplierDAO getInstance() {
-        return new SupplierDAO();
+    public static SupplierSql getInstance() {
+        return new SupplierSql();
     }
 
     @Override
     public int insert(Supplier t) {
         int ketQua = 0;
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             String sql = "INSERT INTO SUPPLIERS (supplier_id, supplier_name, email, address, phone_number, is_deleted) VALUES (?, ?, ?, ?, ?, ?)";
             
             PreparedStatement pst = con.prepareStatement(sql);
@@ -31,7 +31,7 @@ public class SupplierDAO implements DAOInterface<Supplier> {
             pst.setInt(6, t.getIsDeleted());
             
             ketQua = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -42,7 +42,7 @@ public class SupplierDAO implements DAOInterface<Supplier> {
     public ArrayList<Supplier> selectAll() {
         ArrayList<Supplier> ketQua = new ArrayList<>();
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             // Chỉ lấy những nhà cung cấp chưa bị xóa (is_deleted = 0)
             String sql = "SELECT * FROM SUPPLIERS WHERE is_deleted = 0";
             
@@ -60,7 +60,7 @@ public class SupplierDAO implements DAOInterface<Supplier> {
                 Supplier s = new Supplier(id, name, email, address, phone, isDel);
                 ketQua.add(s);
             }
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -71,7 +71,7 @@ public class SupplierDAO implements DAOInterface<Supplier> {
     public int update(Supplier t) { 
         int ketQua = 0;
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             String sql = "UPDATE SUPPLIERS SET supplier_name = ?, email = ?, address = ?, phone_number = ?, is_deleted = ? WHERE supplier_id = ?";
             
             PreparedStatement pst = con.prepareStatement(sql);
@@ -83,7 +83,7 @@ public class SupplierDAO implements DAOInterface<Supplier> {
             pst.setString(6, t.getSupplierId());
             
             ketQua = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -94,7 +94,7 @@ public class SupplierDAO implements DAOInterface<Supplier> {
     public int delete(String id) { 
         int ketQua = 0;
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             // Xóa mềm: Cập nhật is_deleted = 1 thay vì xóa vĩnh viễn
             String sql = "UPDATE SUPPLIERS SET is_deleted = 1 WHERE supplier_id = ?";
             
@@ -102,7 +102,7 @@ public class SupplierDAO implements DAOInterface<Supplier> {
             pst.setString(1, id);
             
             ketQua = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -113,7 +113,7 @@ public class SupplierDAO implements DAOInterface<Supplier> {
     public Supplier selectById(String id) { 
         Supplier ketQua = null;
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             String sql = "SELECT * FROM SUPPLIERS WHERE supplier_id = ?";
             
             PreparedStatement pst = con.prepareStatement(sql);
@@ -130,7 +130,7 @@ public class SupplierDAO implements DAOInterface<Supplier> {
                 
                 ketQua = new Supplier(supId, name, email, address, phone, isDel);
             }
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }

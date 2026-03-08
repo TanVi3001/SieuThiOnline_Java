@@ -1,23 +1,23 @@
 package business.sql;
 
-import common.db.JDBCUtil;
+import common.db.DatabaseConnection;
 import model.DeliveryManagement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 
-public class DeliveryManagementDAO implements DAOInterface<DeliveryManagement> {
+public class DeliveryManagementSql implements SqlInterface<DeliveryManagement> {
 
-    public static DeliveryManagementDAO getInstance() {
-        return new DeliveryManagementDAO();
+    public static DeliveryManagement getInstance() {
+        return new DeliveryManagement();
     }
 
     @Override
     public int insert(DeliveryManagement t) {
         int ketQua = 0;
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             String sql = "INSERT INTO DELIVERY_MANAGEMENT (delivery_id, order_id, employee_id, execution_date, status, is_deleted) VALUES (?, ?, ?, ?, ?, ?)";
             
             PreparedStatement pst = con.prepareStatement(sql);
@@ -29,7 +29,7 @@ public class DeliveryManagementDAO implements DAOInterface<DeliveryManagement> {
             pst.setInt(6, t.getIsDeleted());
             
             ketQua = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (Exception e) {
             e.printStackTrace();
         }

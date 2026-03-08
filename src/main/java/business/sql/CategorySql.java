@@ -1,6 +1,6 @@
 package business.sql;
 
-import common.db.JDBCUtil;
+import common.db.DatabaseConnection;
 import model.Category;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,18 +8,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class CategoryDAO implements DAOInterface<Category> {
+public class CategorySql implements SqlInterface<Category> {
 
     // Áp dụng mẫu Singleton (Chỉ tạo 1 instance duy nhất)
-    public static CategoryDAO getInstance() {
-        return new CategoryDAO();
+    public static CategorySql getInstance() {
+        return new CategorySql();
     }
 
     @Override
     public int insert(Category t) {
         int ketQua = 0;
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             String sql = "INSERT INTO CATEGORIES (category_id, category_name, description, is_deleted) VALUES (?, ?, ?, ?)";
             
             PreparedStatement pst = con.prepareStatement(sql);
@@ -30,7 +30,7 @@ public class CategoryDAO implements DAOInterface<Category> {
             
             ketQua = pst.executeUpdate();
             
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -41,7 +41,7 @@ public class CategoryDAO implements DAOInterface<Category> {
     public ArrayList<Category> selectAll() {
         ArrayList<Category> ketQua = new ArrayList<>();
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             // Lấy những danh mục chưa bị xóa (is_deleted = 0)
             String sql = "SELECT * FROM CATEGORIES WHERE is_deleted = 0";
             
@@ -57,7 +57,7 @@ public class CategoryDAO implements DAOInterface<Category> {
                 Category c = new Category(id, name, desc, isDel);
                 ketQua.add(c);
             }
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -68,7 +68,7 @@ public class CategoryDAO implements DAOInterface<Category> {
     public int update(Category t) { 
         int ketQua = 0;
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             String sql = "UPDATE CATEGORIES SET category_name = ?, description = ?, is_deleted = ? WHERE category_id = ?";
             
             PreparedStatement pst = con.prepareStatement(sql);
@@ -78,7 +78,7 @@ public class CategoryDAO implements DAOInterface<Category> {
             pst.setString(4, t.getCategoryId());
             
             ketQua = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) { 
             e.printStackTrace();
         }
@@ -89,7 +89,7 @@ public class CategoryDAO implements DAOInterface<Category> {
     public int delete(String id) { 
         int ketQua = 0;
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             // Xóa mềm: Chuyển is_deleted = 1
             String sql = "UPDATE CATEGORIES SET is_deleted = 1 WHERE category_id = ?";
             
@@ -97,7 +97,7 @@ public class CategoryDAO implements DAOInterface<Category> {
             pst.setString(1, id);
             
             ketQua = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -108,7 +108,7 @@ public class CategoryDAO implements DAOInterface<Category> {
     public Category selectById(String id) { 
         Category ketQua = null;
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             String sql = "SELECT * FROM CATEGORIES WHERE category_id = ?";
             
             PreparedStatement pst = con.prepareStatement(sql);
@@ -123,7 +123,7 @@ public class CategoryDAO implements DAOInterface<Category> {
                 
                 ketQua = new Category(catId, name, desc, isDel);
             }
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }

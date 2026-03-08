@@ -1,6 +1,6 @@
 package business.sql;
 
-import common.db.JDBCUtil;
+import common.db.DatabaseConnection;
 import model.Store;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,17 +8,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class StoreDAO implements DAOInterface<Store> {
+public class StoreSql implements SqlInterface<Store> {
 
-    public static StoreDAO getInstance() {
-        return new StoreDAO();
+    public static StoreSql getInstance() {
+        return new StoreSql();
     }
 
     @Override
     public int insert(Store t) {
         int ketQua = 0;
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             String sql = "INSERT INTO STORES (store_id, email, address, phone_number, is_deleted) VALUES (?, ?, ?, ?, ?)";
             
             PreparedStatement pst = con.prepareStatement(sql);
@@ -29,7 +29,7 @@ public class StoreDAO implements DAOInterface<Store> {
             pst.setInt(5, t.getIsDeleted());
             
             ketQua = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -40,7 +40,7 @@ public class StoreDAO implements DAOInterface<Store> {
     public ArrayList<Store> selectAll() {
         ArrayList<Store> ketQua = new ArrayList<>();
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             // Chỉ lấy các cửa hàng chưa bị xóa (is_deleted = 0)
             String sql = "SELECT * FROM STORES WHERE is_deleted = 0";
             
@@ -57,7 +57,7 @@ public class StoreDAO implements DAOInterface<Store> {
                 );
                 ketQua.add(s);
             }
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -68,7 +68,7 @@ public class StoreDAO implements DAOInterface<Store> {
     public int update(Store t) { 
         int ketQua = 0;
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             String sql = "UPDATE STORES SET email = ?, address = ?, phone_number = ?, is_deleted = ? WHERE store_id = ?";
             
             PreparedStatement pst = con.prepareStatement(sql);
@@ -79,7 +79,7 @@ public class StoreDAO implements DAOInterface<Store> {
             pst.setString(5, t.getStoreId());
             
             ketQua = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -90,7 +90,7 @@ public class StoreDAO implements DAOInterface<Store> {
     public int delete(String id) { 
         int ketQua = 0;
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             // Dùng "Xóa mềm" (Soft Delete) - Chuyển trạng thái is_deleted thành 1 thay vì xóa hẳn khỏi DB
             String sql = "UPDATE STORES SET is_deleted = 1 WHERE store_id = ?";
             
@@ -98,7 +98,7 @@ public class StoreDAO implements DAOInterface<Store> {
             pst.setString(1, id);
             
             ketQua = pst.executeUpdate();
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -109,7 +109,7 @@ public class StoreDAO implements DAOInterface<Store> {
     public Store selectById(String id) { 
         Store ketQua = null;
         try {
-            Connection con = JDBCUtil.getConnection();
+            Connection con = DatabaseConnection.getConnection();
             String sql = "SELECT * FROM STORES WHERE store_id = ?";
             
             PreparedStatement pst = con.prepareStatement(sql);
@@ -125,7 +125,7 @@ public class StoreDAO implements DAOInterface<Store> {
                     rs.getInt("is_deleted")
                 );
             }
-            JDBCUtil.closeConnection(con);
+            DatabaseConnection.closeConnection(con);
         } catch (Exception e) {
             e.printStackTrace();
         }
