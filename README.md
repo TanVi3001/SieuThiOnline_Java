@@ -1,4 +1,5 @@
-                                      <img width="454" height="126" alt="image" src="https://github.com/user-attachments/assets/a952ced1-8359-4774-8b27-ba99a473af9a" />
+[<img width="454" height="126" alt="image" src="https://github.com/user-attachments/assets/2036c003-62d1-42f1-9817-6cca86de0fc8" />](https://www.uit.edu.vn/sites/vi/files/uit20-02.png)
+
 
 
 ## GIỚI THIỆU ĐỒ ÁN
