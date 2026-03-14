@@ -8,7 +8,15 @@
 * **Mô tả:** Đề tài "Xây dựng phần mềm quản lý Siêu thị Online" là một đồ án môn học được thực hiện với mục tiêu xây dựng một hệ thống phần mềm Desktop hỗ trợ công tác quản lý bán hàng, nhập kho, và thông tin khách hàng tại siêu thị một cách hiệu quả và dễ sử dụng. Hệ thống được thiết kế theo mô hình kiến trúc N-Tier chuẩn mực, bao gồm các chức năng chính như quản lý sản phẩm, nhân viên, khách hàng, tạo hóa đơn và thống kê báo cáo. Trong quá trình triển khai, nhóm đã vận dụng các kiến thức về lập trình hướng đối tượng (OOP), phân tích thiết kế hệ thống thông tin, kết hợp với kỹ năng làm việc nhóm qua Git để hoàn thiện sản phẩm.
 
 ## CÔNG NGHỆ VÀ CÔNG CỤ SỬ DỤNG
-
+src/main/java/
+├── business/        # Tầng xử lý logic & SQL
+│   ├── main/        # Lớp chạy chính SieuThiOnline.java
+│   └── sql/         # Các lớp DAO (Singleton)
+├── common/          # Tầng dùng chung
+│   ├── db/          # Kết nối Database
+│   └── report/      # Module xuất Excel/PDF
+├── model/           # Các lớp đối tượng (POJO)
+└── view/            # Giao diện người dùng
 **Application Development**
 
 * [Java](https://www.java.com/) - Ngôn ngữ lập trình chính
@@ -22,7 +30,7 @@
 * [NetBeans](https://netbeans.apache.org/) - IDE phát triển chính
 * [GitHub](https://github.com/) - Quản lý mã nguồn và làm việc nhóm
 
-### **Third-party Services**
+**Third-party Services**
 
 * [Apache POI](https://poi.apache.org/) - Xử lý và xuất báo cáo file Excel (.xlsx)
 * [iText 7](https://itextpdf.com/products/itext-7) - Công cụ xuất báo cáo/hóa đơn định dạng PDF (Unicode)
