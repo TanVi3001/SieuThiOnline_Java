@@ -26,7 +26,6 @@
 
 * [Apache POI](https://poi.apache.org/) - Xử lý và xuất báo cáo file Excel (.xlsx)
 * [iText 7](https://itextpdf.com/products/itext-7) - Công cụ xuất báo cáo/hóa đơn định dạng PDF (Unicode)
-* [Git](https://git-scm.com/) - Công cụ quản lý phiên bản
 
 ## THÀNH VIÊN NHÓM
 
