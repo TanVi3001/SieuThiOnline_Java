@@ -5,10 +5,10 @@ import common.db.DatabaseConnection;
 import java.sql.Connection;
 
 // Import đầy đủ 4 Model & DAO của mảng Đối tác, Kho bãi & Giao hàng
-import business.sql.SupplierSql;
-import business.sql.StoreSql;
-import business.sql.InventorySql;
-import business.sql.DeliveryManagementSql;
+import business.sql.prod_inventory.SuppliersSql;
+import business.sql.prod_inventory.StoresSql;
+import business.sql.prod_inventory.InventorySql; 
+import business.sql.sales_order.DeliveryManagementSql;
 
 import model.Supplier;
 import model.Store;
@@ -43,14 +43,14 @@ public class SieuThiOnline {
         // 1. Test bảng SUPPLIERS (Nhà cung cấp)
         System.out.println("\n1. Đang test thêm Nhà cung cấp...");
         Supplier ncc = new Supplier("SUP_TEST_01", "Công ty Nước Giải Khát", "contact@ngk.com", "KCN Sóng Thần, Dĩ An", "0999888777", 0);
-        int kqSup = SupplierSql.getInstance().insert(ncc);
+        int kqSup = SuppliersSql.getInstance().insert(ncc);
         if (kqSup > 0) System.out.println("✅ Thành công: Đã thêm SUPPLIERS!");
         else System.out.println("❌ Thất bại hoặc dữ liệu đã tồn tại.");
 
         // 2. Test bảng STORES (Cửa hàng)
         System.out.println("\n2. Đang test thêm Cửa hàng...");
         Store cuaHang = new Store("STORE_TEST_01", "store.langdaihoc@sieuthi.com", "Làng Đại Học Quốc Gia", "0123456789", 0);
-        int kqStore = StoreSql.getInstance().insert(cuaHang);
+        int kqStore = StoresSql.getInstance().insert(cuaHang);
         if (kqStore > 0) System.out.println("✅ Thành công: Đã thêm STORES!");
         else System.out.println("❌ Thất bại hoặc dữ liệu đã tồn tại.");
 
