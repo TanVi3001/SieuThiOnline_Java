@@ -5,7 +5,9 @@ common\db\DatabaseConnection.class
 model\DeliveryManagement.class
 business\sql\StoreSql.class
 business\sql\InventorySql.class
+common\report\ExcelExporter.class
 business\sql\CategorySql.class
+common\report\PDFExporter.class
 business\sql\DeliveryManagementSql.class
 model\Category.class
 model\Store.class
