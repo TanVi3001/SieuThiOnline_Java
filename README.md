@@ -22,6 +22,12 @@
 * [NetBeans](https://netbeans.apache.org/) - IDE phát triển chính
 * [GitHub](https://github.com/) - Quản lý mã nguồn và làm việc nhóm
 
+### **Third-party Services**
+
+* [Apache POI](https://poi.apache.org/) - Xử lý và xuất báo cáo file Excel (.xlsx)
+* [iText 7](https://itextpdf.com/products/itext-7) - Công cụ xuất báo cáo/hóa đơn định dạng PDF (Unicode)
+* [Git](https://git-scm.com/) - Công cụ quản lý phiên bản
+
 ## THÀNH VIÊN NHÓM
 
 | STT | MSSV | Họ và Tên | GitHub | Email | 
