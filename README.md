@@ -28,7 +28,6 @@
 * [iText 7](https://itextpdf.com/products/itext-7) - Công cụ xuất báo cáo/hóa đơn định dạng PDF (Unicode)
 
 ## CẤU TRÚC DỰ ÁN
-## 🏗️ CẤU TRÚC DỰ ÁN (PROJECT STRUCTURE)
 
 ```text
 src/main/java/
