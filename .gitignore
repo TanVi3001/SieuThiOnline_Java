@@ -1,16 +1,28 @@
-# Các file biên dịch của Java
+# --- JAVA & MAVEN ---
 target/
 *.class
+HELP.md
 
-# File cấu hình của NetBeans
-nbproject/private/
+# --- NETBEANS ---
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 build/
-nbbuild/
-dist/
-nbdist/
-nbactions.xml
-.nb-gradle/
 
-# File hệ thống
-.DS_Store
-Thumbs.db
+# --- INTELLIJ IDEA ---
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# --- VS CODE ---
+.vscode/
+
+# --- DATABASE & REPORTS (Bảo vệ file cá nhân) ---
+**/src/main/resources/db/
+*.log
+*.xlsx
+*.pdf
+# (Dòng trên giúp chặn các file Excel/PDF ông test không bị đẩy lên repo làm rác nhóm)
