@@ -1,0 +1,16 @@
+# Các file biên dịch của Java
+target/
+*.class
+
+# File cấu hình của NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+.nb-gradle/
+
+# File hệ thống
+.DS_Store
+Thumbs.db
