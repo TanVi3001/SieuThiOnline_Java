@@ -1,13 +1,37 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model;
 
 /**
- *
- * @author nguye
+ * Model OrderDetail
+ * Leader: Lê Tấn Vĩ (Đã dọn dẹp đống rác của Tùng)
  */
 public class OrderDetail {
-    
+
+    private final String orderId;
+    private final String productId;
+    private final int quantity;
+    private final double unitPrice;
+
+    public OrderDetail(String orderId, String productId, int quantity, double unitPrice) {
+        this.orderId = orderId;
+        this.productId = productId;
+        this.quantity = quantity;
+        this.unitPrice = unitPrice;
+    }
+
+    // Sửa lại để trả về giá trị thực tế thay vì ném lỗi
+    public String getProductId() {
+        return productId;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public double getUnitPrice() {
+        return unitPrice;
+    }
 }

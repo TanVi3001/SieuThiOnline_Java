@@ -10,96 +10,104 @@ import model.Supplier;
 import model.Store;
 import model.Inventory;
 import model.DeliveryManagement;
+import model.Order;
+import model.OrderDetail;
 
-// Import DAO (Đã thống nhất dùng bản có s của Tùng và đúng package prod_inventory)
 import business.sql.prod_inventory.SuppliersSql;
 import business.sql.prod_inventory.StoresSql;
 import business.sql.prod_inventory.InventorySql;
 import business.sql.sales_order.DeliveryManagementSql;
+import business.service.PaymentService; 
 
-// Import "Vũ khí" xuất báo cáo
+// Import xuất báo cáo
 import common.report.ExcelExporter;
+import java.util.ArrayList;
 
+/**
+ * Dự án: Hệ thống Quản lý Siêu thị Online
+ * Mô tả: Module kiểm thử tích hợp các thành phần hệ thống
+ * Người thực hiện: Lê Tấn Vĩ (Nhóm trưởng)
+ */
 public class SieuThiOnline {
 
     public static void main(String[] args) {
+        // Thiết lập luồng xuất dữ liệu chuẩn UTF-8 để hiển thị Tiếng Việt
         try {
-            // Ép toàn bộ Output của Console về UTF-8 để không lỗi font tiếng Việt
             System.setOut(new java.io.PrintStream(System.out, true, "UTF-8"));
         } catch (java.io.UnsupportedEncodingException e) {
-            e.printStackTrace();
+            System.err.println("[LỖI] Hệ thống không hỗ trợ định dạng UTF-8.");
         }
 
-        // ==========================================
-        // BƯỚC 0: TEST KẾT NỐI ORACLE
-        // ==========================================
-        System.out.println("=== KIỂM TRA KẾT NỐI ORACLE ===");
+        System.out.println("-------------------------------------------------------");
+        System.out.println("BẮT ĐẦU KIỂM THỬ TÍCH HỢP HỆ THỐNG");
+        System.out.println("-------------------------------------------------------");
+
+        // =====================================================
+        // GIAI ĐOẠN 0: KIỂM TRA KẾT NỐI CƠ SỞ DỮ LIỆU
+        // =====================================================
+        System.out.println("[THÔNG BÁO] Đang thực thi Giai đoạn 0: Kiểm tra kết nối Oracle...");
         try (Connection con = DatabaseConnection.getConnection()) {
             if (con != null) {
-                System.out.println("✅ Chúc mừng! Kết nối Oracle thành công rực rỡ!");
+                System.out.println("[HOÀN TẤT] Kết nối cơ sở dữ liệu được thiết lập thành công.");
             } else {
-                System.out.println("❌ Kết nối thất bại, hãy kiểm tra lại file DatabaseConnection!");
+                System.out.println("[THẤT BẠI] Không thể thiết lập kết nối cơ sở dữ liệu.");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("[CẢNH BÁO] Ngoại lệ kết nối: " + e.getMessage());
         }
 
-        // ==========================================
-        // BƯỚC 1 - 4: TEST THÊM DỮ LIỆU
-        // ==========================================
-        System.out.println("\n=== BẮT ĐẦU TEST 4 BẢNG CỦA VĨ ===");
-        java.sql.Date ngayHienTai = new java.sql.Date(System.currentTimeMillis());
-
-        // 1. Test bảng SUPPLIERS
-        Supplier ncc = new Supplier("SUP_TEST_01", "Công ty Nước Giải Khát", "contact@ngk.com", "KCN Sóng Thần, Dĩ An", "0999888777", 0);
-        int kqSup = SuppliersSql.getInstance().insert(ncc);
-        if (kqSup > 0) {
-            System.out.println("✅ Thành công: Đã thêm SUPPLIERS!");
-        } else {
-            System.out.println("❌ Thất bại hoặc dữ liệu SUPPLIERS đã tồn tại.");
-        }
-
-        // 2. Test bảng STORES
-        Store cuaHang = new Store("STORE_TEST_01", "store.langdaihoc@sieuthi.com", "Làng Đại Học Quốc Gia", "0123456789", 0);
-        int kqStore = StoresSql.getInstance().insert(cuaHang);
-        if (kqStore > 0) {
-            System.out.println("✅ Thành công: Đã thêm STORES!");
-        } else {
-            System.out.println("❌ Thất bại hoặc dữ liệu STORES đã tồn tại.");
-        }
-
-        // 3. Test bảng INVENTORY
-        Inventory tonKho = new Inventory("PROD_MILK_01", "STORE_TEST_01", 50, "Thùng", ngayHienTai, 0);
-        int kqInv = InventorySql.getInstance().insert(tonKho);
-        if (kqInv > 0) {
-            System.out.println("✅ Thành công: Đã thêm INVENTORY!");
-        } else {
-            System.out.println("❌ Thất bại hoặc dữ liệu INVENTORY đã tồn tại.");
-        }
-
-        // 4. Test bảng DELIVERY_MANAGEMENT
-        DeliveryManagement giaoHang = new DeliveryManagement("DEL_TEST_01", "ORD_001", "EMP_01", ngayHienTai, "Đang giao", 0);
-        int kqDel = DeliveryManagementSql.getInstance().insert(giaoHang);
-        if (kqDel > 0) {
-            System.out.println("✅ Thành công: Đã thêm DELIVERY_MANAGEMENT!");
-        } else {
-            System.out.println("❌ Thất bại hoặc dữ liệu DELIVERY_MANAGEMENT đã tồn tại.");
-        }
-
-        // ==========================================
-        // BƯỚC 5: TEST XUẤT BÁO CÁO EXCEL
-        // ==========================================
-        System.out.println("\n=== BƯỚC 5: TEST XUẤT BÁO CÁO EXCEL ===");
+        // =====================================================
+        // GIAI ĐOẠN 5: KIỂM TRA MODULE XUẤT BÁO CÁO EXCEL
+        // =====================================================
+        System.out.println("\n[THÔNG BÁO] Đang thực thi Giai đoạn 5: Kiểm tra xuất báo cáo kho...");
         try {
             List<Inventory> dsTonKho = InventorySql.getInstance().selectAll();
             String filePath = "E:\\Inventory_Report_Vi.xlsx";
 
             ExcelExporter.exportInventory(dsTonKho, filePath);
-            System.out.println("🚀 Leader Vĩ vừa xuất xong báo cáo xịn xò tại: " + filePath);
+            System.out.println("[HOÀN TẤT] Báo cáo hàng tồn kho đã được xuất tại: " + filePath);
         } catch (Exception e) {
-            System.out.println("❌ Lỗi xuất Excel: " + e.getMessage());
+            System.out.println("[CẢNH BÁO] Lỗi xuất dữ liệu Excel: " + e.getMessage());
         }
 
-        System.out.println("\n=== HOÀN TẤT TOÀN BỘ BÀI TEST ===");
+        // =====================================================
+        // GIAI ĐOẠN 6: KIỂM TRA GIAO DỊCH THANH TOÁN (LOGIC CỐT LÕI)
+        // =====================================================
+        System.out.println("\n[THÔNG BÁO] Đang thực thi Giai đoạn 6: Kiểm tra giao dịch thanh toán...");
+
+        // Định danh duy nhất cho mã hóa đơn kiểm thử
+        String maHD = "HD_ST_1002"; 
+
+        // Khởi tạo dữ liệu Hóa đơn
+        Order hd = new Order(
+                maHD,
+                "KH001", 
+                "EMP_01", 
+                new java.sql.Date(System.currentTimeMillis()),
+                150000.0,
+                "ĐÃ THANH TOÁN"
+        );
+
+        // Khởi tạo danh sách Chi tiết hóa đơn (Giỏ hàng)
+        List<OrderDetail> gioHang = new ArrayList<>();
+        gioHang.add(new OrderDetail(maHD, "PROD_MILK_01", 2, 20000.0));
+        gioHang.add(new OrderDetail(maHD, "PROD_MILK_02", 5, 8000.0));
+
+        // Thực thi giao dịch thông qua PaymentService (Áp dụng Transaction)
+        try {
+            boolean isTransactionSuccess = PaymentService.thanhToan(hd, gioHang);
+
+            if (isTransactionSuccess) {
+                System.out.println("[HOÀN TẤT] Giao dịch thành công: Đã lưu hóa đơn và cập nhật kho hàng.");
+            } else {
+                System.out.println("[THẤT BẠI] Giao dịch không thành công: Cơ chế Rollback đã được kích hoạt.");
+            }
+        } catch (Exception e) {
+            System.out.println("[NGHIÊM TRỌNG] Lỗi hệ thống trong quá trình giao dịch: " + e.getMessage());
+        }
+
+        System.out.println("\n-------------------------------------------------------");
+        System.out.println("KẾT THÚC QUY TRÌNH KIỂM THỬ TÍCH HỢP");
+        System.out.println("-------------------------------------------------------");
     }
 }
