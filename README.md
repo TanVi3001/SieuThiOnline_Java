@@ -30,15 +30,38 @@
 ## CẤU TRÚC DỰ ÁN
 
 ```text
-src/main/java/
-├── business/        # Tầng xử lý logic & SQL
-│   ├── main/        # Lớp chạy chính SieuThiOnline.java
-│   └── sql/         # Các lớp DAO (Singleton)
-├── common/          # Tầng dùng chung (Utilities)
-│   ├── db/          # Kết nối Database
-│   └── report/      # Module xuất báo cáo Excel/PDF
-├── model/           # Các lớp đối tượng dữ liệu (POJO)
-└── view/            # Giao diện người dùng (GUI)
+SieuThiOnline [Project Root]
+├── src/main/java
+│   ├── business.main
+│   │   └── SieuThiOnline.java       <-- File chạy thử nghiệm & Main App
+│   ├── business.service
+│   │   └── PaymentService.java      <-- Xử lý Logic (Transaction, tính toán)
+│   ├── business.sql
+│   │   ├── SqlInterface.java        <-- "BẢN HIẾN PHÁP" CHUNG (Duy nhất ở đây)
+│   │   ├── prod_inventory           <-- Phân hệ Kho & Sản phẩm
+│   │   │   ├── CategoriesSql.java
+│   │   │   ├── InventorySql.java
+│   │   │   ├── ProductsSql.java
+│   │   │   └── SuppliersSql.java
+│   │   ├── rbac                     <-- Phân hệ Phân quyền & Tài khoản
+│   │   │   ├── AccountSql.java
+│   │   │   ├── FunctionsSql.java
+│   │   │   └── ...
+│   │   └── sales_order              <-- Phân hệ Đơn hàng & Khách hàng
+│   │       ├── CustomersSql.java
+│   │       ├── OrdersSql.java
+│   │       └── OrderDetailsSql.java
+│   ├── common.db
+│   │   └── DatabaseConnection.java  <-- Kết nối Oracle (Singleton)
+│   ├── common.report
+│   │   └── ExcelExporter.java       <-- Module xuất Excel
+│   └── model                        <-- Chứa các thực thể (POJO)
+│       ├── Category.java
+│       ├── Product.java
+│       ├── Supplier.java
+│       └── ...
+├── .gitignore                       <-- Chặn file rác 
+└── README.md                        <-- Hướng dẫn dự án
 ```
 ## THÀNH VIÊN NHÓM
 
