@@ -5,6 +5,7 @@ import business.sql.SqlInterface;
 import common.db.DatabaseConnection;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class PromotionsSql implements SqlInterface<Promotion> {
 
@@ -39,4 +40,9 @@ public class PromotionsSql implements SqlInterface<Promotion> {
     
     // Hàm bổ trợ: Lấy danh sách khuyến mãi đang còn hiệu lực
     public ArrayList<Promotion> selectActivePromotions() { return new ArrayList<>(); }
+
+    @Override
+    public List<Promotion> selectByCondition(String condition) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

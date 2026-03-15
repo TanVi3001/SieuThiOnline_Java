@@ -3,6 +3,7 @@ package business.sql.sales_order;
 import model.Customer;
 import business.sql.SqlInterface;
 import java.util.ArrayList;
+import java.util.List;
 
 public class CustomersSql implements SqlInterface<Customer> {
     public static CustomersSql getInstance() { return new CustomersSql(); }
@@ -15,4 +16,9 @@ public class CustomersSql implements SqlInterface<Customer> {
     
     // Hàm đặc thù: Cập nhật điểm thưởng
     public int updateRewardPoints(String customerId, int points) { return 0; }
+
+    @Override
+    public List<Customer> selectByCondition(String condition) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

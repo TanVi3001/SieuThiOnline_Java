@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.sql.Date;
+import java.util.List;
 
 public class InventorySql implements SqlInterface<Inventory> {
 
@@ -162,5 +163,10 @@ public class InventorySql implements SqlInterface<Inventory> {
             e.printStackTrace();
         }
         return ketQua;
+    }
+
+    @Override
+    public List<Inventory> selectByCondition(String condition) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

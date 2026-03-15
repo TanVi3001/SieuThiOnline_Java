@@ -3,6 +3,7 @@ package business.sql.hr_kpi;
 import model.Employee;
 import business.sql.SqlInterface;
 import java.util.ArrayList;
+import java.util.List;
 
 public class EmployeeSql implements SqlInterface<Employee> {
     public static EmployeeSql getInstance() {
@@ -17,4 +18,9 @@ public class EmployeeSql implements SqlInterface<Employee> {
     
     // Hàm bổ trợ cập nhật số đơn hàng hoàn thành (theo logic SQL của bạn)
     public int updateCompletedOrders(String employeeId, int count) { return 0; }
+
+    @Override
+    public List<Employee> selectByCondition(String condition) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

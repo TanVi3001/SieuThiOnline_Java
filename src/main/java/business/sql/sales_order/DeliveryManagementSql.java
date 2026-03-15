@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.List;
 
 public class DeliveryManagementSql implements SqlInterface<DeliveryManagement> {
 
@@ -134,5 +135,10 @@ public class DeliveryManagementSql implements SqlInterface<DeliveryManagement> {
             e.printStackTrace();
         }
         return ketQua;
+    }
+
+    @Override
+    public List<DeliveryManagement> selectByCondition(String condition) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

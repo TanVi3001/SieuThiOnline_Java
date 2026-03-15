@@ -5,6 +5,7 @@ import business.sql.SqlInterface;
 import common.db.DatabaseConnection;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class PromotionCampaignsSql implements SqlInterface<PromotionCampaign> {
 
@@ -34,4 +35,9 @@ public class PromotionCampaignsSql implements SqlInterface<PromotionCampaign> {
     @Override public int delete(String id) { return 0; }
     @Override public ArrayList<PromotionCampaign> selectAll() { return new ArrayList<>(); }
     @Override public PromotionCampaign selectById(String id) { return null; }
+
+    @Override
+    public List<PromotionCampaign> selectByCondition(String condition) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

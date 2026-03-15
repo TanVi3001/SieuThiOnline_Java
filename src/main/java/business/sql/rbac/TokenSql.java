@@ -4,6 +4,7 @@ import business.sql.SqlInterface;
 import business.sql.SqlInterface;
 import model.Token;
 import java.util.ArrayList;
+import java.util.List;
 
 public class TokenSql implements SqlInterface<Token> {
     public static TokenSql getInstance() {
@@ -17,4 +18,9 @@ public class TokenSql implements SqlInterface<Token> {
     @Override public Token selectById(String id) { return null; }
     
     public void revokeToken(String tokenValue) { /* Logic hủy token */ }
+
+    @Override
+    public List<Token> selectByCondition(String condition) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

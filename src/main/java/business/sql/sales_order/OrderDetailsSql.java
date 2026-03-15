@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * OrderDetailsSql: Xử lý lưu chi tiết hóa đơn vào Oracle Leader Vĩ: Đã fix
@@ -111,5 +112,10 @@ public class OrderDetailsSql implements SqlInterface<OrderDetail> {
     @Override
     public OrderDetail selectById(String id) {
         return null;
+    }
+
+    @Override
+    public List<OrderDetail> selectByCondition(String condition) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

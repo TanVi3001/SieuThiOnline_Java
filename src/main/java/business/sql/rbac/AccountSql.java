@@ -4,6 +4,7 @@ import business.sql.SqlInterface;
 import business.sql.SqlInterface;
 import model.Account;
 import java.util.ArrayList;
+import java.util.List;
 
 public class AccountSql implements SqlInterface<Account> {
     public static AccountSql getInstance() {
@@ -18,4 +19,9 @@ public class AccountSql implements SqlInterface<Account> {
     
     // Hàm bổ trợ cho đăng nhập
     public Account login(String username, String password) { return null; }
+
+    @Override
+    public List<Account> selectByCondition(String condition) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

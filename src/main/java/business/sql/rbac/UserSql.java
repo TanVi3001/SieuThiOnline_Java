@@ -4,6 +4,7 @@ import business.sql.SqlInterface;
 import business.sql.SqlInterface;
 import model.User; // Đảm bảo bạn có class User trong package model
 import java.util.ArrayList;
+import java.util.List;
 
 public class UserSql implements SqlInterface<User> {
     public static UserSql getInstance() {
@@ -15,4 +16,9 @@ public class UserSql implements SqlInterface<User> {
     @Override public int delete(String id) { return 0; }
     @Override public ArrayList<User> selectAll() { return new ArrayList<>(); }
     @Override public User selectById(String id) { return null; }
+
+    @Override
+    public List<User> selectByCondition(String condition) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class OrdersSql implements SqlInterface<Order> {
     private static OrdersSql instance;
@@ -49,4 +50,9 @@ public class OrdersSql implements SqlInterface<Order> {
     @Override public int delete(String id) { return 0; }
     @Override public ArrayList<Order> selectAll() { return new ArrayList<>(); }
     @Override public Order selectById(String id) { return null; }
+
+    @Override
+    public List<Order> selectByCondition(String condition) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

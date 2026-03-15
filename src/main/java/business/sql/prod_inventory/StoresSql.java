@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class StoresSql implements SqlInterface<Store> {
     private static StoresSql instance;
@@ -132,5 +133,10 @@ public class StoresSql implements SqlInterface<Store> {
             System.out.println("❌ Lỗi Select By ID Store: " + e.getMessage());
         }
         return ketQua;
+    }
+
+    @Override
+    public List<Store> selectByCondition(String condition) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

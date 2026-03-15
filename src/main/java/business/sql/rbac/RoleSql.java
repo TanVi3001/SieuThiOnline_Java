@@ -1,9 +1,9 @@
 package business.sql.rbac;
 
 import business.sql.SqlInterface;
-import business.sql.SqlInterface;
 import model.Role;
 import java.util.ArrayList;
+import java.util.List;
 
 public class RoleSql implements SqlInterface<Role> {
     public static RoleSql getInstance() {
@@ -15,4 +15,9 @@ public class RoleSql implements SqlInterface<Role> {
     @Override public int delete(String id) { return 0; }
     @Override public ArrayList<Role> selectAll() { return new ArrayList<>(); }
     @Override public Role selectById(String id) { return null; }
+
+    @Override
+    public List<Role> selectByCondition(String condition) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

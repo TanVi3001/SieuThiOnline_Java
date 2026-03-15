@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SuppliersSql implements SqlInterface<Supplier> {
 
@@ -132,5 +133,10 @@ public class SuppliersSql implements SqlInterface<Supplier> {
             e.printStackTrace();
         }
         return ketQua;
+    }
+
+    @Override
+    public List<Supplier> selectByCondition(String condition) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }
