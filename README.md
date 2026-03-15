@@ -11,7 +11,7 @@
 
 **Application Development**
 
-* [Java](https://www.java.com/) - Ngôn ngữ lập trình chính
+* [Java](https://www.java.com/) - Ngôn ngữ lập trình chính (JDK 11+)
 * [Java Swing](https://docs.oracle.com/javase/tutorial/uiswing/) - Thư viện xây dựng giao diện người dùng (GUI)
 * [N-Tier Architecture](https://en.wikipedia.org/wiki/Multitier_architecture) - Kiến trúc phân tầng dự án (common, business, model, view, controller)
 
