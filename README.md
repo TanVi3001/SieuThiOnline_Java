@@ -22,6 +22,24 @@
 * [NetBeans](https://netbeans.apache.org/) - IDE phát triển chính
 * [GitHub](https://github.com/) - Quản lý mã nguồn và làm việc nhóm
 
+**Third-party Services**
+
+* [Apache POI](https://poi.apache.org/) - Xử lý và xuất báo cáo file Excel (.xlsx)
+* [iText 7](https://itextpdf.com/products/itext-7) - Công cụ xuất báo cáo/hóa đơn định dạng PDF (Unicode)
+
+## CẤU TRÚC DỰ ÁN
+
+```text
+src/main/java/
+├── business/        # Tầng xử lý logic & SQL
+│   ├── main/        # Lớp chạy chính SieuThiOnline.java
+│   └── sql/         # Các lớp DAO (Singleton)
+├── common/          # Tầng dùng chung (Utilities)
+│   ├── db/          # Kết nối Database
+│   └── report/      # Module xuất báo cáo Excel/PDF
+├── model/           # Các lớp đối tượng dữ liệu (POJO)
+└── view/            # Giao diện người dùng (GUI)
+```
 ## THÀNH VIÊN NHÓM
 
 | STT | MSSV | Họ và Tên | GitHub | Email | 
