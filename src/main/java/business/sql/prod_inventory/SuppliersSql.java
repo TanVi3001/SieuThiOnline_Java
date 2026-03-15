@@ -12,9 +12,16 @@ import java.util.List;
 
 public class SuppliersSql implements SqlInterface<Supplier> {
 
-    // Áp dụng Singleton Pattern
+    // 1. Áp dụng Singleton chuẩn (Tiết kiệm bộ nhớ)
+    private static SuppliersSql instance;
+
+    private SuppliersSql() {} // Ngăn tạo đối tượng tự do
+
     public static SuppliersSql getInstance() {
-        return new SuppliersSql();
+        if (instance == null) {
+            instance = new SuppliersSql();
+        }
+        return instance;
     }
 
     @Override
@@ -22,6 +29,7 @@ public class SuppliersSql implements SqlInterface<Supplier> {
         int ketQua = 0;
         String sql = "INSERT INTO SUPPLIERS (supplier_id, supplier_name, email, address, phone_number, is_deleted) VALUES (?, ?, ?, ?, ?, ?)";
         
+        // Dùng try-with-resources: Tự động đóng connection khi kết thúc
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement pst = con.prepareStatement(sql)) {
             
@@ -33,7 +41,7 @@ public class SuppliersSql implements SqlInterface<Supplier> {
             pst.setInt(6, t.getIsDeleted());
             
             ketQua = pst.executeUpdate();
-            DatabaseConnection.closeConnection(con);
+            // KHÔNG cần gọi closeConnection(con) ở đây nữa vì try-with-resources đã làm rồi
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -41,8 +49,8 @@ public class SuppliersSql implements SqlInterface<Supplier> {
     }
 
     @Override
-    public ArrayList<Supplier> selectAll() {
-        ArrayList<Supplier> ketQua = new ArrayList<>();
+    public List<Supplier> selectAll() { // Đổi sang List cho đúng Interface
+        List<Supplier> ketQua = new ArrayList<>();
         String sql = "SELECT * FROM SUPPLIERS WHERE is_deleted = 0";
         
         try (Connection con = DatabaseConnection.getConnection();
@@ -50,17 +58,15 @@ public class SuppliersSql implements SqlInterface<Supplier> {
              ResultSet rs = pst.executeQuery()) {
             
             while (rs.next()) {
-                Supplier s = new Supplier(
+                ketQua.add(new Supplier(
                     rs.getString("supplier_id"),
                     rs.getString("supplier_name"),
                     rs.getString("email"),
                     rs.getString("address"),
                     rs.getString("phone_number"),
                     rs.getInt("is_deleted")
-                );
-                ketQua.add(s);
+                ));
             }
-            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -83,7 +89,6 @@ public class SuppliersSql implements SqlInterface<Supplier> {
             pst.setString(6, t.getSupplierId());
             
             ketQua = pst.executeUpdate();
-            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -100,7 +105,6 @@ public class SuppliersSql implements SqlInterface<Supplier> {
             
             pst.setString(1, id);
             ketQua = pst.executeUpdate();
-            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -110,7 +114,7 @@ public class SuppliersSql implements SqlInterface<Supplier> {
     @Override
     public Supplier selectById(String id) { 
         Supplier ketQua = null;
-        String sql = "SELECT * FROM SUPPLIERS WHERE supplier_id = ?";
+        String sql = "SELECT * FROM SUPPLIERS WHERE supplier_id = ? AND is_deleted = 0";
         
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement pst = con.prepareStatement(sql)) {
@@ -128,7 +132,6 @@ public class SuppliersSql implements SqlInterface<Supplier> {
                     );
                 }
             }
-            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -137,6 +140,32 @@ public class SuppliersSql implements SqlInterface<Supplier> {
 
     @Override
     public List<Supplier> selectByCondition(String condition) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        // Hỗ trợ tìm kiếm theo tên hoặc số điện thoại nhà cung cấp
+        List<Supplier> ketQua = new ArrayList<>();
+        String sql = "SELECT * FROM SUPPLIERS WHERE (supplier_name LIKE ? OR phone_number LIKE ?) AND is_deleted = 0";
+        
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            
+            String searchPattern = "%" + condition + "%";
+            pst.setString(1, searchPattern);
+            pst.setString(2, searchPattern);
+            
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    ketQua.add(new Supplier(
+                        rs.getString("supplier_id"),
+                        rs.getString("supplier_name"),
+                        rs.getString("email"),
+                        rs.getString("address"),
+                        rs.getString("phone_number"),
+                        rs.getInt("is_deleted")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ketQua;
     }
 }

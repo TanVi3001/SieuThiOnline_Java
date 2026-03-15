@@ -2,7 +2,7 @@ package business.sql.prod_inventory;
 
 import common.db.DatabaseConnection;
 import model.Category;
-import business.sql.SqlInterface; // Import interface từ package gốc
+import business.sql.SqlInterface;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,9 +12,16 @@ import java.util.List;
 
 public class CategoriesSql implements SqlInterface<Category> {
 
-    // Áp dụng mẫu Singleton
+    // 1. Áp dụng Singleton chuẩn (Chỉ tồn tại 1 thực thể duy nhất)
+    private static CategoriesSql instance;
+
+    private CategoriesSql() {} // Ngăn không cho tạo đối tượng từ bên ngoài
+
     public static CategoriesSql getInstance() {
-        return new CategoriesSql();
+        if (instance == null) {
+            instance = new CategoriesSql();
+        }
+        return instance;
     }
 
     @Override
@@ -22,6 +29,7 @@ public class CategoriesSql implements SqlInterface<Category> {
         int ketQua = 0;
         String sql = "INSERT INTO CATEGORIES (category_id, category_name, description, is_deleted) VALUES (?, ?, ?, ?)";
         
+        // Dùng try-with-resources: Tự động đóng connection, không cần gọi close thủ công
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement pst = con.prepareStatement(sql)) {
             
@@ -31,7 +39,6 @@ public class CategoriesSql implements SqlInterface<Category> {
             pst.setInt(4, t.getIsDeleted());
             
             ketQua = pst.executeUpdate();
-            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -39,8 +46,8 @@ public class CategoriesSql implements SqlInterface<Category> {
     }
 
     @Override
-    public ArrayList<Category> selectAll() {
-        ArrayList<Category> ketQua = new ArrayList<>();
+    public List<Category> selectAll() { // Đổi sang List cho chuẩn Interface
+        List<Category> ketQua = new ArrayList<>();
         String sql = "SELECT * FROM CATEGORIES WHERE is_deleted = 0";
         
         try (Connection con = DatabaseConnection.getConnection();
@@ -56,7 +63,6 @@ public class CategoriesSql implements SqlInterface<Category> {
                 );
                 ketQua.add(c);
             }
-            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -77,7 +83,6 @@ public class CategoriesSql implements SqlInterface<Category> {
             pst.setString(4, t.getCategoryId());
             
             ketQua = pst.executeUpdate();
-            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) { 
             e.printStackTrace();
         }
@@ -94,7 +99,6 @@ public class CategoriesSql implements SqlInterface<Category> {
             
             pst.setString(1, id);
             ketQua = pst.executeUpdate();
-            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -104,7 +108,7 @@ public class CategoriesSql implements SqlInterface<Category> {
     @Override
     public Category selectById(String id) { 
         Category ketQua = null;
-        String sql = "SELECT * FROM CATEGORIES WHERE category_id = ?";
+        String sql = "SELECT * FROM CATEGORIES WHERE category_id = ? AND is_deleted = 0";
         
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement pst = con.prepareStatement(sql)) {
@@ -120,7 +124,6 @@ public class CategoriesSql implements SqlInterface<Category> {
                     );
                 }
             }
-            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -129,6 +132,27 @@ public class CategoriesSql implements SqlInterface<Category> {
 
     @Override
     public List<Category> selectByCondition(String condition) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        // Bonus cho bà Quỳnh: Tìm kiếm danh mục theo tên
+        List<Category> ketQua = new ArrayList<>();
+        String sql = "SELECT * FROM CATEGORIES WHERE category_name LIKE ? AND is_deleted = 0";
+        
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            
+            pst.setString(1, "%" + condition + "%");
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    ketQua.add(new Category(
+                        rs.getString("category_id"),
+                        rs.getString("category_name"),
+                        rs.getString("description"),
+                        rs.getInt("is_deleted")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ketQua;
     }
 }
