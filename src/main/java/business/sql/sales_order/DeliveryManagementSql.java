@@ -1,5 +1,6 @@
-package business.sql;
+package business.sql.sales_order;
 
+import business.sql.SqlInterface;
 import common.db.DatabaseConnection;
 import model.DeliveryManagement;
 import java.sql.Connection;

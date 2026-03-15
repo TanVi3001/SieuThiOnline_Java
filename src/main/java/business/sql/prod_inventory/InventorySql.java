@@ -1,5 +1,6 @@
-package business.sql;
+package business.sql.prod_inventory;
 
+import business.sql.SqlInterface;
 import common.db.DatabaseConnection;
 import model.Inventory;
 import java.sql.Connection;
