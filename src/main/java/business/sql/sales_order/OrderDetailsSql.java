@@ -1,7 +1,7 @@
 package business.sql.sales_order;
 
 import common.db.DatabaseConnection;
-import model.OrderDetail;
+import model.order.OrderDetail;
 import business.sql.SqlInterface;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

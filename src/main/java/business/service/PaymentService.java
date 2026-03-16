@@ -4,8 +4,8 @@ import common.db.DatabaseConnection;
 import business.sql.prod_inventory.ProductsSql; 
 import business.sql.sales_order.OrdersSql;      // DAO cho hóa đơn
 import business.sql.sales_order.OrderDetailsSql; // DAO cho chi tiết
-import model.Order;
-import model.OrderDetail;
+import model.order.Order;
+import model.order.OrderDetail;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;

@@ -1,7 +1,7 @@
 package business.sql.prod_inventory;
 
 import common.db.DatabaseConnection;
-import model.Supplier;
+import model.product.Supplier;
 import business.sql.SqlInterface;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

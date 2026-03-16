@@ -2,7 +2,7 @@ package business.sql.prod_inventory;
 
 import business.sql.SqlInterface;
 import common.db.DatabaseConnection;
-import model.Inventory;
+import model.product.Inventory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

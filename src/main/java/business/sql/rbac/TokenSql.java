@@ -2,7 +2,7 @@ package business.sql.rbac;
 
 import business.sql.SqlInterface;
 import business.sql.SqlInterface;
-import model.Token;
+import model.account.Token;
 import java.util.ArrayList;
 import java.util.List;
 

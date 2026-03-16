@@ -1,6 +1,6 @@
 package business.sql.promotion;
 
-import model.Promotion; 
+import model.promotion.Promotion; 
 import business.sql.SqlInterface;
 import common.db.DatabaseConnection;
 import java.sql.*;

@@ -1,7 +1,7 @@
 package business.sql.rbac;
 
 import business.sql.SqlInterface;
-import model.Function;
+import model.account.Function;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,6 +1,6 @@
 package business.sql.promotion;
 
-import model.PromotionCampaign; // Đảm bảo đã có model tương ứng
+import model.promotion.PromotionCampaign; // Đảm bảo đã có model tương ứng
 import business.sql.SqlInterface;
 import common.db.DatabaseConnection;
 import java.sql.*;

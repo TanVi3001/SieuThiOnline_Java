@@ -2,7 +2,7 @@ package business.sql.rbac;
 
 import business.sql.SqlInterface;
 import business.sql.SqlInterface;
-import model.User; // Đảm bảo bạn có class User trong package model
+import model.account.User; // Đảm bảo bạn có class User trong package model
 import java.util.ArrayList;
 import java.util.List;
 

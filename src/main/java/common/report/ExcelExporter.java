@@ -5,7 +5,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
-import model.Inventory; // Import model mà ông muốn xuất báo cáo
+import model.product.Inventory; // Import model mà ông muốn xuất báo cáo
 
 public class ExcelExporter {
 

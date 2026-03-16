@@ -1,6 +1,6 @@
 package business.sql.hr_kpi;
 
-import model.Shift; // Giả định bạn sẽ tạo model trong package tương ứng
+import model.employee.Shift; // Giả định bạn sẽ tạo model trong package tương ứng
 import business.sql.SqlInterface;
 import java.util.ArrayList;
 import java.util.List;

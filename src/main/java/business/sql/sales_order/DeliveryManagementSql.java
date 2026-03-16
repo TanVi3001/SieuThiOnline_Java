@@ -2,7 +2,7 @@ package business.sql.sales_order;
 
 import business.sql.SqlInterface;
 import common.db.DatabaseConnection;
-import model.DeliveryManagement;
+import model.order.DeliveryManagement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

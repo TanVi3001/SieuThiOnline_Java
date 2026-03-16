@@ -2,7 +2,7 @@ package business.sql.rbac;
 
 import business.sql.SqlInterface;
 import business.sql.SqlInterface;
-import model.Account;
+import model.account.Account;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,6 +1,6 @@
 package business.sql.sales_order;
 
-import model.Customer;
+import model.order.Customer;
 import business.sql.SqlInterface;
 import java.util.ArrayList;
 import java.util.List;

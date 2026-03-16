@@ -1,7 +1,7 @@
 package business.sql.rbac;
 
 import business.sql.SqlInterface;
-import model.RoleGroup;
+import model.account.RoleGroup;
 import java.util.ArrayList;
 import java.util.List;
 

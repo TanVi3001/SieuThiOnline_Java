@@ -1,6 +1,6 @@
 package business.sql.hr_kpi;
 
-import model.KpiCriteria;
+import model.account.kpi.KpiCriteria;
 import business.sql.SqlInterface;
 import java.util.ArrayList;
 import java.util.List;

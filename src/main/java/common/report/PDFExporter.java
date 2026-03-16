@@ -10,7 +10,7 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.UnitValue;
 import java.util.List;
-import model.Inventory;
+import model.product.Inventory;
 
 /**
  * Lớp hỗ trợ xuất báo cáo định dạng PDF Hỗ trợ hiển thị Tiếng Việt và định dạng

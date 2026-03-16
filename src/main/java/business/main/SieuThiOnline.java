@@ -6,12 +6,12 @@ import java.sql.Connection;
 import java.util.List;
 
 // Import Model
-import model.Supplier;
-import model.Store;
-import model.Inventory;
-import model.DeliveryManagement;
-import model.Order;
-import model.OrderDetail;
+import model.product.Supplier;
+import model.product.Store;
+import model.product.Inventory;
+import model.order.DeliveryManagement;
+import model.order.Order;
+import model.order.OrderDetail;
 
 import business.sql.prod_inventory.SuppliersSql;
 import business.sql.prod_inventory.StoresSql;
