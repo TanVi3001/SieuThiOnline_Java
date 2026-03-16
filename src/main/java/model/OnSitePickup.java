@@ -14,4 +14,28 @@ public class OnSitePickup {
     }
 
     // Getters and Setters...
+
+    public String getDeliveryId() {
+        return deliveryId;
+    }
+
+    public void setDeliveryId(String deliveryId) {
+        this.deliveryId = deliveryId;
+    }
+
+    public String getCounterPosition() {
+        return counterPosition;
+    }
+
+    public void setCounterPosition(String counterPosition) {
+        this.counterPosition = counterPosition;
+    }
+
+    public int getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(int isDeleted) {
+        this.isDeleted = isDeleted;
+    }
 }
