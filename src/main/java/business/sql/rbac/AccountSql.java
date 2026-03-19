@@ -1,27 +1,78 @@
 package business.sql.rbac;
 
 import business.sql.SqlInterface;
-import business.sql.SqlInterface;
+import common.db.DatabaseConnection;
 import model.account.Account;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AccountSql implements SqlInterface<Account> {
+
+    // 1. Singleton chuẩn (Duy nhất 1 thực thể)
+    private static AccountSql instance;
+    private AccountSql() {}
+
     public static AccountSql getInstance() {
-        return new AccountSql();
+        if (instance == null) {
+            instance = new AccountSql();
+        }
+        return instance;
     }
 
-    @Override public int insert(Account t) { return 0; }
-    @Override public int update(Account t) { return 0; }
-    @Override public int delete(String id) { return 0; }
-    @Override public ArrayList<Account> selectAll() { return new ArrayList<>(); }
-    @Override public Account selectById(String id) { return null; }
-    
-    // Hàm bổ trợ cho đăng nhập
-    public Account login(String username, String password) { return null; }
+    // 2. Hàm quan trọng nhất cho LoginService
+    public Account selectByUsername(String username) {
+        Account acc = null;
+        // SQL: Chỉ lấy những tài khoản chưa bị xóa (is_deleted = 0)
+        String sql = "SELECT * FROM ACCOUNTS WHERE username = ? AND is_deleted = 0";
+        
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            
+            pst.setString(1, username);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    acc = new Account(
+                        rs.getString("account_id"),
+                        rs.getString("username"),
+                        rs.getString("password"),
+                        rs.getString("role"),
+                        rs.getInt("is_deleted")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi SQL Account: " + e.getMessage());
+        }
+        return acc;
+    }
 
     @Override
-    public List<Account> selectByCondition(String condition) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public List<Account> selectAll() {
+        List<Account> list = new ArrayList<>();
+        String sql = "SELECT * FROM ACCOUNTS WHERE is_deleted = 0";
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
+            while (rs.next()) {
+                list.add(new Account(
+                    rs.getString("account_id"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    rs.getString("role"),
+                    rs.getInt("is_deleted")
+                ));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
     }
+
+    @Override public int insert(Account t) { return 0; } // Sẽ bổ sung khi làm chức năng Tạo TK
+    @Override public int update(Account t) { return 0; }
+    @Override public int delete(String id) { return 0; }
+    @Override public Account selectById(String id) { return null; }
+    @Override public List<Account> selectByCondition(String condition) { return null; }
 }

@@ -57,6 +57,10 @@ public class Store {
     public void setIsDeleted(int isDeleted) {
         this.isDeleted = isDeleted;
     }
+
+    public String getStoreName() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
     
     
 }

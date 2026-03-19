@@ -27,18 +27,19 @@ public class ProductsSql {
      * @throws java.sql.SQLException
      */
     public int subtractStockWithConn(Connection con, String productId, int quantity) throws SQLException {
-        // SQL: Giảm số lượng trong bảng INVENTORY (vì bảng PRODUCTS không giữ số lượng)
-        String sql = "UPDATE INVENTORY SET quantity = quantity - ? WHERE product_id = ?";
+        // SQL: Chỉ trừ nếu số lượng tồn kho (quantity) lớn hơn hoặc bằng số lượng mua
+        String sql = "UPDATE INVENTORY SET quantity = quantity - ? WHERE product_id = ? AND quantity >= ?";
         
         try (PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setInt(1, quantity);
             pst.setString(2, productId);
+            pst.setInt(3, quantity); // Ràng buộc: Kho phải còn đủ hàng mới cho trừ
             
             int res = pst.executeUpdate();
             
-            // Nếu không tìm thấy sản phẩm trong kho để trừ
             if (res == 0) {
-                throw new SQLException("LỖI: Mã sản phẩm " + productId + " không tồn tại trong bảng INVENTORY!");
+                // Lỗi này sẽ giúp PaymentService biết để Rollback toàn bộ hóa đơn
+                throw new SQLException("LỖI: Sản phẩm " + productId + " không đủ hàng trong kho hoặc mã không tồn tại!");
             }
             
             return res;

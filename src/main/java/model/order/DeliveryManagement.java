@@ -70,4 +70,8 @@ public int insert(DeliveryManagement giaoHang) {
         }
         return ketQua;
     }
+
+    public String getDeliveryStatus() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

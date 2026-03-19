@@ -9,7 +9,7 @@ package view;
  * @author Admin
  */
 public class LoginView extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(LoginView.class.getName());
 
     /**
@@ -17,6 +17,18 @@ public class LoginView extends javax.swing.JFrame {
      */
     public LoginView() {
         initComponents();
+        this.setLocationRelativeTo(null);
+        // Bắt sự kiện bàn phím cho ô Mật khẩu (Manual KeyListener)
+        txtPassword.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                // Kiểm tra nếu phím vừa nhấn là phím ENTER
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    // Gọi thẳng cái hàm xử lý của nút Đăng nhập
+                    btnLoginActionPerformed(null);
+                }
+            }
+        });
     }
 
     /**
@@ -33,8 +45,8 @@ public class LoginView extends javax.swing.JFrame {
         Username = new javax.swing.JLabel();
         Password = new javax.swing.JLabel();
         txtUsername = new javax.swing.JTextField();
-        txtPassword = new javax.swing.JTextField();
         btnLogin = new javax.swing.JButton();
+        txtPassword = new javax.swing.JPasswordField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(0, 0, 102));
@@ -54,11 +66,13 @@ public class LoginView extends javax.swing.JFrame {
         Password.setForeground(new java.awt.Color(255, 255, 255));
         Password.setText("MẬT KHẨU");
 
-        txtPassword.addActionListener(this::txtPasswordActionPerformed);
+        txtUsername.addActionListener(this::txtUsernameActionPerformed);
 
         btnLogin.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnLogin.setText("Đăng nhập");
         btnLogin.addActionListener(this::btnLoginActionPerformed);
+
+        txtPassword.addActionListener(this::txtPasswordActionPerformed);
 
         javax.swing.GroupLayout LoginViewLayout = new javax.swing.GroupLayout(LoginView);
         LoginView.setLayout(LoginViewLayout);
@@ -94,8 +108,8 @@ public class LoginView extends javax.swing.JFrame {
                     .addComponent(Username, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(31, 31, 31)
                 .addGroup(LoginViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Password, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Password, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 48, Short.MAX_VALUE)
                 .addComponent(btnLogin)
                 .addGap(28, 28, 28))
@@ -115,13 +129,70 @@ public class LoginView extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
+        // 1. Lấy dữ liệu
+        String user = txtUsername.getText().trim();
+
+        // SỬA DÒNG NÀY: JPasswordField dùng getPassword() trả về mảng char, 
+        // mình phải bọc nó trong new String(...) để lấy chuỗi mật khẩu.
+        String pass = new String(txtPassword.getPassword()).trim();
+
+        // 2. Kiểm tra nhanh (Validation)
+        if (user.isEmpty() || pass.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Vui lòng nhập đầy đủ Tài khoản và Mật khẩu!",
+                    "Nhắc nhở",
+                    javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            // 3. Gọi Service để kiểm tra với Database Oracle
+            if (business.service.LoginService.authenticate(user, pass)) {
+
+                // --- ĐĂNG NHẬP THÀNH CÔNG ---
+                javax.swing.JOptionPane.showMessageDialog(this,
+                        "Chào mừng " + user + "! Bạn đã đăng nhập thành công.",
+                        "Thông báo",
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
+
+                // 4. Mở Dashboard
+                java.awt.EventQueue.invokeLater(() -> {
+                    DashboardView mainScreen = new DashboardView();
+                    mainScreen.setVisible(true);
+                    mainScreen.setLocationRelativeTo(null);
+                });
+
+                // 5. Đóng màn hình Login (Giải phóng RAM cho LOQ)
+                this.dispose();
+
+            } else {
+                // --- ĐĂNG NHẬP THẤT BẠI ---
+                javax.swing.JOptionPane.showMessageDialog(this,
+                        "Tài khoản hoặc mật khẩu không chính xác!",
+                        "Lỗi đăng nhập",
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
+
+                txtPassword.setText("");
+                txtPassword.requestFocus();
+            }
+        } catch (Exception e) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Hệ thống đang gặp sự cố kết nối: " + e.getMessage(),
+                    "LỖI NGHIÊM TRỌNG",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_btnLoginActionPerformed
+
+    private void txtUsernameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtUsernameActionPerformed
+        txtPassword.requestFocus(); // Nhấn Enter ở đây thì nhảy xuống ô dưới
+        btnLoginActionPerformed(evt); // Gọi trực tiếp hàm xử lý của nút Đăng nhập
+    }//GEN-LAST:event_txtUsernameActionPerformed
+
     private void txtPasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtPasswordActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtPasswordActionPerformed
-
-    private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnLoginActionPerformed
 
     /**
      * @param args the command line arguments
@@ -154,7 +225,7 @@ public class LoginView extends javax.swing.JFrame {
     private javax.swing.JLabel Password;
     private javax.swing.JLabel Username;
     private javax.swing.JButton btnLogin;
-    private javax.swing.JTextField txtPassword;
+    private javax.swing.JPasswordField txtPassword;
     private javax.swing.JTextField txtUsername;
     // End of variables declaration//GEN-END:variables
 }
