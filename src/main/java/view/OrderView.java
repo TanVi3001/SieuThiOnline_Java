@@ -44,6 +44,7 @@ public class OrderView extends javax.swing.JPanel {
         pnTop.add(jLabel1);
 
         cbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Đang xử lý", "Đã giao", "Đã hủy", " " }));
+        cbStatus.addActionListener(this::cbStatusActionPerformed);
         pnTop.add(cbStatus);
 
         add(pnTop, java.awt.BorderLayout.PAGE_START);
@@ -78,6 +79,10 @@ public class OrderView extends javax.swing.JPanel {
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnUpdateActionPerformed
+
+    private void cbStatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbStatusActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cbStatusActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

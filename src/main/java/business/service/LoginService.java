@@ -10,6 +10,7 @@ public class LoginService {
 
     /**
      * Hàm xử lý đăng nhập
+     *
      * @param username tên đăng nhập từ LoginView
      * @param password mật khẩu từ LoginView
      * @return true nếu khớp, false nếu sai tài khoản/mật khẩu
@@ -38,7 +39,8 @@ public class LoginService {
 
     /**
      * Hàm lấy thông tin người dùng hiện tại
-     * @return 
+     *
+     * @return
      */
     public static Account getCurrentUser() {
         return currentUser;
@@ -49,11 +51,13 @@ public class LoginService {
      */
     public static void logout() {
         currentUser = null;
+        System.out.println("LOG: Người dùng đã đăng xuất.");
     }
 
     /**
      * Hàm kiểm tra quyền Admin để hỗ trợ Quỳnh ẩn/hiện nút
-     * @return 
+     *
+     * @return
      */
     public static boolean isAdmin() {
         return currentUser != null && "ADMIN".equalsIgnoreCase(currentUser.getRole());

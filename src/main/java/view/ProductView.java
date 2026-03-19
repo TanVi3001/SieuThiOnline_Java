@@ -8,6 +8,10 @@ package view;
  *
  * @author Admin
  */
+import java.util.List;
+import javax.swing.table.DefaultTableModel;
+import model.product.Product;
+
 public class ProductView extends javax.swing.JPanel {
 
     /**
@@ -29,14 +33,14 @@ public class ProductView extends javax.swing.JPanel {
         pnForm = new javax.swing.JPanel();
         ProductName = new javax.swing.JLabel();
         txtName = new javax.swing.JTextField();
-        Price = new javax.swing.JLabel();
+        price = new javax.swing.JLabel();
         txtPrice = new javax.swing.JTextField();
         Quantity = new javax.swing.JLabel();
         txtQuantity = new javax.swing.JTextField();
         Category = new javax.swing.JLabel();
         txtCategory = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
-        tblProduct = new javax.swing.JTable();
+        tblProducts = new javax.swing.JTable();
         pnlButton = new javax.swing.JPanel();
         btnAdd = new javax.swing.JButton();
         btnUpdate = new javax.swing.JButton();
@@ -52,9 +56,9 @@ public class ProductView extends javax.swing.JPanel {
         ProductName.setText("Tên sản phẩm");
         ProductName.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
-        Price.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        Price.setText("Giá");
-        Price.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        price.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        price.setText("Giá");
+        price.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
         Quantity.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         Quantity.setText("Số lượng");
@@ -70,7 +74,7 @@ public class ProductView extends javax.swing.JPanel {
             pnFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(ProductName, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(Price, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(price, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addComponent(txtPrice, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addComponent(Quantity, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addComponent(txtQuantity, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -84,7 +88,7 @@ public class ProductView extends javax.swing.JPanel {
                 .addGap(0, 0, 0)
                 .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(Price, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(price, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
                 .addComponent(txtPrice, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
@@ -101,8 +105,8 @@ public class ProductView extends javax.swing.JPanel {
 
         jScrollPane1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
 
-        tblProduct.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        tblProduct.setModel(new javax.swing.table.DefaultTableModel(
+        tblProducts.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        tblProducts.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -113,7 +117,7 @@ public class ProductView extends javax.swing.JPanel {
                 "Mã sản phẩm", "Tên sản phẩm", "Giá", "Số lượng"
             }
         ));
-        jScrollPane1.setViewportView(tblProduct);
+        jScrollPane1.setViewportView(tblProducts);
 
         add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
@@ -139,10 +143,35 @@ public class ProductView extends javax.swing.JPanel {
         add(pnlButton, java.awt.BorderLayout.PAGE_END);
     }// </editor-fold>//GEN-END:initComponents
 
+    public void loadDataToTable() {
+        // 2. Lấy model của cái bảng mà Quỳnh đã đặt tên
+        DefaultTableModel model = (DefaultTableModel) tblProducts.getModel();
+
+        // 3. Xóa dữ liệu cũ trên bảng (nếu có) để tránh bị lặp
+        model.setRowCount(0);
+
+        try {
+            // 4. Gọi hàm của Tùng (Giả sử Tùng đã viết xong class ProductSql)
+            List<model.product.Product> list = business.sql.prod_inventory.ProductsSql.getInstance().selectAll();
+
+            // 5. Đổ từng dòng dữ liệu vào bảng
+            for (model.product.Product p : list) {
+                Object[] row = {
+                    p.getProductId(),
+                    p.getProductName(),
+                    p.getBasePrice(),
+                    p.getQuantity() // Cái này lấy từ bảng Inventory
+                };
+                model.addRow(row);
+            }
+        } catch (Exception e) {
+            System.out.println("Lỗi load bảng: " + e.getMessage());
+        }
+    }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel Category;
-    private javax.swing.JLabel Price;
     private javax.swing.JLabel ProductName;
     private javax.swing.JLabel Quantity;
     private javax.swing.JButton btnAdd;
@@ -152,7 +181,8 @@ public class ProductView extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel pnForm;
     private javax.swing.JPanel pnlButton;
-    private javax.swing.JTable tblProduct;
+    private javax.swing.JLabel price;
+    private javax.swing.JTable tblProducts;
     private javax.swing.JTextField txtCategory;
     private javax.swing.JTextField txtName;
     private javax.swing.JTextField txtPrice;

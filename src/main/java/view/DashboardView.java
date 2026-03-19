@@ -9,7 +9,7 @@ package view;
  * @author Admin
  */
 public class DashboardView extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DashboardView.class.getName());
 
     /**
@@ -17,6 +17,32 @@ public class DashboardView extends javax.swing.JFrame {
      */
     public DashboardView() {
         initComponents();
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        this.setLocationRelativeTo(null);
+
+        // Lấy tên người dùng từ Service AE mình vừa làm
+        String username = business.service.LoginService.getCurrentUser().getUsername();
+        String role = business.service.LoginService.getCurrentUser().getRole();
+        authorize();
+    }
+
+    private void authorize() {
+        // 1. Lấy thông tin người dùng hiện tại từ LoginService
+        model.account.Account user = business.service.LoginService.getCurrentUser();
+
+        if (user != null) {
+            String role = user.getRole(); // Lấy chức vụ: ADMIN hoặc STAFF
+
+            // 2. Nếu KHÔNG PHẢI là Admin (tức là Nhân viên)
+            if (!role.equalsIgnoreCase("ADMIN")) {
+                // Ẩn các nút nhạy cảm
+                btnEmployee.setVisible(false);  // Ẩn nút Quản lý nhân viên
+                btnStatistic.setVisible(false); // Ẩn nút Thống kê
+
+                // Gợi ý: Có thể đổi màu sidebar cho nhân viên dễ phân biệt
+                // jPanel2.setBackground(new java.awt.Color(100, 100, 100));
+            }
+        }
     }
 
     /**
@@ -52,16 +78,16 @@ public class DashboardView extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(97, 97, 97)
+                .addGap(15, 15, 15)
                 .addComponent(jLabel2)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(17, 17, 17)
+                .addGap(21, 21, 21)
                 .addComponent(jLabel2)
-                .addContainerGap(27, Short.MAX_VALUE))
+                .addContainerGap(23, Short.MAX_VALUE))
         );
 
         jPanel2.setBackground(new java.awt.Color(44, 62, 80));
@@ -81,11 +107,13 @@ public class DashboardView extends javax.swing.JFrame {
         btnProduct.setText("Quản lý sản phẩm");
         btnProduct.setBorderPainted(false);
         btnProduct.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        btnProduct.addActionListener(this::btnProductActionPerformed);
 
         btnEmployee.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
         btnEmployee.setText("Quản lý nhân viên");
         btnEmployee.setBorderPainted(false);
         btnEmployee.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        btnEmployee.addActionListener(this::btnEmployeeActionPerformed);
 
         btnCustomer.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
         btnCustomer.setText("Khách hàng");
@@ -106,6 +134,7 @@ public class DashboardView extends javax.swing.JFrame {
         btnLogout.setText("Đăng xuất");
         btnLogout.setBorderPainted(false);
         btnLogout.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        btnLogout.addActionListener(this::btnLogoutActionPerformed);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -162,6 +191,42 @@ public class DashboardView extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnProductActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProductActionPerformed
+        // TODO add your handling code here:
+        showPanel(new ProductView()); // Gọi cái JPanel
+    }//GEN-LAST:event_btnProductActionPerformed
+
+    private void btnEmployeeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEmployeeActionPerformed
+        // TODO add your handling code here:
+        showPanel(new view.EmployeeView());
+    }//GEN-LAST:event_btnEmployeeActionPerformed
+
+    private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
+        // TODO add your handling code here:
+        // 1. Hiện bảng xác nhận cho "chắc cú"
+        int confirm = javax.swing.JOptionPane.showConfirmDialog(this,
+                "Bạn có thực sự muốn đăng xuất không?",
+                "Xác nhận",
+                javax.swing.JOptionPane.YES_NO_OPTION);
+
+        // 2. Nếu Nhóm trưởng chọn YES
+        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+            // Gọi hàm xóa session đã viết ở Bước 1
+            business.service.LoginService.logout();
+
+            // 3. Mở lại màn hình Login
+            java.awt.EventQueue.invokeLater(() -> {
+                view.LoginView login = new view.LoginView();
+                login.setVisible(true);
+                login.setLocationRelativeTo(null); // Vẫn phải ở giữa màn hình cho đẹp
+            });
+
+            // 4. Đóng cái Dashboard hiện tại lại
+            this.dispose();
+        }
+
+    }//GEN-LAST:event_btnLogoutActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -185,6 +250,19 @@ public class DashboardView extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new DashboardView().setVisible(true));
+    }
+
+    private void showPanel(javax.swing.JPanel childPanel) {
+        // 1. Chỉ xóa nội dung vùng Content, KHÔNG xóa Header và Sidebar
+        jPanel3.removeAll();
+
+        // 2. Ép Layout để panel con lấp đầy vùng xanh
+        jPanel3.setLayout(new java.awt.BorderLayout());
+        jPanel3.add(childPanel, java.awt.BorderLayout.CENTER);
+
+        // 3. Làm tươi giao diện
+        jPanel3.revalidate();
+        jPanel3.repaint();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
