@@ -110,7 +110,7 @@ public class CustomerView extends javax.swing.JPanel {
 
         add(jPanel2, java.awt.BorderLayout.PAGE_END);
 
-        txtSearch.setBackground(new java.awt.Color(236, 245, 242));
+        txtSearch.setBackground(new java.awt.Color(236, 240, 241));
         txtSearch.setPreferredSize(new java.awt.Dimension(0, 40));
 
         btnSearch.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N

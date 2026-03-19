@@ -119,7 +119,7 @@
               <Component id="btnStatistic" alignment="0" max="32767" attributes="0"/>
               <Component id="btnOrder" alignment="1" max="32767" attributes="0"/>
               <Component id="btnCustomer" alignment="0" max="32767" attributes="0"/>
-              <Component id="btnEmployee" max="32767" attributes="0"/>
+              <Component id="btnEmployee" pref="303" max="32767" attributes="0"/>
               <Component id="btnProduct" alignment="0" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
