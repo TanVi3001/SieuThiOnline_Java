@@ -72,4 +72,69 @@ public class ProductsSql {
         }
         return list;
     }
+    public boolean insert(Product p) {
+        String sqlProduct = "INSERT INTO PRODUCTS (product_id, product_name, base_price, is_deleted) VALUES (?, ?, ?, 0)";
+        String sqlInventory = "INSERT INTO INVENTORY (product_id, quantity) VALUES (?, ?)";
+
+        try (Connection con = common.db.DatabaseConnection.getConnection()) {
+            con.setAutoCommit(false); // Bắt đầu Transaction
+
+            try (PreparedStatement psProd = con.prepareStatement(sqlProduct);
+                 PreparedStatement psInv = con.prepareStatement(sqlInventory)) {
+
+                // 1. Thêm vào bảng PRODUCTS
+                psProd.setString(1, p.getProductId());
+                psProd.setString(2, p.getProductName());
+                psProd.setBigDecimal(3, p.getBasePrice());
+                psProd.executeUpdate();
+
+                // 2. Thêm vào bảng INVENTORY (khởi tạo số lượng)
+                psInv.setString(1, p.getProductId());
+                psInv.setInt(2, p.getQuantity()); // Số lượng ban đầu
+                psInv.executeUpdate();
+
+                con.commit(); // Thành công cả hai thì commit
+                return true;
+            } catch (SQLException e) {
+                con.rollback(); // Lỗi một trong hai thì rollback
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    public boolean update(Product p) {
+        String sql = "UPDATE PRODUCTS SET product_name = ?, base_price = ? WHERE product_id = ? AND is_deleted = 0";
+
+        try (Connection con = common.db.DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, p.getProductName());
+            ps.setBigDecimal(2, p.getBasePrice());
+            ps.setString(3, p.getProductId());
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    public boolean delete(String productId) {
+        // Chuyển trạng thái is_deleted thành 1
+        String sql = "UPDATE PRODUCTS SET is_deleted = 1 WHERE product_id = ?";
+
+        try (Connection con = common.db.DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, productId);
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }
