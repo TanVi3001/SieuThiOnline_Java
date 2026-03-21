@@ -85,24 +85,30 @@ public class DeliveryManagementSql implements SqlInterface<DeliveryManagement> {
     }
 
     @Override
-    public java.util.ArrayList<DeliveryManagement> selectAll() {
-        java.util.ArrayList<DeliveryManagement> ketQua = new java.util.ArrayList<>();
-        try {
-            java.sql.Connection con = common.db.DatabaseConnection.getConnection();
-            String sql = "SELECT * FROM DELIVERY_MANAGEMENT WHERE is_deleted = 0";
-            java.sql.PreparedStatement pst = con.prepareStatement(sql);
-            java.sql.ResultSet rs = pst.executeQuery();
+    public ArrayList<DeliveryManagement> selectAll() {
+        ArrayList<DeliveryManagement> ketQua = new ArrayList<>();
+        String sql = "SELECT * FROM DELIVERY_MANAGEMENT WHERE is_deleted = 0";
+
+        try (Connection con = common.db.DatabaseConnection.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
 
             while (rs.next()) {
-                DeliveryManagement dm = new DeliveryManagement(
-                        rs.getString("delivery_id"), rs.getString("order_id"),
-                        rs.getString("employee_id"), rs.getDate("execution_date"),
-                        rs.getString("status"), rs.getInt("is_deleted")
-                );
+                DeliveryManagement dm = new DeliveryManagement();
+
+                // Gán dữ liệu bằng các hàm set để tránh phụ thuộc vào thứ tự tham số Constructor
+                dm.setDeliveryId(rs.getString("delivery_id"));
+                dm.setOrderId(rs.getString("order_id"));
+                dm.setEmployeeId(rs.getString("employee_id"));
+                dm.setExecutionDate(rs.getDate("execution_date"));
+                dm.setStatus(rs.getString("status"));
+                dm.setIsDeleted(rs.getInt("is_deleted"));
+
                 ketQua.add(dm);
             }
-            common.db.DatabaseConnection.closeConnection(con);
         } catch (Exception e) {
+            // In lỗi chi tiết để dễ debug trong quá trình làm đồ án
+            System.err.println("Lỗi tại DeliveryManagementSql.selectAll: " + e.getMessage());
             e.printStackTrace();
         }
         return ketQua;

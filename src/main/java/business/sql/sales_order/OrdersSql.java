@@ -5,6 +5,7 @@ import model.order.Order;
 import business.sql.SqlInterface;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,11 +49,40 @@ public class OrdersSql implements SqlInterface<Order> {
 
     @Override public int update(Order t) { return 0; }
     @Override public int delete(String id) { return 0; }
-    @Override public ArrayList<Order> selectAll() { return new ArrayList<>(); }
     @Override public Order selectById(String id) { return null; }
 
     @Override
     public List<Order> selectByCondition(String condition) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+    @Override
+    public ArrayList<Order> selectAll() {
+        ArrayList<Order> list = new ArrayList<>();
+        // Thường hóa đơn sẽ sắp xếp theo ngày mới nhất lên đầu
+        String sql = "SELECT * FROM ORDERS ORDER BY order_date DESC";
+
+        try (Connection con = common.db.DatabaseConnection.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
+
+            while (rs.next()) {
+                // Lấy dữ liệu từ ResultSet
+                String id = rs.getString("order_id");
+                String cusId = rs.getString("customer_id");
+                String empId = rs.getString("employee_id");
+                java.sql.Date date = rs.getDate("order_date");
+                double amount = rs.getDouble("total_amount");
+                String status = rs.getString("status");
+
+                // Khởi tạo Object bằng Constructor đầy đủ tham số mà bạn vừa gửi
+                Order hoaDon = new Order(id, cusId, empId, date, amount, status);
+
+                list.add(hoaDon);
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi tại OrdersSql.selectAll: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
     }
 }

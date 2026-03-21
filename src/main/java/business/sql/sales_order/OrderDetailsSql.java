@@ -93,11 +93,32 @@ public class OrderDetailsSql implements SqlInterface<OrderDetail> {
     }
 
     @Override
-    public ArrayList<OrderDetail> selectAll() {
-        // Thường ít khi lấy toàn bộ chi tiết của tất cả hóa đơn, 
-        // nhưng vẫn để đây để tránh lỗi Interface
-        return new ArrayList<>();
+public ArrayList<OrderDetail> selectAll() {
+    ArrayList<OrderDetail> ds = new ArrayList<>();
+    String sql = "SELECT * FROM ORDER_DETAILS";
+
+    try (Connection con = common.db.DatabaseConnection.getConnection();
+         PreparedStatement pst = con.prepareStatement(sql);
+         ResultSet rs = pst.executeQuery()) {
+
+        while (rs.next()) {
+            // Vì các trường trong Model là final, ta phải lấy dữ liệu ra biến tạm trước
+            String oId = rs.getString("order_id");
+            String pId = rs.getString("product_id");
+            int qty = rs.getInt("quantity");
+            double price = rs.getDouble("unit_price");
+
+            // Sau đó truyền tất cả vào Constructor duy nhất của OrderDetail
+            OrderDetail ct = new OrderDetail(oId, pId, qty, price);
+            
+            ds.add(ct);
+        }
+    } catch (SQLException e) {
+        System.err.println("Lỗi tại OrderDetailsSql.selectAll: " + e.getMessage());
+        e.printStackTrace();
     }
+    return ds;
+}
 
     @Override
     public int update(OrderDetail t) {
