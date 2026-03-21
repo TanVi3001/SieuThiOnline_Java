@@ -25,5 +25,24 @@ public class Attendance {
         this.isDeleted = isDeleted;
     }
 
-    // Getters and Setters...
+    public String getEmployeeId() { return employeeId; }
+    public void setEmployeeId(String employeeId) { this.employeeId = employeeId; }
+
+    public String getShiftId() { return shiftId; }
+    public void setShiftId(String shiftId) { this.shiftId = shiftId; }
+
+    public Date getWorkDate() { return workDate; }
+    public void setWorkDate(Date workDate) { this.workDate = workDate; }
+
+    public Timestamp getCheckInTime() { return checkInTime; }
+    public void setCheckInTime(Timestamp checkInTime) { this.checkInTime = checkInTime; }
+
+    public Timestamp getCheckOutTime() { return checkOutTime; }
+    public void setCheckOutTime(Timestamp checkOutTime) { this.checkOutTime = checkOutTime; }
+
+    public double getAttendanceCoefficient() { return attendanceCoefficient; }
+    public void setAttendanceCoefficient(double attendanceCoefficient) { this.attendanceCoefficient = attendanceCoefficient; }
+
+    public int getIsDeleted() { return isDeleted; }
+    public void setIsDeleted(int isDeleted) { this.isDeleted = isDeleted; }
 }
