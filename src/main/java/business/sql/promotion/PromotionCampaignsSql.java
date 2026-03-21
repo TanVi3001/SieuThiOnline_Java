@@ -33,11 +33,31 @@ public class PromotionCampaignsSql implements SqlInterface<PromotionCampaign> {
 
     @Override public int update(PromotionCampaign t) { return 0; }
     @Override public int delete(String id) { return 0; }
-    @Override public ArrayList<PromotionCampaign> selectAll() { return new ArrayList<>(); }
     @Override public PromotionCampaign selectById(String id) { return null; }
 
     @Override
     public List<PromotionCampaign> selectByCondition(String condition) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+    
+    @Override
+    public ArrayList<PromotionCampaign> selectAll() {
+        ArrayList<PromotionCampaign> list = new ArrayList<>();
+        String sql = "SELECT * FROM PROMOTION_CAMPAIGNS WHERE is_deleted = 0";
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
+            while (rs.next()) {
+                PromotionCampaign pc = new PromotionCampaign();
+                pc.setCampaignId(rs.getString("campaign_id"));
+                pc.setCampaignName(rs.getString("campaign_name"));
+                pc.setDescription(rs.getString("description"));
+                pc.setStartDate(rs.getDate("start_date"));
+                pc.setEndDate(rs.getDate("end_date"));
+                pc.setIsDeleted(rs.getInt("is_deleted"));
+                list.add(pc);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
     }
 }

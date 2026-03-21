@@ -9,37 +9,34 @@ package model.promotion;
  * @author nguye
  */
 public class Promotion {
+    private String promotionId, promotionName, campaignId, applicationCondition, status, orderDetailId;
+    private double discountAmount;
+    private int isDeleted;
 
-    public String getPromotionId() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+    public Promotion() {}
 
-    public String getPromotionName() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+    // Getter & Setter (Thay thế các hàm throw cũ)
+    public String getPromotionId() { return promotionId; }
+    public void setPromotionId(String promotionId) { this.promotionId = promotionId; }
 
-    public String getCampaignId() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+    public String getPromotionName() { return promotionName; }
+    public void setPromotionName(String promotionName) { this.promotionName = promotionName; }
 
-    public String getApplicationCondition() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+    public String getCampaignId() { return campaignId; }
+    public void setCampaignId(String campaignId) { this.campaignId = campaignId; }
 
-    public String getStatus() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+    public String getApplicationCondition() { return applicationCondition; }
+    public void setApplicationCondition(String cond) { this.applicationCondition = cond; }
 
-    public String getOrderDetailId() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    public double getDiscountAmount() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+    public String getOrderDetailId() { return orderDetailId; }
+    public void setOrderDetailId(String id) { this.orderDetailId = id; }
 
-    public int getIsDeleted() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-    
+    public double getDiscountAmount() { return discountAmount; }
+    public void setDiscountAmount(double amount) { this.discountAmount = amount; }
+
+    public int getIsDeleted() { return isDeleted; }
+    public void setIsDeleted(int isDeleted) { this.isDeleted = isDeleted; }
 }
