@@ -49,23 +49,23 @@ public class SuppliersSql implements SqlInterface<Supplier> {
     }
 
     @Override
-    public List<Supplier> selectAll() { // Đổi sang List cho đúng Interface
+    public List<Supplier> selectAll() {
         List<Supplier> ketQua = new ArrayList<>();
         String sql = "SELECT * FROM SUPPLIERS WHERE is_deleted = 0";
-        
+
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement pst = con.prepareStatement(sql);
              ResultSet rs = pst.executeQuery()) {
-            
+
             while (rs.next()) {
-                ketQua.add(new Supplier(
-                    rs.getString("supplier_id"),
-                    rs.getString("supplier_name"),
-                    rs.getString("email"),
-                    rs.getString("address"),
-                    rs.getString("phone_number"),
-                    rs.getInt("is_deleted")
-                ));
+                Supplier s = new Supplier();
+                s.setSupplierId(rs.getString("supplier_id"));
+                s.setSupplierName(rs.getString("supplier_name"));
+                s.setEmail(rs.getString("email"));
+                s.setAddress(rs.getString("address"));
+                s.setPhoneNumber(rs.getString("phone_number"));
+                s.setIsDeleted(rs.getInt("is_deleted"));
+                ketQua.add(s);
             }
         } catch (SQLException e) {
             e.printStackTrace();

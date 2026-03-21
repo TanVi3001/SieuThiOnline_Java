@@ -46,21 +46,20 @@ public class CategoriesSql implements SqlInterface<Category> {
     }
 
     @Override
-    public List<Category> selectAll() { // Đổi sang List cho chuẩn Interface
+    public List<Category> selectAll() {
         List<Category> ketQua = new ArrayList<>();
         String sql = "SELECT * FROM CATEGORIES WHERE is_deleted = 0";
-        
+
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement pst = con.prepareStatement(sql);
              ResultSet rs = pst.executeQuery()) {
-            
+
             while (rs.next()) {
-                Category c = new Category(
-                    rs.getString("category_id"),
-                    rs.getString("category_name"),
-                    rs.getString("description"),
-                    rs.getInt("is_deleted")
-                );
+                Category c = new Category();
+                c.setCategoryId(rs.getString("category_id"));
+                c.setCategoryName(rs.getString("category_name"));
+                c.setDescription(rs.getString("description"));
+                c.setIsDeleted(rs.getInt("is_deleted"));
                 ketQua.add(c);
             }
         } catch (SQLException e) {

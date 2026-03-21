@@ -51,25 +51,22 @@ public class InventorySql implements SqlInterface<Inventory> {
     @Override
     public ArrayList<Inventory> selectAll() {
         ArrayList<Inventory> ketQua = new ArrayList<>();
-        try {
-            Connection con = DatabaseConnection.getConnection();
-            String sql = "SELECT * FROM INVENTORY WHERE is_deleted = 0";
+        String sql = "SELECT * FROM INVENTORY WHERE is_deleted = 0";
 
-            PreparedStatement pst = con.prepareStatement(sql);
-            ResultSet rs = pst.executeQuery();
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
 
             while (rs.next()) {
-                String pId = rs.getString("product_id");
-                String sId = rs.getString("store_id");
-                int qty = rs.getInt("quantity");
-                String unit = rs.getString("unit");
-                Date lastUpdated = rs.getDate("last_updated");
-                int isDel = rs.getInt("is_deleted");
-
-                Inventory inv = new Inventory(pId, sId, qty, unit, lastUpdated, isDel);
+                Inventory inv = new Inventory();
+                inv.setProductId(rs.getString("product_id"));
+                inv.setStoreId(rs.getString("store_id"));
+                inv.setQuantity(rs.getInt("quantity"));
+                inv.setUnit(rs.getString("unit"));
+                inv.setLastUpdated(rs.getDate("last_updated"));
+                inv.setIsDeleted(rs.getInt("is_deleted"));
                 ketQua.add(inv);
             }
-            DatabaseConnection.closeConnection(con);
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -2,7 +2,9 @@ package business.sql.prod_inventory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import model.product.Product;
 
@@ -51,23 +53,28 @@ public class ProductsSql {
     }
 
     public List<Product> selectAll() {
-        java.util.List<model.product.Product> list = new java.util.ArrayList<>();
-        // Câu SQL lấy thông tin sản phẩm và số lượng từ kho
-        String sql = "SELECT p.product_id, p.product_name, p.base_price, i.quantity "
-                + "FROM PRODUCTS p JOIN INVENTORY i ON p.product_id = i.product_id "
-                + "WHERE p.is_deleted = 0";
+        List<Product> list = new ArrayList<>();
+        // Thêm p.category_id và p.supplier_id vào câu SELECT
+        String sql = "SELECT p.product_id, p.product_name, p.base_price, p.category_id, p.supplier_id, i.quantity "
+                   + "FROM PRODUCTS p JOIN INVENTORY i ON p.product_id = i.product_id "
+                   + "WHERE p.is_deleted = 0";
 
-        try (java.sql.Connection con = common.db.DatabaseConnection.getConnection(); java.sql.PreparedStatement ps = con.prepareStatement(sql); java.sql.ResultSet rs = ps.executeQuery()) {
+        try (Connection con = common.db.DatabaseConnection.getConnection(); 
+             PreparedStatement ps = con.prepareStatement(sql); 
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                model.product.Product p = new model.product.Product();
+                Product p = new Product();
                 p.setProductId(rs.getString("product_id"));
                 p.setProductName(rs.getString("product_name"));
                 p.setBasePrice(rs.getBigDecimal("base_price"));
+                p.setCategoryId(rs.getString("category_id")); // Mới thêm
+                p.setSupplierId(rs.getString("supplier_id")); // Mới thêm
                 p.setQuantity(rs.getInt("quantity"));
+                p.setIsDeleted(0); 
                 list.add(p);
             }
-        } catch (java.sql.SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return list;

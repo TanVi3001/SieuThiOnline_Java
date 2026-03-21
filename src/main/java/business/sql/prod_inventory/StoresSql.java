@@ -88,19 +88,18 @@ public class StoresSql implements SqlInterface<Store> {
     public ArrayList<Store> selectAll() {
         ArrayList<Store> ketQua = new ArrayList<>();
         String sql = "SELECT * FROM STORES WHERE is_deleted = 0";
-        
+
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement pst = con.prepareStatement(sql);
              ResultSet rs = pst.executeQuery()) {
-            
+
             while (rs.next()) {
-                Store s = new Store(
-                        rs.getString("store_id"),
-                        rs.getString("email"),
-                        rs.getString("address"),
-                        rs.getString("phone_number"),
-                        rs.getInt("is_deleted")
-                );
+                Store s = new Store();
+                s.setStoreId(rs.getString("store_id"));
+                s.setEmail(rs.getString("email"));
+                s.setAddress(rs.getString("address"));
+                s.setPhoneNumber(rs.getString("phone_number"));
+                s.setIsDeleted(rs.getInt("is_deleted"));
                 ketQua.add(s);
             }
         } catch (SQLException e) {
