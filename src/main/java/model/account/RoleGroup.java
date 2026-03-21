@@ -20,7 +20,7 @@ public class RoleGroup {
     public RoleGroup() {
     }
 
-    public RoleGroup(String roleGroupId, String groupName, Timestamp createdAt,
+     public RoleGroup(String roleGroupId, String groupName, Timestamp createdAt,
                      Timestamp updatedAt, int isDeleted) {
         this.roleGroupId = roleGroupId;
         this.groupName = groupName;
