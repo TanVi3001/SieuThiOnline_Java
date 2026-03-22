@@ -17,12 +17,23 @@ public class DashboardView extends javax.swing.JFrame {
      */
     public DashboardView() {
         initComponents();
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
+        // 1. Chỉnh kích thước: Phóng to toàn màn hình và đặt size tối thiểu cho con LOQ
+        this.setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
+        this.setMinimumSize(new java.awt.Dimension(1280, 720));
         this.setLocationRelativeTo(null);
 
-        // Lấy tên người dùng từ Service AE mình vừa làm
-        String username = business.service.LoginService.getCurrentUser().getUsername();
-        String role = business.service.LoginService.getCurrentUser().getRole();
+        // 2. Căn giữa cái Title (Hệ thống siêu thị)
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
+        // 3. Lấy thông tin người dùng để hiện lời chào (Ghi điểm chuyên nghiệp)
+        model.account.Account currentUser = business.service.LoginService.getCurrentUser();
+        if (currentUser != null) {
+            // Giả sử ông có cái label nào đó để hiện tên, nếu không thì hiện tạm lên jLabel2
+            jLabel2.setText("HỆ THỐNG SIÊU THỊ - Chào, " + currentUser.getUsername());
+        }
+
+        // 4. Thực thi phân quyền (Ẩn nút nếu là Staff)
         authorize();
     }
 
@@ -248,8 +259,26 @@ public class DashboardView extends javax.swing.JFrame {
         }
         //</editor-fold>
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new DashboardView().setVisible(true));
+       // PHẢI ĐẶT ĐẦU TIÊN: Trị lỗi màn hình 2K/4K bị bé xíu
+    System.setProperty("sun.java2d.uiScale", "1.5");
+
+    /* Set the Nimbus look and feel */
+    try {
+        for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            if ("Nimbus".equals(info.getName())) {
+                javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                break;
+            }
+        }
+    } catch (Exception ex) {
+        java.util.logging.Logger.getLogger(DashboardView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    }
+
+    /* Khởi tạo và hiển thị */
+    java.awt.EventQueue.invokeLater(() -> {
+        DashboardView dashboard = new DashboardView();
+        dashboard.setVisible(true);
+    });
     }
 
     private void showPanel(javax.swing.JPanel childPanel) {
