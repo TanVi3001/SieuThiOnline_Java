@@ -130,16 +130,19 @@ public class DashboardView extends javax.swing.JFrame {
         btnCustomer.setText("Khách hàng");
         btnCustomer.setBorderPainted(false);
         btnCustomer.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        btnCustomer.addActionListener(this::btnCustomerActionPerformed);
 
         btnOrder.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
         btnOrder.setText("Hóa đơn");
         btnOrder.setBorderPainted(false);
         btnOrder.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        btnOrder.addActionListener(this::btnOrderActionPerformed);
 
         btnStatistic.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
         btnStatistic.setText("Thống kê");
         btnStatistic.setBorderPainted(false);
         btnStatistic.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        btnStatistic.addActionListener(this::btnStatisticActionPerformed);
 
         btnLogout.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
         btnLogout.setText("Đăng xuất");
@@ -237,6 +240,22 @@ public class DashboardView extends javax.swing.JFrame {
         }
 
     }//GEN-LAST:event_btnLogoutActionPerformed
+
+    private void btnStatisticActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStatisticActionPerformed
+        // TODO add your handling code here:
+        showPanel(new StatisticView());
+    }//GEN-LAST:event_btnStatisticActionPerformed
+
+    private void btnOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOrderActionPerformed
+        // TODO add your handling code here:
+        showPanel(new OrderView());
+    }//GEN-LAST:event_btnOrderActionPerformed
+
+    private void btnCustomerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCustomerActionPerformed
+        // TODO add your handling code here:
+        showPanel(new CustomerView());
+        
+    }//GEN-LAST:event_btnCustomerActionPerformed
 
     /**
      * @param args the command line arguments

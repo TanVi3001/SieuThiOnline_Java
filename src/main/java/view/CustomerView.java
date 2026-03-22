@@ -15,6 +15,21 @@ public class CustomerView extends javax.swing.JPanel {
      */
     public CustomerView() {
         initComponents();
+
+        // 1. Dùng ĐÚNG tên biến trong bảng Navigator của ông nè
+        // (Ông check lại xem là txtPhone hay txtPhoneNumber nhé)
+        javax.swing.JTextField[] fields = {txtCustomerName, txtPhone, txtEmail, txtAddress};
+
+        for (javax.swing.JTextField f : fields) {
+            // 2. Ép chiều cao đúng 30px (bằng với thanh Tìm kiếm)
+            f.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 30));
+            f.setMinimumSize(new java.awt.Dimension(100, 30));
+            f.setPreferredSize(new java.awt.Dimension(250, 30));
+        }
+
+        // 3. Quan trọng: Refresh lại để nó nhận thông số mới
+        this.revalidate();
+        this.repaint();
     }
 
     /**
@@ -50,29 +65,68 @@ public class CustomerView extends javax.swing.JPanel {
 
         jPanel1.setBackground(new java.awt.Color(236, 240, 241));
         jPanel1.setPreferredSize(new java.awt.Dimension(280, 0));
-        jPanel1.setLayout(new java.awt.GridLayout(8, 1));
 
         CustomerName.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         CustomerName.setText("Tên khách hàng");
-        jPanel1.add(CustomerName);
-        jPanel1.add(txtCustomerName);
+
+        txtCustomerName.setMaximumSize(new java.awt.Dimension(2147483647, 30));
+        txtCustomerName.setPreferredSize(new java.awt.Dimension(250, 30));
 
         Phone.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         Phone.setText("Số điện thoại");
-        jPanel1.add(Phone);
-        jPanel1.add(txtPhone);
+
+        txtPhone.setMaximumSize(new java.awt.Dimension(2147483647, 30));
+        txtPhone.setPreferredSize(new java.awt.Dimension(250, 30));
 
         Email.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         Email.setText("Email");
-        jPanel1.add(Email);
-        jPanel1.add(txtEmail);
+
+        txtEmail.setMaximumSize(new java.awt.Dimension(2147483647, 30));
+        txtEmail.setPreferredSize(new java.awt.Dimension(250, 30));
 
         Address.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         Address.setText("Địa chỉ");
-        jPanel1.add(Address);
-        jPanel1.add(txtAddress);
+
+        txtAddress.setMaximumSize(new java.awt.Dimension(2147483647, 30));
+        txtAddress.setPreferredSize(new java.awt.Dimension(200, 30));
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(CustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(txtCustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(Phone, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(txtPhone, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(Email, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(Address, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(txtAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(CustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(txtCustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(Phone, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(txtPhone, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(Email, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(Address, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtAddress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(216, Short.MAX_VALUE))
+        );
 
         add(jPanel1, java.awt.BorderLayout.LINE_START);
+
+        jScrollPane1.setPreferredSize(null);
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -125,7 +179,7 @@ public class CustomerView extends javax.swing.JPanel {
                 .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 483, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnSearch)
-                .addContainerGap(51, Short.MAX_VALUE))
+                .addContainerGap(114, Short.MAX_VALUE))
         );
         txtSearchLayout.setVerticalGroup(
             txtSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
