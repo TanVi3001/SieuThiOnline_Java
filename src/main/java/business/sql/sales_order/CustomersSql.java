@@ -43,4 +43,33 @@ public class CustomersSql implements SqlInterface<Customer> {
         } catch (SQLException e) { e.printStackTrace(); }
         return list;
     }
+    /**
+     * Tìm kiếm khách hàng theo tên (hỗ trợ tìm gần đúng)
+     * @param name Tên khách hàng hoặc một phần của tên
+     * @return Danh sách khách hàng khớp với điều kiện
+     */
+    public ArrayList<Customer> searchByName(String name) {
+        ArrayList<Customer> list = new ArrayList<>();
+        // SQL: Sử dụng LIKE để tìm kiếm chuỗi chứa tên nhập vào
+        String sql = "SELECT * FROM CUSTOMERS WHERE customer_name LIKE ? AND is_deleted = 0";
+
+        try (Connection con = common.db.DatabaseConnection.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql)) {
+
+            // Thiết lập tham số: % chuỗi % để tìm kiếm ở bất kỳ vị trí nào trong tên
+            pst.setString(1, "%" + name + "%");
+
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    Customer c = new Customer();
+                    c.setCustomerId(rs.getString("customer_id"));
+                    c.setCustomerName(rs.getString("customer_name"));
+                    list.add(c);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

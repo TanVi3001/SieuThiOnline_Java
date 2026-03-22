@@ -11,6 +11,7 @@ package model.order;
 public class Customer {
 
     private String customerId;
+    private String customerName;
     private String roleId;
     private int rewardPoints;
     private int isDeleted;
@@ -18,8 +19,10 @@ public class Customer {
     public Customer() {
     }
 
-    public Customer(String customerId, String roleId, int rewardPoints, int isDeleted) {
+    public Customer(String customerId, String customerName, String roleId, 
+            int rewardPoints, int isDeleted) {
         this.customerId = customerId;
+        this.customerName = customerName;
         this.roleId = roleId;
         this.rewardPoints = rewardPoints;
         this.isDeleted = isDeleted;
@@ -31,6 +34,14 @@ public class Customer {
 
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
+    }
+    
+    public String getCustomerName() { 
+        return customerName; 
+    }
+    
+    public void setCustomerName(String customerName) { 
+        this.customerName = customerName; 
     }
 
     public String getRoleId() {
