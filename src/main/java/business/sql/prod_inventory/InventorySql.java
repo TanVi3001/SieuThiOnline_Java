@@ -166,4 +166,25 @@ public class InventorySql implements SqlInterface<Inventory> {
     public List<Inventory> selectByCondition(String condition) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
+    
+    public int subtractStock(Connection con, String productId, int quantity) throws SQLException {
+        // SQL: Trừ số lượng và cập nhật ngày giờ mới nhất
+        // Điều kiện: quantity >= ? để đảm bảo không bị trừ âm kho
+        String sql = "UPDATE INVENTORY SET quantity = quantity - ?, last_updated = CURRENT_TIMESTAMP "
+                   + "WHERE product_id = ? AND quantity >= ?";
+
+        try (PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setInt(1, quantity);
+            pst.setString(2, productId);
+            pst.setInt(3, quantity);
+
+            int rowsAffected = pst.executeUpdate();
+
+            if (rowsAffected == 0) {
+                // Bắn lỗi ra để Service biết và thực hiện ROLLBACK
+                throw new SQLException("LỖI: Sản phẩm mã " + productId + " không đủ số lượng tồn kho!");
+            }
+            return rowsAffected;
+        }
+    }   
 }
