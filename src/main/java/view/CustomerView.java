@@ -27,6 +27,8 @@ public class CustomerView extends javax.swing.JPanel {
             f.setPreferredSize(new java.awt.Dimension(250, 30));
         }
 
+        txtAddress.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 30));
+        txtAddress.setPreferredSize(new java.awt.Dimension(200, 30));
         // 3. Quan trọng: Refresh lại để nó nhận thông số mới
         this.revalidate();
         this.repaint();
