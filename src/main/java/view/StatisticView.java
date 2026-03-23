@@ -29,94 +29,53 @@ public class StatisticView extends javax.swing.JPanel {
     private void initComponents() {
 
         pnTop = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jPanel3 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        jPanel4 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
+        pnTotalRevenue = new javax.swing.JPanel();
+        TotalRevenue = new javax.swing.JLabel();
+        pnTotalCustomers = new javax.swing.JPanel();
+        TotalCustomers = new javax.swing.JLabel();
+        pnTotalOder = new javax.swing.JPanel();
+        TotalOrder = new javax.swing.JLabel();
         tbStatistic = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
 
         setLayout(new java.awt.BorderLayout());
 
         pnTop.setPreferredSize(new java.awt.Dimension(0, 40));
-        pnTop.setLayout(new java.awt.BorderLayout());
+        pnTop.setLayout(new java.awt.GridLayout());
 
-        jPanel2.setBackground(new java.awt.Color(140, 181, 119));
-        jPanel2.setPreferredSize(new java.awt.Dimension(150, 40));
+        pnTotalRevenue.setBackground(new java.awt.Color(46, 204, 113));
+        pnTotalRevenue.setPreferredSize(new java.awt.Dimension(150, 40));
+        pnTotalRevenue.setLayout(new java.awt.GridLayout());
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel1.setText("Tổng doanh thu");
+        TotalRevenue.setBackground(new java.awt.Color(46, 204, 113));
+        TotalRevenue.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        TotalRevenue.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        TotalRevenue.setText("Tổng doanh thu");
+        pnTotalRevenue.add(TotalRevenue);
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(26, 26, 26)
-                .addComponent(jLabel1)
-                .addContainerGap(18, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(14, Short.MAX_VALUE)
-                .addComponent(jLabel1)
-                .addContainerGap())
-        );
+        pnTop.add(pnTotalRevenue);
 
-        pnTop.add(jPanel2, java.awt.BorderLayout.LINE_START);
+        pnTotalCustomers.setBackground(new java.awt.Color(243, 156, 18));
+        pnTotalCustomers.setPreferredSize(new java.awt.Dimension(150, 40));
+        pnTotalCustomers.setLayout(new java.awt.GridLayout());
 
-        jPanel3.setBackground(new java.awt.Color(52, 152, 219));
-        jPanel3.setPreferredSize(new java.awt.Dimension(150, 40));
+        TotalCustomers.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        TotalCustomers.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        TotalCustomers.setText("Tổng khách hàng");
+        pnTotalCustomers.add(TotalCustomers);
 
-        jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel3.setText("Tổng khách hàng");
+        pnTop.add(pnTotalCustomers);
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel3)
-                .addGap(27, 27, 27))
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(14, Short.MAX_VALUE)
-                .addComponent(jLabel3)
-                .addContainerGap())
-        );
+        pnTotalOder.setBackground(new java.awt.Color(52, 152, 219));
+        pnTotalOder.setPreferredSize(new java.awt.Dimension(150, 40));
+        pnTotalOder.setLayout(new java.awt.GridLayout());
 
-        pnTop.add(jPanel3, java.awt.BorderLayout.LINE_END);
+        TotalOrder.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        TotalOrder.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        TotalOrder.setText("Tổng đơn hàng");
+        pnTotalOder.add(TotalOrder);
 
-        jPanel4.setBackground(new java.awt.Color(243, 156, 18));
-        jPanel4.setPreferredSize(new java.awt.Dimension(150, 40));
-
-        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel2.setText("Tổng đơn hàng");
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addContainerGap(20, Short.MAX_VALUE)
-                .addComponent(jLabel2)
-                .addGap(32, 32, 32))
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addContainerGap(14, Short.MAX_VALUE)
-                .addComponent(jLabel2)
-                .addContainerGap())
-        );
-
-        pnTop.add(jPanel4, java.awt.BorderLayout.CENTER);
+        pnTop.add(pnTotalOder);
 
         add(pnTop, java.awt.BorderLayout.PAGE_START);
 
@@ -138,14 +97,14 @@ public class StatisticView extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
+    private javax.swing.JLabel TotalCustomers;
+    private javax.swing.JLabel TotalOrder;
+    private javax.swing.JLabel TotalRevenue;
     private javax.swing.JTable jTable1;
     private javax.swing.JPanel pnTop;
+    private javax.swing.JPanel pnTotalCustomers;
+    private javax.swing.JPanel pnTotalOder;
+    private javax.swing.JPanel pnTotalRevenue;
     private javax.swing.JScrollPane tbStatistic;
     // End of variables declaration//GEN-END:variables
 }

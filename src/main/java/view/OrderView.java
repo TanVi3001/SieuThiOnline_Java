@@ -25,27 +25,49 @@ public class OrderView extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         pnTop = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        btnBack = new javax.swing.JButton();
+        Status = new javax.swing.JLabel();
         cbStatus = new javax.swing.JComboBox<>();
         tbOrder = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         pnButton = new javax.swing.JPanel();
         btnDetail = new javax.swing.JButton();
         btnUpdate = new javax.swing.JButton();
+        btnIssueAnInvoice = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
 
         pnTop.setBackground(new java.awt.Color(236, 240, 241));
+        pnTop.setPreferredSize(new java.awt.Dimension(342, 32));
+        pnTop.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel1.setText("Trạng thái");
-        pnTop.add(jLabel1);
+        btnBack.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnBack.setText("Quay lại");
+        pnTop.add(btnBack, new java.awt.GridBagConstraints());
+
+        Status.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        Status.setText("Trạng thái");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.ipady = 16;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 87, 0, 0);
+        pnTop.add(Status, gridBagConstraints);
 
         cbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Đang xử lý", "Đã giao", "Đã hủy", " " }));
         cbStatus.addActionListener(this::cbStatusActionPerformed);
-        pnTop.add(cbStatus);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = -24;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 222);
+        pnTop.add(cbStatus, gridBagConstraints);
 
         add(pnTop, java.awt.BorderLayout.PAGE_START);
 
@@ -65,13 +87,37 @@ public class OrderView extends javax.swing.JPanel {
         add(tbOrder, java.awt.BorderLayout.CENTER);
 
         pnButton.setBackground(new java.awt.Color(236, 240, 241));
+        pnButton.setPreferredSize(new java.awt.Dimension(358, 40));
+        pnButton.setLayout(new java.awt.GridBagLayout());
 
+        btnDetail.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnDetail.setText("Xem chi tiết");
-        pnButton.add(btnDetail);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 44, 12, 0);
+        pnButton.add(btnDetail, gridBagConstraints);
 
+        btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnUpdate.setText("Cập nhật trạng thái");
         btnUpdate.addActionListener(this::btnUpdateActionPerformed);
-        pnButton.add(btnUpdate);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 6, 12, 0);
+        pnButton.add(btnUpdate, gridBagConstraints);
+
+        btnIssueAnInvoice.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnIssueAnInvoice.setForeground(new java.awt.Color(204, 0, 0));
+        btnIssueAnInvoice.setText("Xuất hóa đơn");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 6, 12, 59);
+        pnButton.add(btnIssueAnInvoice, gridBagConstraints);
 
         add(pnButton, java.awt.BorderLayout.PAGE_END);
     }// </editor-fold>//GEN-END:initComponents
@@ -86,10 +132,12 @@ public class OrderView extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel Status;
+    private javax.swing.JButton btnBack;
     private javax.swing.JButton btnDetail;
+    private javax.swing.JButton btnIssueAnInvoice;
     private javax.swing.JButton btnUpdate;
     private javax.swing.JComboBox<String> cbStatus;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JTable jTable1;
     private javax.swing.JPanel pnButton;
     private javax.swing.JPanel pnTop;

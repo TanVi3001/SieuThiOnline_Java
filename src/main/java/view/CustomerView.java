@@ -43,7 +43,9 @@ public class CustomerView extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
+        pnIn4Customer = new javax.swing.JPanel();
+        CustomerID = new javax.swing.JLabel();
+        txtCustomerID = new javax.swing.JTextField();
         CustomerName = new javax.swing.JLabel();
         txtCustomerName = new javax.swing.JTextField();
         Phone = new javax.swing.JLabel();
@@ -52,21 +54,25 @@ public class CustomerView extends javax.swing.JPanel {
         txtEmail = new javax.swing.JTextField();
         Address = new javax.swing.JLabel();
         txtAddress = new javax.swing.JTextField();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        tbCustomer = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
-        jPanel2 = new javax.swing.JPanel();
+        pnButton = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
-        txtSearch = new javax.swing.JPanel();
+        pnTop = new javax.swing.JPanel();
         jTextField1 = new javax.swing.JTextField();
         btnSearch = new javax.swing.JButton();
+        btnBack = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
 
-        jPanel1.setBackground(new java.awt.Color(236, 240, 241));
-        jPanel1.setPreferredSize(new java.awt.Dimension(280, 0));
+        pnIn4Customer.setBackground(new java.awt.Color(236, 240, 241));
+        pnIn4Customer.setPreferredSize(new java.awt.Dimension(280, 0));
+
+        CustomerID.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        CustomerID.setText("Mã khách hàng");
 
         CustomerName.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         CustomerName.setText("Tên khách hàng");
@@ -92,43 +98,53 @@ public class CustomerView extends javax.swing.JPanel {
         txtAddress.setMaximumSize(new java.awt.Dimension(2147483647, 30));
         txtAddress.setPreferredSize(new java.awt.Dimension(200, 30));
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(CustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(txtCustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(Phone, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(txtPhone, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(Email, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(Address, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(txtAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+        javax.swing.GroupLayout pnIn4CustomerLayout = new javax.swing.GroupLayout(pnIn4Customer);
+        pnIn4Customer.setLayout(pnIn4CustomerLayout);
+        pnIn4CustomerLayout.setHorizontalGroup(
+            pnIn4CustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnIn4CustomerLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnIn4CustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(CustomerID, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(pnIn4CustomerLayout.createSequentialGroup()
+                        .addGroup(pnIn4CustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtCustomerID, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(CustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtCustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Phone, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtPhone, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Email, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(Address, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(CustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+        pnIn4CustomerLayout.setVerticalGroup(
+            pnIn4CustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnIn4CustomerLayout.createSequentialGroup()
+                .addComponent(CustomerID, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(txtCustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtCustomerID, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(Phone, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(CustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(txtPhone, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtCustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(Email, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(Phone, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtPhone, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(Address, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtAddress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(216, Short.MAX_VALUE))
+                .addComponent(Email, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(Address, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(txtAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        add(jPanel1, java.awt.BorderLayout.LINE_START);
-
-        jScrollPane1.setPreferredSize(null);
+        add(pnIn4Customer, java.awt.BorderLayout.LINE_START);
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -141,81 +157,91 @@ public class CustomerView extends javax.swing.JPanel {
                 "Mã khách hàng", "Tên khách hàng", "Số điện thoại", "Email"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        tbCustomer.setViewportView(jTable1);
 
-        add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        add(tbCustomer, java.awt.BorderLayout.CENTER);
 
-        jPanel2.setBackground(new java.awt.Color(236, 240, 241));
-        jPanel2.setPreferredSize(new java.awt.Dimension(0, 60));
+        pnButton.setBackground(new java.awt.Color(236, 240, 241));
+        pnButton.setPreferredSize(new java.awt.Dimension(0, 60));
 
         jButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton1.setText("Thêm");
-        jPanel2.add(jButton1);
+        pnButton.add(jButton1);
 
         jButton2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton2.setText("Cập nhật");
-        jPanel2.add(jButton2);
+        pnButton.add(jButton2);
 
         jButton3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton3.setText("Xóa");
-        jPanel2.add(jButton3);
+        pnButton.add(jButton3);
 
+        jButton4.setBackground(new java.awt.Color(255, 255, 204));
         jButton4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton4.setText("Làm mới");
-        jPanel2.add(jButton4);
+        pnButton.add(jButton4);
 
-        add(jPanel2, java.awt.BorderLayout.PAGE_END);
+        add(pnButton, java.awt.BorderLayout.PAGE_END);
 
-        txtSearch.setBackground(new java.awt.Color(236, 240, 241));
-        txtSearch.setPreferredSize(new java.awt.Dimension(0, 40));
+        pnTop.setBackground(new java.awt.Color(236, 240, 241));
+        pnTop.setPreferredSize(new java.awt.Dimension(0, 40));
 
         btnSearch.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnSearch.setText("Tìm kiếm");
 
-        javax.swing.GroupLayout txtSearchLayout = new javax.swing.GroupLayout(txtSearch);
-        txtSearch.setLayout(txtSearchLayout);
-        txtSearchLayout.setHorizontalGroup(
-            txtSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(txtSearchLayout.createSequentialGroup()
-                .addGap(47, 47, 47)
+        btnBack.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnBack.setText("Quay lại");
+
+        javax.swing.GroupLayout pnTopLayout = new javax.swing.GroupLayout(pnTop);
+        pnTop.setLayout(pnTopLayout);
+        pnTopLayout.setHorizontalGroup(
+            pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnTopLayout.createSequentialGroup()
+                .addGap(18, 18, 18)
+                .addComponent(btnBack)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 159, Short.MAX_VALUE)
                 .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 483, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnSearch)
-                .addContainerGap(114, Short.MAX_VALUE))
+                .addGap(16, 16, 16))
         );
-        txtSearchLayout.setVerticalGroup(
-            txtSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, txtSearchLayout.createSequentialGroup()
+        pnTopLayout.setVerticalGroup(
+            pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnTopLayout.createSequentialGroup()
                 .addContainerGap(11, Short.MAX_VALUE)
-                .addGroup(txtSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSearch))
+                    .addComponent(btnSearch)
+                    .addComponent(btnBack))
                 .addContainerGap())
         );
 
-        add(txtSearch, java.awt.BorderLayout.PAGE_START);
+        add(pnTop, java.awt.BorderLayout.PAGE_START);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel Address;
+    private javax.swing.JLabel CustomerID;
     private javax.swing.JLabel CustomerName;
     private javax.swing.JLabel Email;
     private javax.swing.JLabel Phone;
+    private javax.swing.JButton btnBack;
     private javax.swing.JButton btnSearch;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JPanel pnButton;
+    private javax.swing.JPanel pnIn4Customer;
+    private javax.swing.JPanel pnTop;
+    private javax.swing.JScrollPane tbCustomer;
     private javax.swing.JTextField txtAddress;
+    private javax.swing.JTextField txtCustomerID;
     private javax.swing.JTextField txtCustomerName;
     private javax.swing.JTextField txtEmail;
     private javax.swing.JTextField txtPhone;
-    private javax.swing.JPanel txtSearch;
     // End of variables declaration//GEN-END:variables
 }

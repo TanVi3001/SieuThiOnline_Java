@@ -29,6 +29,7 @@ public class ProductView extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         pnForm = new javax.swing.JPanel();
         ProductName = new javax.swing.JLabel();
@@ -46,60 +47,97 @@ public class ProductView extends javax.swing.JPanel {
         btnUpdate = new javax.swing.JButton();
         btnDelete = new javax.swing.JButton();
         btnClear = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        btnBack = new javax.swing.JButton();
+        txtSearch = new javax.swing.JTextField();
+        btnSearch = new javax.swing.JButton();
 
+        setBackground(new java.awt.Color(236, 240, 241));
         setLayout(new java.awt.BorderLayout());
 
         pnForm.setBackground(new java.awt.Color(236, 240, 241));
         pnForm.setPreferredSize(new java.awt.Dimension(280, 0));
+        pnForm.setLayout(new java.awt.GridBagLayout());
 
         ProductName.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         ProductName.setText("Tên sản phẩm");
         ProductName.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 182;
+        gridBagConstraints.ipady = 16;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(1, 6, 0, 0);
+        pnForm.add(ProductName, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.ipadx = 210;
+        gridBagConstraints.ipady = 14;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        pnForm.add(txtName, gridBagConstraints);
 
         price.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         price.setText("Giá");
         price.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.ipadx = 252;
+        gridBagConstraints.ipady = 16;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        pnForm.add(price, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.ipadx = 210;
+        gridBagConstraints.ipady = 14;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        pnForm.add(txtPrice, gridBagConstraints);
 
         Quantity.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         Quantity.setText("Số lượng");
         Quantity.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.ipadx = 214;
+        gridBagConstraints.ipady = 16;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        pnForm.add(Quantity, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.ipadx = 210;
+        gridBagConstraints.ipady = 14;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        pnForm.add(txtQuantity, gridBagConstraints);
 
         Category.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         Category.setText("Loại sản phẩm");
         Category.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-
-        javax.swing.GroupLayout pnFormLayout = new javax.swing.GroupLayout(pnForm);
-        pnForm.setLayout(pnFormLayout);
-        pnFormLayout.setHorizontalGroup(
-            pnFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(ProductName, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(price, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(txtPrice, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(Quantity, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(txtQuantity, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(Category, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(txtCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-        pnFormLayout.setVerticalGroup(
-            pnFormLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnFormLayout.createSequentialGroup()
-                .addComponent(ProductName, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(price, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(txtPrice, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(Quantity, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(txtQuantity, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(Category, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(txtCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.ipadx = 179;
+        gridBagConstraints.ipady = 16;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        pnForm.add(Category, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.ipadx = 210;
+        gridBagConstraints.ipady = 14;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 2, 0);
+        pnForm.add(txtCategory, gridBagConstraints);
 
         add(pnForm, java.awt.BorderLayout.LINE_START);
 
@@ -136,11 +174,45 @@ public class ProductView extends javax.swing.JPanel {
         btnDelete.setText("Xóa");
         pnlButton.add(btnDelete);
 
+        btnClear.setBackground(new java.awt.Color(255, 255, 204));
         btnClear.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnClear.setText("Làm mới");
         pnlButton.add(btnClear);
 
         add(pnlButton, java.awt.BorderLayout.PAGE_END);
+
+        jPanel1.setBackground(new java.awt.Color(236, 240, 241));
+        jPanel1.setPreferredSize(new java.awt.Dimension(877, 35));
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        btnBack.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnBack.setText("Quay lại");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 0);
+        jPanel1.add(btnBack, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 393;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 222, 0, 0);
+        jPanel1.add(txtSearch, gridBagConstraints);
+
+        btnSearch.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnSearch.setText("Tìm kiếm");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 26);
+        jPanel1.add(btnSearch, gridBagConstraints);
+
+        add(jPanel1, java.awt.BorderLayout.PAGE_START);
     }// </editor-fold>//GEN-END:initComponents
 
     public void loadDataToTable() {
@@ -175,9 +247,12 @@ public class ProductView extends javax.swing.JPanel {
     private javax.swing.JLabel ProductName;
     private javax.swing.JLabel Quantity;
     private javax.swing.JButton btnAdd;
+    private javax.swing.JButton btnBack;
     private javax.swing.JButton btnClear;
     private javax.swing.JButton btnDelete;
+    private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnUpdate;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel pnForm;
     private javax.swing.JPanel pnlButton;
@@ -187,5 +262,6 @@ public class ProductView extends javax.swing.JPanel {
     private javax.swing.JTextField txtName;
     private javax.swing.JTextField txtPrice;
     private javax.swing.JTextField txtQuantity;
+    private javax.swing.JTextField txtSearch;
     // End of variables declaration//GEN-END:variables
 }
