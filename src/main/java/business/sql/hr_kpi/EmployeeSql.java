@@ -49,4 +49,40 @@ public class EmployeeSql implements SqlInterface<Employee> {
         } catch (SQLException e) { e.printStackTrace(); }
         return list;
     }
+    
+        /**
+     * Tìm kiếm nhân viên theo tên (hỗ trợ tìm gần đúng)
+     */
+    public ArrayList<Employee> searchByName(String name) {
+        ArrayList<Employee> list = new ArrayList<>();
+        // SQL: Tìm nhân viên chưa bị xóa có tên khớp với từ khóa
+        String sql = "SELECT * FROM EMPLOYEES WHERE employee_name LIKE ? AND is_deleted = 0";
+
+        try (Connection con = common.db.DatabaseConnection.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql)) {
+
+            // Gán tham số tìm kiếm
+            pst.setString(1, "%" + name + "%");
+
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    Employee e = new Employee();
+                    e.setEmployeeId(rs.getString("employee_id"));
+                    e.setEmployeeName(rs.getString("employee_name"));
+                    e.setHireDate(rs.getDate("hire_date"));
+                    e.setSalaryCoefficient(rs.getBigDecimal("salary_coefficient"));
+                    e.setTotalCompletedOrders(rs.getInt("total_completed_orders"));
+                    e.setRoleId(rs.getString("role_id"));
+                    e.setShiftId(rs.getString("shift_id"));
+                    e.setIsDeleted(rs.getInt("is_deleted"));
+
+                    list.add(e);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi tại EmployeeSql.searchByName: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

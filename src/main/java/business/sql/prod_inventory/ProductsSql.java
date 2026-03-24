@@ -144,4 +144,43 @@ public class ProductsSql {
         }
         return false;
     }
+    
+        /**
+     * Tìm kiếm sản phẩm theo tên (hỗ trợ tìm gần đúng)
+     * Kết hợp lấy số lượng từ bảng INVENTORY để hiển thị lên giao diện
+     */
+    public List<Product> searchByName(String name) {
+        List<Product> list = new ArrayList<>();
+        // SQL: Lấy thông tin sản phẩm và số lượng tồn kho tương ứng
+        String sql = "SELECT p.product_id, p.product_name, p.base_price, p.category_id, p.supplier_id, i.quantity "
+                   + "FROM PRODUCTS p "
+                   + "JOIN INVENTORY i ON p.product_id = i.product_id "
+                   + "WHERE p.product_name LIKE ? AND p.is_deleted = 0";
+
+        try (Connection con = common.db.DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            // Thiết lập tham số tìm kiếm: %chuỗi%
+            ps.setString(1, "%" + name + "%");
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Product p = new Product();
+                    p.setProductId(rs.getString("product_id"));
+                    p.setProductName(rs.getString("product_name"));
+                    p.setBasePrice(rs.getBigDecimal("base_price"));
+                    p.setCategoryId(rs.getString("category_id"));
+                    p.setSupplierId(rs.getString("supplier_id"));
+                    p.setQuantity(rs.getInt("quantity"));
+                    p.setIsDeleted(0);
+
+                    list.add(p);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi tại ProductsSql.searchByName: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
+    }
 }
