@@ -31,122 +31,121 @@ public class SieuThiOnline {
 
     public static void main(String[] args) {
 //        // Thiết lập luồng xuất dữ liệu chuẩn UTF-8 để hiển thị Tiếng Việt
-//        try {
-//            System.setOut(new java.io.PrintStream(System.out, true, "UTF-8"));
-//        } catch (java.io.UnsupportedEncodingException e) {
-//            System.err.println("[LỖI] Hệ thống không hỗ trợ định dạng UTF-8.");
-//        }
-//
-//        System.out.println("-------------------------------------------------------");
-//        System.out.println("BẮT ĐẦU KIỂM THỬ TÍCH HỢP HỆ THỐNG");
-//        System.out.println("-------------------------------------------------------");
-//
-//        // =====================================================
-//        // GIAI ĐOẠN 0: KIỂM TRA KẾT NỐI CƠ SỞ DỮ LIỆU
-//        // =====================================================
-//        System.out.println("[THÔNG BÁO] Đang thực thi Giai đoạn 0: Kiểm tra kết nối Oracle...");
-//        try (Connection con = DatabaseConnection.getConnection()) {
-//            if (con != null) {
-//                System.out.println("[HOÀN TẤT] Kết nối cơ sở dữ liệu được thiết lập thành công.");
-//            } else {
-//                System.out.println("[THẤT BẠI] Không thể thiết lập kết nối cơ sở dữ liệu.");
-//            }
-//        } catch (Exception e) {
-//            System.out.println("[CẢNH BÁO] Ngoại lệ kết nối: " + e.getMessage());
-//        }
-//
-//        // =====================================================
-//        // GIAI ĐOẠN 1: KIỂM THỬ TÍNH TOÀN VẸN CỦA MODEL (NGUYÊN) & SQL (TÙNG)
-//        // =====================================================
-//        System.out.println("\n[THÔNG BÁO] Đang thực thi Giai đoạn 1: Kiểm tra Model và Mapping dữ liệu...");
-//        
-//        try {
-//            // 1. Kiểm tra Model Nhà cung cấp (Supplier) - Test dữ liệu danh mục gốc
-//            System.out.println("--- 1.1 Kiểm tra Model Supplier ---");
-//            List<Supplier> dsNhaCC = SuppliersSql.getInstance().selectAll();
-//            if (dsNhaCC.isEmpty()) {
-//                System.out.println("[!] Cảnh báo: DB chưa có dữ liệu Nhà cung cấp.");
-//            } else {
-//                for (Supplier s : dsNhaCC) {
-//                    // Test các Getter mà Nguyên đã viết trong class Supplier
-//                    System.out.printf("ID: %-10s | Tên NCC: %-20s | SĐT: %s\n", 
-//                        s.getSupplierId(), s.getSupplierName(), s.getPhoneNumber());
-//                }
-//            }
-//
-//            // 2. Kiểm tra Model Cửa hàng (Store)
-//            System.out.println("\n--- 1.2 Kiểm tra Model Store ---");
-//            List<Store> dsCuaHang = StoresSql.getInstance().selectAll();
-//            for (Store st : dsCuaHang) {
-//                System.out.println("Cửa hàng: " + st.getStoreName() + " - Địa chỉ: " + st.getAddress());
-//            }
-//
-//            // 3. Kiểm tra Model Quản lý giao hàng (DeliveryManagement)
-//            System.out.println("\n--- 1.3 Kiểm tra Model DeliveryManagement ---");
-//            List<DeliveryManagement> dsGiaoHang = DeliveryManagementSql.getInstance().selectAll();
-//            if (!dsGiaoHang.isEmpty()) {
-//                DeliveryManagement dm = dsGiaoHang.get(0);
-//                System.out.println("Đơn giao thử nghiệm: " + dm.getOrderId() + " | Trạng thái: " + dm.getDeliveryStatus());
-//            }
-//
-//        } catch (Exception e) {
-//            System.out.println("[CẢNH BÁO] Lỗi mapping dữ liệu giữa Model và SQL: " + e.getMessage());
-//        }
-//        
-//        // =====================================================
-//        // GIAI ĐOẠN 5: KIỂM TRA MODULE XUẤT BÁO CÁO EXCEL
-//        // =====================================================
-//        System.out.println("\n[THÔNG BÁO] Đang thực thi Giai đoạn 5: Kiểm tra xuất báo cáo kho...");
-//        try {
-//            List<Inventory> dsTonKho = InventorySql.getInstance().selectAll();
-//            String filePath = "E:\\Inventory_Report_Vi.xlsx";
-//
-//            ExcelExporter.exportInventory(dsTonKho, filePath);
-//            System.out.println("[HOÀN TẤT] Báo cáo hàng tồn kho đã được xuất tại: " + filePath);
-//        } catch (Exception e) {
-//            System.out.println("[CẢNH BÁO] Lỗi xuất dữ liệu Excel: " + e.getMessage());
-//        }
-//
-//        // =====================================================
-//        // GIAI ĐOẠN 6: KIỂM TRA GIAO DỊCH THANH TOÁN (LOGIC CỐT LÕI)
-//        // =====================================================
-//        System.out.println("\n[THÔNG BÁO] Đang thực thi Giai đoạn 6: Kiểm tra giao dịch thanh toán...");
-//
-//        // Định danh duy nhất cho mã hóa đơn kiểm thử
-//        String maHD = "HD_ST_1002"; 
-//
-//        // Khởi tạo dữ liệu Hóa đơn
-//        Order hd = new Order(
-//                maHD,
-//                "KH001", 
-//                "EMP_01", 
-//                new java.sql.Date(System.currentTimeMillis()),
-//                150000.0,
-//                "ĐÃ THANH TOÁN"
-//        );
-//
-//        // Khởi tạo danh sách Chi tiết hóa đơn (Giỏ hàng)
-//        List<OrderDetail> gioHang = new ArrayList<>();
-//        gioHang.add(new OrderDetail(maHD, "PROD_MILK_01", 2, 20000.0));
-//        gioHang.add(new OrderDetail(maHD, "PROD_MILK_02", 5, 8000.0));
-//
-//        // Thực thi giao dịch thông qua PaymentService (Áp dụng Transaction)
-//        try {
-//            boolean isTransactionSuccess = PaymentService.thanhToan(hd, gioHang);
-//
-//            if (isTransactionSuccess) {
-//                System.out.println("[HOÀN TẤT] Giao dịch thành công: Đã lưu hóa đơn và cập nhật kho hàng.");
-//            } else {
-//                System.out.println("[THẤT BẠI] Giao dịch không thành công: Cơ chế Rollback đã được kích hoạt.");
-//            }
-//        } catch (Exception e) {
-//            System.out.println("[NGHIÊM TRỌNG] Lỗi hệ thống trong quá trình giao dịch: " + e.getMessage());
-//        }
-//
-//        System.out.println("\n-------------------------------------------------------");
-//        System.out.println("KẾT THÚC QUY TRÌNH KIỂM THỬ TÍCH HỢP");
-//        System.out.println("-------------------------------------------------------");
-// 1. Thiết lập giao diện (Nimbus Look and Feel)
+        try {
+            System.setOut(new java.io.PrintStream(System.out, true, "UTF-8"));
+        } catch (java.io.UnsupportedEncodingException e) {
+            System.err.println("[LỖI] Hệ thống không hỗ trợ định dạng UTF-8.");
+        }
+
+        System.out.println("-------------------------------------------------------");
+        System.out.println("BẮT ĐẦU KIỂM THỬ TÍCH HỢP HỆ THỐNG");
+        System.out.println("-------------------------------------------------------");
+
+        // =====================================================
+        // GIAI ĐOẠN 0: KIỂM TRA KẾT NỐI CƠ SỞ DỮ LIỆU
+        // =====================================================
+        System.out.println("[THÔNG BÁO] Đang thực thi Giai đoạn 0: Kiểm tra kết nối Oracle...");
+        try (Connection con = DatabaseConnection.getConnection()) {
+            if (con != null) {
+                System.out.println("[HOÀN TẤT] Kết nối cơ sở dữ liệu được thiết lập thành công.");
+            } else {
+                System.out.println("[THẤT BẠI] Không thể thiết lập kết nối cơ sở dữ liệu.");
+            }
+        } catch (Exception e) {
+            System.out.println("[CẢNH BÁO] Ngoại lệ kết nối: " + e.getMessage());
+        }
+
+        // =====================================================
+        // GIAI ĐOẠN 1: KIỂM THỬ TÍNH TOÀN VẸN CỦA MODEL (NGUYÊN) & SQL (TÙNG)
+        // =====================================================
+        System.out.println("\n[THÔNG BÁO] Đang thực thi Giai đoạn 1: Kiểm tra Model và Mapping dữ liệu...");
+        
+        try {
+            // 1. Kiểm tra Model Nhà cung cấp (Supplier) - Test dữ liệu danh mục gốc
+            System.out.println("--- 1.1 Kiểm tra Model Supplier ---");
+            List<Supplier> dsNhaCC = SuppliersSql.getInstance().selectAll();
+            if (dsNhaCC.isEmpty()) {
+                System.out.println("[!] Cảnh báo: DB chưa có dữ liệu Nhà cung cấp.");
+            } else {
+                for (Supplier s : dsNhaCC) {
+                    // Test các Getter mà Nguyên đã viết trong class Supplier
+                    System.out.printf("ID: %-10s | Tên NCC: %-20s | SĐT: %s\n", 
+                        s.getSupplierId(), s.getSupplierName(), s.getPhoneNumber());
+                }
+            }
+
+            // 2. Kiểm tra Model Cửa hàng (Store)
+            System.out.println("\n--- 1.2 Kiểm tra Model Store ---");
+            List<Store> dsCuaHang = StoresSql.getInstance().selectAll();
+            for (Store st : dsCuaHang) {
+                System.out.println("Cửa hàng: " + st.getStoreName() + " - Địa chỉ: " + st.getAddress());
+            }
+
+            // 3. Kiểm tra Model Quản lý giao hàng (DeliveryManagement)
+            System.out.println("\n--- 1.3 Kiểm tra Model DeliveryManagement ---");
+            List<DeliveryManagement> dsGiaoHang = DeliveryManagementSql.getInstance().selectAll();
+            if (!dsGiaoHang.isEmpty()) {
+                DeliveryManagement dm = dsGiaoHang.get(0);
+                System.out.println("Đơn giao thử nghiệm: " + dm.getOrderId() + " | Trạng thái: " + dm.getDeliveryStatus());
+            }
+
+        } catch (Exception e) {
+            System.out.println("[CẢNH BÁO] Lỗi mapping dữ liệu giữa Model và SQL: " + e.getMessage());
+        }
+        
+        // =====================================================
+        // GIAI ĐOẠN 5: KIỂM TRA MODULE XUẤT BÁO CÁO EXCEL
+        // =====================================================
+        System.out.println("\n[THÔNG BÁO] Đang thực thi Giai đoạn 5: Kiểm tra xuất báo cáo kho...");
+        try {
+            List<Inventory> dsTonKho = InventorySql.getInstance().selectAll();
+            String filePath = "E:\\Inventory_Report_Vi.xlsx";
+
+            ExcelExporter.exportInventory(dsTonKho, filePath);
+            System.out.println("[HOÀN TẤT] Báo cáo hàng tồn kho đã được xuất tại: " + filePath);
+        } catch (Exception e) {
+            System.out.println("[CẢNH BÁO] Lỗi xuất dữ liệu Excel: " + e.getMessage());
+        }
+
+        // =====================================================
+        // GIAI ĐOẠN 6: KIỂM TRA GIAO DỊCH THANH TOÁN (LOGIC CỐT LÕI)
+        // =====================================================
+        System.out.println("\n[THÔNG BÁO] Đang thực thi Giai đoạn 6: Kiểm tra giao dịch thanh toán...");
+
+        // Định danh duy nhất cho mã hóa đơn kiểm thử
+        String maHD = "HD_ST_1002"; 
+
+        // Khởi tạo dữ liệu Hóa đơn
+        Order hd = new Order(
+                maHD,
+                "KH001", 
+                "EMP_01", 
+                new java.sql.Date(System.currentTimeMillis()),
+                150000.0,
+                "ĐÃ THANH TOÁN"
+        );
+
+        // Khởi tạo danh sách Chi tiết hóa đơn (Giỏ hàng)
+        List<OrderDetail> gioHang = new ArrayList<>();
+        gioHang.add(new OrderDetail(maHD, "PROD_MILK_01", 2, 20000.0));
+        gioHang.add(new OrderDetail(maHD, "PROD_MILK_02", 5, 8000.0));
+
+        // Thực thi giao dịch thông qua PaymentService (Áp dụng Transaction)
+        try {
+            boolean isTransactionSuccess = PaymentService.thanhToan(hd, gioHang);
+
+            if (isTransactionSuccess) {
+                System.out.println("[HOÀN TẤT] Giao dịch thành công: Đã lưu hóa đơn và cập nhật kho hàng.");
+            } else {
+                System.out.println("[THẤT BẠI] Giao dịch không thành công: Cơ chế Rollback đã được kích hoạt.");
+            }
+        } catch (Exception e) {
+            System.out.println("[NGHIÊM TRỌNG] Lỗi hệ thống trong quá trình giao dịch: " + e.getMessage());
+        }
+
+        System.out.println("\n-------------------------------------------------------");
+        System.out.println("KẾT THÚC QUY TRÌNH KIỂM THỬ TÍCH HỢP");
+        System.out.println("-------------------------------------------------------");
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {

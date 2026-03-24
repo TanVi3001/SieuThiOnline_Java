@@ -18,41 +18,83 @@ public class DashboardView extends javax.swing.JFrame {
     public DashboardView() {
         initComponents();
 
-        // 1. Chỉnh kích thước: Phóng to toàn màn hình và đặt size tối thiểu cho con LOQ
+        // 1. Chỉnh kích thước & Tiêu đề (Thêm setTitle để thanh Taskbar hiện tên app)
+        this.setTitle("Hệ Thống Quản Lý Siêu Thị");
         this.setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
         this.setMinimumSize(new java.awt.Dimension(1280, 720));
         this.setLocationRelativeTo(null);
 
-        // 2. Căn giữa cái Title (Hệ thống siêu thị)
+        // Đảm bảo đóng app là tắt hẳn tiến trình (Tránh chạy ngầm tốn RAM)
+        this.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
+
+        // 2. Căn giữa cái Title
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
-        // 3. Lấy thông tin người dùng để hiện lời chào (Ghi điểm chuyên nghiệp)
-        model.account.Account currentUser = business.service.LoginService.getCurrentUser();
-        if (currentUser != null) {
-            // Giả sử ông có cái label nào đó để hiện tên, nếu không thì hiện tạm lên jLabel2
-            jLabel2.setText("HỆ THỐNG SIÊU THỊ - Chào, " + currentUser.getUsername());
+        // 3. Xử lý thông tin người dùng (Thêm kiểm tra null và format chuỗi)
+        try {
+            model.account.Account currentUser = business.service.LoginService.getCurrentUser();
+            if (currentUser != null) {
+                // Dùng String.format để code nhìn sạch và dễ chỉnh sửa sau này
+                String welcomeMsg = String.format("HỆ THỐNG SIÊU THỊ - Chào, %s", currentUser.getUsername());
+                jLabel2.setText(welcomeMsg);
+            } else {
+                jLabel2.setText("HỆ THỐNG SIÊU THỊ - Chưa đăng nhập");
+            }
+        } catch (Exception e) {
+            // Nếu lấy user bị lỗi thì app vẫn chạy được chứ không "văng" ra ngoài
+            System.err.println("Lỗi load user: " + e.getMessage());
         }
 
-        // 4. Thực thi phân quyền (Ẩn nút nếu là Staff)
+        // 4. Thực thi phân quyền
         authorize();
     }
 
     private void authorize() {
-        // 1. Lấy thông tin người dùng hiện tại từ LoginService
-        model.account.Account user = business.service.LoginService.getCurrentUser();
+        try {
+            // 1. Lấy thông tin người dùng
+            model.account.Account user = business.service.LoginService.getCurrentUser();
 
-        if (user != null) {
-            String role = user.getRole(); // Lấy chức vụ: ADMIN hoặc STAFF
-
-            // 2. Nếu KHÔNG PHẢI là Admin (tức là Nhân viên)
-            if (!role.equalsIgnoreCase("ADMIN")) {
-                // Ẩn các nút nhạy cảm
-                btnEmployee.setVisible(false);  // Ẩn nút Quản lý nhân viên
-                btnStatistic.setVisible(false); // Ẩn nút Thống kê
-
-                // Gợi ý: Có thể đổi màu sidebar cho nhân viên dễ phân biệt
-                // jPanel2.setBackground(new java.awt.Color(100, 100, 100));
+            // Kiểm tra xem có lấy được User không
+            if (user == null) {
+                System.err.println("DEBUG: Không tìm thấy thông tin người dùng (User is null)");
+                return;
             }
+
+            // 2. Lấy Role và làm sạch chuỗi (Trim để xóa khoảng trắng dư thừa)
+            String role = user.getRole();
+            if (role == null) {
+                System.err.println("DEBUG: User không có quyền (Role is null)");
+                return;
+            }
+            role = role.trim(); // Xóa dấu cách nếu có (ví dụ "ADMIN " thành "ADMIN")
+
+            // 3. Thực thi phân quyền
+            // Kiểm tra: Nếu KHÔNG PHẢI là Admin thì ẩn nút
+            if (!role.equalsIgnoreCase("ADMIN")) {
+
+                // Ẩn nút Quản lý nhân viên
+                if (btnEmployee != null) {
+                    btnEmployee.setVisible(false);
+                }
+
+                // Ẩn nút Thống kê
+                if (btnStatistic != null) {
+                    btnStatistic.setVisible(false);
+                }
+
+                // In ra console để ông kiểm tra xem code có chạy vào đây không
+                System.out.println("DEBUG: Đã nhận diện Staff. Đang ẩn các nút Admin...");
+            } else {
+                System.out.println("DEBUG: Đã nhận diện Admin. Giữ nguyên các nút.");
+            }
+
+            // 4. Ép giao diện vẽ lại (Quan trọng để các nút biến mất ngay lập tức)
+            this.revalidate();
+            this.repaint();
+
+        } catch (Exception e) {
+            System.err.println("Lỗi phân quyền: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -254,7 +296,7 @@ public class DashboardView extends javax.swing.JFrame {
     private void btnCustomerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCustomerActionPerformed
         // TODO add your handling code here:
         showPanel(new CustomerView());
-        
+
     }//GEN-LAST:event_btnCustomerActionPerformed
 
     /**
@@ -278,26 +320,26 @@ public class DashboardView extends javax.swing.JFrame {
         }
         //</editor-fold>
 
-       // PHẢI ĐẶT ĐẦU TIÊN: Trị lỗi màn hình 2K/4K bị bé xíu
-    System.setProperty("sun.java2d.uiScale", "1.5");
+        // PHẢI ĐẶT ĐẦU TIÊN: Trị lỗi màn hình 2K/4K bị bé xíu
+        System.setProperty("sun.java2d.uiScale", "1.5");
 
-    /* Set the Nimbus look and feel */
-    try {
-        for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-            if ("Nimbus".equals(info.getName())) {
-                javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                break;
+        /* Set the Nimbus look and feel */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
             }
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(DashboardView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-    } catch (Exception ex) {
-        java.util.logging.Logger.getLogger(DashboardView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-    }
 
-    /* Khởi tạo và hiển thị */
-    java.awt.EventQueue.invokeLater(() -> {
-        DashboardView dashboard = new DashboardView();
-        dashboard.setVisible(true);
-    });
+        /* Khởi tạo và hiển thị */
+        java.awt.EventQueue.invokeLater(() -> {
+            DashboardView dashboard = new DashboardView();
+            dashboard.setVisible(true);
+        });
     }
 
     private void showPanel(javax.swing.JPanel childPanel) {
