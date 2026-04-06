@@ -148,6 +148,8 @@ public class ProductsSql {
         /**
      * Tìm kiếm sản phẩm theo tên (hỗ trợ tìm gần đúng)
      * Kết hợp lấy số lượng từ bảng INVENTORY để hiển thị lên giao diện
+     * @param name
+     * @return 
      */
     public List<Product> searchByName(String name) {
         List<Product> list = new ArrayList<>();

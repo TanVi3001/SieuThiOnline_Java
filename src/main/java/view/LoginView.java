@@ -95,7 +95,7 @@ public class LoginView extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, LoginViewLayout.createSequentialGroup()
                         .addComponent(btnLogin)
                         .addGap(2, 2, 2)))
-                .addContainerGap(141, Short.MAX_VALUE))
+                .addContainerGap(146, Short.MAX_VALUE))
         );
         LoginViewLayout.setVerticalGroup(
             LoginViewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -119,7 +119,7 @@ public class LoginView extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(LoginView, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(LoginView, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
