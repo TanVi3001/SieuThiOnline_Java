@@ -214,11 +214,14 @@ CREATE TABLE INVENTORY (
 -- ==========================================================
 
 CREATE TABLE CUSTOMERS (
-    customer_id VARCHAR2(50) PRIMARY KEY,
-    customer_name NVARCHAR2(100),
-    role_id VARCHAR2(50),
-    reward_points NUMBER(10),
-    is_deleted NUMBER(1) DEFAULT 0,
+    customer_id    VARCHAR2(50) PRIMARY KEY,
+    customer_name  NVARCHAR2(100),
+    role_id        VARCHAR2(50),
+    phone          VARCHAR2(20),
+    email          VARCHAR2(100),
+    address        NVARCHAR2(255),
+    reward_points  NUMBER(10),
+    is_deleted     NUMBER(1) DEFAULT 0,
     CONSTRAINT FK_CUSTOMERS_ROLES FOREIGN KEY (role_id) REFERENCES ROLES(role_id)
 );
 
