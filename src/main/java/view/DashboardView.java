@@ -49,6 +49,7 @@ public class DashboardView extends javax.swing.JFrame {
         authorize();
     }
 
+
     private void authorize() {
         try {
             // 1. Lấy thông tin người dùng

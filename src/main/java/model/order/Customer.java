@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model.order;
 
 /**
@@ -13,21 +9,29 @@ public class Customer {
     private String customerId;
     private String customerName;
     private String roleId;
+    private String phone;
+    private String email;
+    private String address;
     private int rewardPoints;
     private int isDeleted;
 
     public Customer() {
     }
 
-    public Customer(String customerId, String customerName, String roleId, 
-            int rewardPoints, int isDeleted) {
+    public Customer(String customerId, String customerName, String roleId,
+                    String phone, String email, String address,
+                    int rewardPoints, int isDeleted) {
         this.customerId = customerId;
         this.customerName = customerName;
         this.roleId = roleId;
+        this.phone = phone;
+        this.email = email;
+        this.address = address;
         this.rewardPoints = rewardPoints;
         this.isDeleted = isDeleted;
     }
 
+    // ===== ID =====
     public String getCustomerId() {
         return customerId;
     }
@@ -35,15 +39,26 @@ public class Customer {
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
     }
-    
-    public String getCustomerName() { 
-        return customerName; 
-    }
-    
-    public void setCustomerName(String customerName) { 
-        this.customerName = customerName; 
+
+    // Alias để tương thích code cũ đang dùng getCustomerID/setCustomerID
+    public String getCustomerID() {
+        return customerId;
     }
 
+    public void setCustomerID(String customerId) {
+        this.customerId = customerId;
+    }
+
+    // ===== Name =====
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    // ===== Role =====
     public String getRoleId() {
         return roleId;
     }
@@ -52,6 +67,34 @@ public class Customer {
         this.roleId = roleId;
     }
 
+    // ===== Phone =====
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    // ===== Email =====
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    // ===== Address =====
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    // ===== Reward =====
     public int getRewardPoints() {
         return rewardPoints;
     }
@@ -60,6 +103,7 @@ public class Customer {
         this.rewardPoints = rewardPoints;
     }
 
+    // ===== Soft delete =====
     public int getIsDeleted() {
         return isDeleted;
     }
