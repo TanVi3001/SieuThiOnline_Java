@@ -122,17 +122,26 @@ CREATE TABLE EMPLOYEES (
     CONSTRAINT FK_EMPLOYEES_SHIFTS FOREIGN KEY (shift_id) REFERENCES SHIFTS(shift_id)
 );
 
-CREATE TABLE ATTENDANCE (
-    employee_id VARCHAR2(50),
+CREATE TABLE EMPLOYEES (
+    employee_id VARCHAR2(50) PRIMARY KEY,
+    employee_name NVARCHAR2(100),
+
+    -- giữ cột cũ
+    hire_date DATE,
+    salary_coefficient NUMBER(5, 2),
+    total_completed_orders NUMBER(10) DEFAULT 0,
+    role_id VARCHAR2(50),
     shift_id VARCHAR2(50),
-    work_date DATE,
-    check_in_time TIMESTAMP,
-    check_out_time TIMESTAMP,
-    attendance_coefficient NUMBER(3, 1),
+
+    -- thêm cho EmployeeView
+    phone VARCHAR2(20),
+    email VARCHAR2(100),
+    gender NVARCHAR2(10),
+
     is_deleted NUMBER(1) DEFAULT 0,
-    PRIMARY KEY (employee_id, shift_id),
-    CONSTRAINT FK_ATTENDANCE_EMPLOYEES FOREIGN KEY (employee_id) REFERENCES EMPLOYEES(employee_id),
-    CONSTRAINT FK_ATTENDANCE_SHIFTS FOREIGN KEY (shift_id) REFERENCES SHIFTS(shift_id)
+
+    CONSTRAINT FK_EMPLOYEES_ROLES FOREIGN KEY (role_id) REFERENCES ROLES(role_id),
+    CONSTRAINT FK_EMPLOYEES_SHIFTS FOREIGN KEY (shift_id) REFERENCES SHIFTS(shift_id)
 );
 
 CREATE TABLE KPI_CRITERIA (
