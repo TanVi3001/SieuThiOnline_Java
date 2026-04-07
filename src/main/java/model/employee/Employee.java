@@ -1,15 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model.employee;
 
-/**
- *
- * @author nguye
- */
-import java.sql.Date;
 import java.math.BigDecimal;
+import java.sql.Date;
 
 public class Employee {
 
@@ -22,12 +14,18 @@ public class Employee {
     private String shiftId;
     private int isDeleted;
 
+    // ===== thêm field để khớp form EmployeeView =====
+    private String phone;
+    private String email;
+    private String role;   // chức vụ hiển thị trên form
+    private String gender;
+
     public Employee() {
     }
 
     public Employee(String employeeId, String employeeName, Date hireDate,
-                    BigDecimal salaryCoefficient, int totalCompletedOrders,
-                    String roleId, String shiftId, int isDeleted) {
+            BigDecimal salaryCoefficient, int totalCompletedOrders,
+            String roleId, String shiftId, int isDeleted) {
         this.employeeId = employeeId;
         this.employeeName = employeeName;
         this.hireDate = hireDate;
@@ -36,6 +34,16 @@ public class Employee {
         this.roleId = roleId;
         this.shiftId = shiftId;
         this.isDeleted = isDeleted;
+    }
+
+    // ===== constructor tiện dùng cho form =====
+    public Employee(String employeeId, String employeeName, String phone, String email, String role, String gender) {
+        this.employeeId = employeeId;
+        this.employeeName = employeeName;
+        this.phone = phone;
+        this.email = email;
+        this.role = role;
+        this.gender = gender;
     }
 
     public String getEmployeeId() {
@@ -100,5 +108,39 @@ public class Employee {
 
     public void setIsDeleted(int isDeleted) {
         this.isDeleted = isDeleted;
+    }
+
+    // ===== các getter/setter từng bị throw lỗi -> sửa thật =====
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getRole() {
+        // ưu tiên role hiển thị; nếu null thì fallback roleId
+        return (role != null) ? role : roleId;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 }

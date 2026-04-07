@@ -4,6 +4,13 @@
  */
 package view;
 
+// import cần có
+import business.sql.hr_kpi.EmployeeSql;
+import java.util.ArrayList;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import model.employee.Employee;
+
 /**
  *
  * @author Admin
@@ -13,8 +20,124 @@ public class EmployeeView extends javax.swing.JPanel {
     /**
      * Creates new form EmployeeView
      */
+    private DefaultTableModel tableModel;
+    private final EmployeeSql employeeSql = new EmployeeSql();
+
     public EmployeeView() {
         initComponents();
+        initTable();
+        initEvents();
+        loadDataToTable();
+    }
+
+    private void initTable() {
+        tableModel = (DefaultTableModel) jTable1.getModel();
+        jTable1.setModel(new DefaultTableModel(
+                new Object[]{"Mã nhân viên", "Tên nhân viên", "SĐT", "Email", "Chức vụ", "Giới tính"}, 0
+        ));
+    }
+
+    private void initEvents() {
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTable1MouseClicked(evt);
+            }
+        });
+    }
+
+    // ====== THÊM CÁC H��M HỖ TRỢ ======
+    private void loadDataToTable() {
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        model.setRowCount(0);
+
+        ArrayList<Employee> list = employeeSql.selectAll();
+        for (Employee e : list) {
+            model.addRow(new Object[]{
+                e.getEmployeeId(),
+                e.getEmployeeName(),
+                e.getPhone(),
+                e.getEmail(),
+                e.getRole(), // nếu model dùng getPosition() thì đổi lại
+                e.getGender()
+            });
+        }
+    }
+
+    private Employee getEmployeeFromForm() {
+        String name = txtEmployeeName.getText().trim();
+        String phone = txtEmployeePhone.getText().trim();
+        String email = txtEmployeeEmail.getText().trim();
+        String role = txtEmployeeRole.getText().trim();
+        String gender = rdoMale.isSelected() ? "Nam" : (rdoFemale.isSelected() ? "Nữ" : "");
+
+        if (name.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Tên nhân viên không được để trống!");
+            return null;
+        }
+        if (phone.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Số điện thoại không được để trống!");
+            return null;
+        }
+        if (email.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Email không được để trống!");
+            return null;
+        }
+        if (role.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Role ID không được để trống! (ví dụ: R001)");
+            return null;
+        }
+        if (gender.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn giới tính!");
+            return null;
+        }
+
+        Employee e = new Employee();
+        e.setEmployeeName(name);
+        e.setPhone(phone);
+        e.setEmail(email);
+        e.setRole(role);
+        e.setRoleId(role);
+        e.setGender(gender);
+        return e;
+    }
+
+    private String generateEmployeeId() {
+        return "EMP" + System.currentTimeMillis();
+    }
+
+    private void clearForm() {
+        txtEmployeeName.setText("");
+        txtEmployeePhone.setText("");
+        txtEmployeeEmail.setText("");
+        txtEmployeeRole.setText("");
+        btngGender.clearSelection();
+        jTable1.clearSelection();
+    }
+
+    private String getSelectedEmployeeId() {
+        int row = jTable1.getSelectedRow();
+        if (row < 0) {
+            return null;
+        }
+        Object v = jTable1.getValueAt(row, 0);
+        return v == null ? null : v.toString();
+    }
+
+    private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {
+        int row = jTable1.getSelectedRow();
+        if (row < 0) {
+            return;
+        }
+
+        txtEmployeeName.setText(String.valueOf(jTable1.getValueAt(row, 1)));
+        txtEmployeePhone.setText(String.valueOf(jTable1.getValueAt(row, 2)));
+        txtEmployeeEmail.setText(String.valueOf(jTable1.getValueAt(row, 3)));
+        txtEmployeeRole.setText(String.valueOf(jTable1.getValueAt(row, 4)));
+
+        String gender = String.valueOf(jTable1.getValueAt(row, 5));
+        rdoMale.setSelected("Nam".equalsIgnoreCase(gender));
+        rdoFemale.setSelected("Nữ".equalsIgnoreCase(gender));
     }
 
     /**
@@ -61,17 +184,25 @@ public class EmployeeView extends javax.swing.JPanel {
         EmloyeeName.setText("Tên nhân viên");
         EmloyeeName.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
 
+        txtEmployeeName.addActionListener(this::txtEmployeeNameActionPerformed);
+
         EmployeePhone.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         EmployeePhone.setText("Số điện thoại");
         EmployeePhone.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+
+        txtEmployeePhone.addActionListener(this::txtEmployeePhoneActionPerformed);
 
         EmployeeEmail.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         EmployeeEmail.setText("Email");
         EmployeeEmail.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
 
+        txtEmployeeEmail.addActionListener(this::txtEmployeeEmailActionPerformed);
+
         EmployeeRole.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         EmployeeRole.setText("Chức vụ");
         EmployeeRole.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+
+        txtEmployeeRole.addActionListener(this::txtEmployeeRoleActionPerformed);
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel5.setText("Giới tính");
@@ -80,10 +211,12 @@ public class EmployeeView extends javax.swing.JPanel {
         btngGender.add(rdoMale);
         rdoMale.setText("Nam");
         rdoMale.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        rdoMale.addActionListener(this::rdoMaleActionPerformed);
 
         btngGender.add(rdoFemale);
         rdoFemale.setText("Nữ");
         rdoFemale.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        rdoFemale.addActionListener(this::rdoFemaleActionPerformed);
 
         javax.swing.GroupLayout pnFormLayout = new javax.swing.GroupLayout(pnForm);
         pnForm.setLayout(pnFormLayout);
@@ -166,19 +299,23 @@ public class EmployeeView extends javax.swing.JPanel {
 
         btnAdd.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnAdd.setText("Thêm");
+        btnAdd.addActionListener(this::btnAddActionPerformed);
         pnButton.add(btnAdd);
 
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnUpdate.setText("Cập nhật");
+        btnUpdate.addActionListener(this::btnUpdateActionPerformed);
         pnButton.add(btnUpdate);
 
         btnDelete.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnDelete.setText("Xóa");
+        btnDelete.addActionListener(this::btnDeleteActionPerformed);
         pnButton.add(btnDelete);
 
         btnClear.setBackground(new java.awt.Color(255, 255, 204));
         btnClear.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnClear.setText("Làm mới");
+        btnClear.addActionListener(this::btnClearActionPerformed);
         pnButton.add(btnClear);
 
         add(pnButton, java.awt.BorderLayout.PAGE_END);
@@ -188,9 +325,13 @@ public class EmployeeView extends javax.swing.JPanel {
 
         btnBack.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnBack.setText("Quay lại");
+        btnBack.addActionListener(this::btnBackActionPerformed);
+
+        txtSearch.addActionListener(this::txtSearchActionPerformed);
 
         btnSearch.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnSearch.setText("Tìm kiếm");
+        btnSearch.addActionListener(this::btnSearchActionPerformed);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -218,6 +359,129 @@ public class EmployeeView extends javax.swing.JPanel {
 
         add(jPanel1, java.awt.BorderLayout.PAGE_START);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
+        // TODO add your handling code here:
+        Employee e = getEmployeeFromForm();
+        if (e == null) {
+            return;
+        }
+
+        // form không có ô mã => tự sinh
+        e.setEmployeeId(generateEmployeeId());
+
+        int rs = employeeSql.insert(e);
+        if (rs > 0) {
+            JOptionPane.showMessageDialog(this, "Thêm nhân viên thành công!");
+            loadDataToTable();
+            clearForm();
+        } else {
+            JOptionPane.showMessageDialog(this, "Thêm thất bại!");
+        }
+
+    }//GEN-LAST:event_btnAddActionPerformed
+
+    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        // TODO add your handling code here:
+        String id = getSelectedEmployeeId();
+        if (id == null || id.isBlank()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên trong bảng để cập nhật!");
+            return;
+        }
+
+        Employee e = getEmployeeFromForm();
+        if (e == null) {
+            return;
+        }
+        e.setEmployeeId(id);
+
+        int rs = employeeSql.update(e);
+        JOptionPane.showMessageDialog(this, rs > 0 ? "Cập nhật thành công!" : "Cập nhật thất bại!");
+        loadDataToTable();
+    }//GEN-LAST:event_btnUpdateActionPerformed
+
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        // TODO add your handling code here:
+        String id = getSelectedEmployeeId();
+        if (id == null || id.isBlank()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên trong bảng để xóa!");
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Bạn có chắc muốn xóa nhân viên này?",
+                "Xác nhận",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            int rs = employeeSql.delete(id);
+            JOptionPane.showMessageDialog(this, rs > 0 ? "Xóa thành công!" : "Xóa thất bại!");
+            loadDataToTable();
+            clearForm();
+        }
+    }//GEN-LAST:event_btnDeleteActionPerformed
+
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+        // TODO add your handling code here:
+        clearForm();
+        loadDataToTable();
+    }//GEN-LAST:event_btnClearActionPerformed
+
+    private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSearchActionPerformed
+
+    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
+        // TODO add your handling code here:
+        String keyword = txtSearch.getText().trim();
+
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        model.setRowCount(0);
+
+        java.util.List<Employee> list = employeeSql.search(keyword); // cần có hàm search trong DAO
+        for (Employee e : list) {
+            model.addRow(new Object[]{
+                e.getEmployeeId(),
+                e.getEmployeeName(),
+                e.getPhone(),
+                e.getEmail(),
+                e.getRole(), // hoặc getPosition()
+                e.getGender()
+            });
+        }
+    }//GEN-LAST:event_btnSearchActionPerformed
+
+    private void txtEmployeeNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtEmployeeNameActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtEmployeeNameActionPerformed
+
+    private void txtEmployeePhoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtEmployeePhoneActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtEmployeePhoneActionPerformed
+
+    private void txtEmployeeEmailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtEmployeeEmailActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtEmployeeEmailActionPerformed
+
+    private void txtEmployeeRoleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtEmployeeRoleActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtEmployeeRoleActionPerformed
+
+    private void rdoMaleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdoMaleActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_rdoMaleActionPerformed
+
+    private void rdoFemaleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rdoFemaleActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_rdoFemaleActionPerformed
+
+    private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
+        // TODO add your handling code here:
+        java.awt.Window w = javax.swing.SwingUtilities.getWindowAncestor(this);
+        if (w instanceof DashboardView dashboard) {
+            dashboard.showPanel(new HomePanel()); // hoặc panel mặc định bạn muốn
+        }
+    }//GEN-LAST:event_btnBackActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

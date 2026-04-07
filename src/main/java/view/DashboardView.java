@@ -343,7 +343,7 @@ public class DashboardView extends javax.swing.JFrame {
         });
     }
 
-    private void showPanel(javax.swing.JPanel childPanel) {
+    public void showPanel(javax.swing.JPanel childPanel) {
         // 1. Chỉ xóa nội dung vùng Content, KHÔNG xóa Header và Sidebar
         jPanel3.removeAll();
 
