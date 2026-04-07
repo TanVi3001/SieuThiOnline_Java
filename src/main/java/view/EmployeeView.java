@@ -15,6 +15,7 @@ import model.employee.Employee;
  *
  * @author Admin
  */
+
 public class EmployeeView extends javax.swing.JPanel {
 
     /**
@@ -478,9 +479,10 @@ public class EmployeeView extends javax.swing.JPanel {
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
         // TODO add your handling code here:
         java.awt.Window w = javax.swing.SwingUtilities.getWindowAncestor(this);
-        if (w instanceof DashboardView dashboard) {
-            dashboard.showPanel(new HomePanel()); // hoặc panel mặc định bạn muốn
+        if (w != null) {
+            w.dispose(); // đóng cửa sổ hiện tại (đang chứa EmployeeView)
         }
+        new DashboardView().setVisible(true); // mở lại Dashboard
     }//GEN-LAST:event_btnBackActionPerformed
 
 
