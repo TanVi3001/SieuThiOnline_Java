@@ -4,6 +4,12 @@
  */
 package view;
 
+import business.sql.sales_order.OrdersSql;
+import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import model.order.Order;
+
 /**
  *
  * @author Admin
@@ -15,7 +21,70 @@ public class OrderView extends javax.swing.JPanel {
      */
     public OrderView() {
         initComponents();
+        
+        // Khởi tạo bổ sung theo style thống nhất
+        initTableModel();
+        loadDataToTable();
+        
+        this.revalidate();
+        this.repaint();
     }
+
+    // ==========================================
+    // Khởi tạo model bảng đúng cột theo DB
+    // ==========================================
+    private void initTableModel() {
+        DefaultTableModel model = new DefaultTableModel(
+            new Object [] { "Mã đơn", "Khách hàng", "Ngày", "Tổng tiền", "Trạng thái" }, 0
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Không cho sửa trực tiếp trên bảng
+            }
+        };
+        jTable1.setModel(model);
+    }
+
+    // ==========================================
+    // Load toàn bộ dữ liệu đơn hàng từ DB lên bảng
+    // ==========================================
+    private void loadDataToTable() {
+        try {
+            // Sử dụng singleton OrdersSql đã viết
+            List<Order> list = OrdersSql.getInstance().selectAll();
+            fillTable(list);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi tải danh sách đơn hàng: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void fillTable(List<Order> list) {
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        model.setRowCount(0);
+        for (Order o : list) {
+            model.addRow(new Object[]{
+                o.getOrderId(),
+                o.getCustomerId(),
+                o.getOrderDate(),
+                o.getTotalAmount(),
+                o.getStatus()
+            });
+        }
+    }
+
+    // ==========================================
+    // Hàm điều hướng Panel (Thống nhất với Dashboard)
+    // ==========================================
+    private void showPanel(javax.swing.JPanel panel) {
+        java.awt.Window win = javax.swing.SwingUtilities.getWindowAncestor(this);
+        if (win instanceof javax.swing.JFrame frame) {
+            frame.setContentPane(panel);
+            frame.revalidate();
+            frame.repaint();
+        }
+    }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -46,6 +115,7 @@ public class OrderView extends javax.swing.JPanel {
 
         btnBack.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnBack.setText("Quay lại");
+        btnBack.addActionListener(this::btnBackActionPerformed);
         pnTop.add(btnBack, new java.awt.GridBagConstraints());
 
         Status.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -92,6 +162,7 @@ public class OrderView extends javax.swing.JPanel {
 
         btnDetail.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnDetail.setText("Xem chi tiết");
+        btnDetail.addActionListener(this::btnDetailActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -112,6 +183,7 @@ public class OrderView extends javax.swing.JPanel {
         btnIssueAnInvoice.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnIssueAnInvoice.setForeground(new java.awt.Color(204, 0, 0));
         btnIssueAnInvoice.setText("Xuất hóa đơn");
+        btnIssueAnInvoice.addActionListener(this::btnIssueAnInvoiceActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -123,12 +195,83 @@ public class OrderView extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
-        // TODO add your handling code here:
+        int row = jTable1.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một đơn hàng để cập nhật!");
+            return;
+        }
+        
+        String orderId = jTable1.getValueAt(row, 0).toString();
+        String currentStatus = jTable1.getValueAt(row, 4).toString();
+        
+        // Tạo mảng lựa chọn khớp với DB
+        String[] statuses = {"Processing", "Completed", "Cancelled"};
+        String newStatus = (String) JOptionPane.showInputDialog(this, 
+                "Chọn trạng thái mới cho đơn hàng " + orderId,
+                "Cập nhật trạng thái", JOptionPane.QUESTION_MESSAGE, null, 
+                statuses, currentStatus);
+        
+        if (newStatus != null && !newStatus.equals(currentStatus)) {
+            try {
+                // Giả định OrdersSql đã có hàm updateStatus hoặc dùng update chung
+                Order o = OrdersSql.getInstance().selectById(orderId);
+                o.setStatus(newStatus);
+                int result = OrdersSql.getInstance().update(o);
+                
+                if (result > 0) {
+                    JOptionPane.showMessageDialog(this, "Cập nhật trạng thái thành công!");
+                    loadDataToTable();
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+            }
+        }
     }//GEN-LAST:event_btnUpdateActionPerformed
 
     private void cbStatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbStatusActionPerformed
-        // TODO add your handling code here:
+        String selected = cbStatus.getSelectedItem().toString();
+        if (selected.equals("Tất cả")) {
+            loadDataToTable();
+        } else {
+            // Tận dụng hàm search hoặc selectByCondition
+            try {
+                List<Order> list = OrdersSql.getInstance().selectAll(); // Hoặc viết hàm lọc riêng
+                List<Order> filtered = list.stream()
+                        .filter(o -> o.getStatus().equalsIgnoreCase(selected))
+                        .toList();
+                fillTable(filtered);
+            } catch (Exception ex) { ex.printStackTrace(); }
+        }
     }//GEN-LAST:event_cbStatusActionPerformed
+
+    private void btnDetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDetailActionPerformed
+        int row = jTable1.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn đơn hàng muốn xem chi tiết!");
+            return;
+        }
+        String orderId = jTable1.getValueAt(row, 0).toString();
+        
+        // TODO: Chuyển sang OrderDetailView và truyền orderId vào
+        JOptionPane.showMessageDialog(this, "Chức năng xem chi tiết đơn hàng: " + orderId);
+        // showPanel(new OrderDetailView(orderId));
+    }//GEN-LAST:event_btnDetailActionPerformed
+
+    private void btnIssueAnInvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIssueAnInvoiceActionPerformed
+        int row = jTable1.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn đơn hàng để xuất hóa đơn!");
+            return;
+        }
+        
+        // Sử dụng PDFExporter hoặc ExcelExporter trong common.report
+        JOptionPane.showMessageDialog(this, "Đang khởi tạo trình xuất hóa đơn (PDF/Excel)...");
+        // new PDFExporter().exportOrder(jTable1.getValueAt(row, 0).toString());
+    }//GEN-LAST:event_btnIssueAnInvoiceActionPerformed
+
+    private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
+        showPanel(new HomePanel()); 
+    }//GEN-LAST:event_btnBackActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -8,7 +8,12 @@ package view;
  *
  * @author Admin
  */
+import business.sql.prod_inventory.ProductsSql;
+import common.utils.Validator;
+import java.awt.event.MouseEvent;
+import java.math.BigDecimal;
 import java.util.List;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import model.product.Product;
 
@@ -19,7 +24,91 @@ public class ProductView extends javax.swing.JPanel {
      */
     public ProductView() {
         initComponents();
+        initTableModel();
+        initEvents();
+        loadDataToTable();
+        
+        this.revalidate();
+        this.repaint();
     }
+
+    private void initTableModel() {
+        DefaultTableModel model = new DefaultTableModel(
+            new Object [] { "Mã sản phẩm", "Tên sản phẩm", "Giá", "Số lượng", "Loại SP" }, 0
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tblProducts.setModel(model);
+    }
+
+    private void initEvents() {
+        tblProducts.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblProductsMouseClicked(evt);
+            }
+
+            private void tblProductsMouseClicked(MouseEvent evt) {
+                throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            }
+        });
+    }
+
+ 
+    private void fillTable(List<Product> list) {
+        DefaultTableModel model = (DefaultTableModel) tblProducts.getModel();
+        model.setRowCount(0);
+        for (Product p : list) {
+            model.addRow(new Object[]{
+                p.getProductId(),
+                p.getProductName(),
+                p.getBasePrice(),
+                p.getQuantity(),
+                p.getCategoryId()
+            });
+        }
+    }
+
+    private boolean validateInput() {
+        if (Validator.isEmpty(txtName.getText())) {
+            JOptionPane.showMessageDialog(this, "Tên sản phẩm không được rỗng!");
+            return false;
+        }
+        if (!Validator.isPositiveInteger(txtQuantity.getText())) {
+            JOptionPane.showMessageDialog(this, "Số lượng phải là số nguyên dương!");
+            return false;
+        }
+        try {
+            new BigDecimal(txtPrice.getText());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Giá không hợp lệ!");
+            return false;
+        }
+        return true;
+    }
+
+    private Product getProductFromForm() {
+        Product p = new Product();
+        p.setProductName(txtName.getText().trim());
+        p.setBasePrice(new BigDecimal(txtPrice.getText().trim()));
+        p.setQuantity(Integer.parseInt(txtQuantity.getText().trim()));
+        p.setCategoryId(txtCategory.getText().trim());
+        return p;
+    }
+
+    private void showPanel(javax.swing.JPanel panel) {
+        java.awt.Window win = javax.swing.SwingUtilities.getWindowAncestor(this);
+        if (win instanceof javax.swing.JFrame frame) {
+            frame.setContentPane(panel);
+            frame.revalidate();
+            frame.repaint();
+        }
+    }
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -164,19 +253,23 @@ public class ProductView extends javax.swing.JPanel {
 
         btnAdd.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnAdd.setText("Thêm");
+        btnAdd.addActionListener(this::btnAddActionPerformed);
         pnlButton.add(btnAdd);
 
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnUpdate.setText("Cập nhật");
+        btnUpdate.addActionListener(this::btnUpdateActionPerformed);
         pnlButton.add(btnUpdate);
 
         btnDelete.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnDelete.setText("Xóa");
+        btnDelete.addActionListener(this::btnDeleteActionPerformed);
         pnlButton.add(btnDelete);
 
         btnClear.setBackground(new java.awt.Color(255, 255, 204));
         btnClear.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnClear.setText("Làm mới");
+        btnClear.addActionListener(this::btnClearActionPerformed);
         pnlButton.add(btnClear);
 
         add(pnlButton, java.awt.BorderLayout.PAGE_END);
@@ -187,6 +280,7 @@ public class ProductView extends javax.swing.JPanel {
 
         btnBack.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnBack.setText("Quay lại");
+        btnBack.addActionListener(this::btnBackActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -204,6 +298,7 @@ public class ProductView extends javax.swing.JPanel {
 
         btnSearch.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnSearch.setText("Tìm kiếm");
+        btnSearch.addActionListener(this::btnSearchActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -215,6 +310,76 @@ public class ProductView extends javax.swing.JPanel {
         add(jPanel1, java.awt.BorderLayout.PAGE_START);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
+        if (!validateInput()) return;
+        Product p = getProductFromForm();
+        // Cần gen ID tự động hoặc nhập ID, ở đây giả định gen ID đơn giản
+        p.setProductId("PROD" + System.currentTimeMillis() % 1000); 
+        if (ProductsSql.getInstance().insert(p)) {
+            JOptionPane.showMessageDialog(this, "Thêm thành công!");
+            loadDataToTable();
+            btnClearActionPerformed(null);
+        }
+    }//GEN-LAST:event_btnAddActionPerformed
+
+    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        int row = tblProducts.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Chọn sản phẩm để xóa!");
+            return;
+        }
+        String id = tblProducts.getValueAt(row, 0).toString();
+        if (JOptionPane.showConfirmDialog(this, "Xóa sản phẩm " + id + "?") == JOptionPane.YES_OPTION) {
+            if (ProductsSql.getInstance().delete(id)) {
+                loadDataToTable();
+                btnClearActionPerformed(null);
+            }
+        }
+    }//GEN-LAST:event_btnUpdateActionPerformed
+
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        int row = tblProducts.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Chọn sản phẩm để xóa!");
+            return;
+        }
+        String id = tblProducts.getValueAt(row, 0).toString();
+        if (JOptionPane.showConfirmDialog(this, "Xóa sản phẩm " + id + "?") == JOptionPane.YES_OPTION) {
+            if (ProductsSql.getInstance().delete(id)) {
+                loadDataToTable();
+                btnClearActionPerformed(null);
+            }
+        }
+    }//GEN-LAST:event_btnDeleteActionPerformed
+
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+        txtName.setText("");
+        txtPrice.setText("");
+        txtQuantity.setText("");
+        txtCategory.setText("");
+        tblProducts.clearSelection();
+    }//GEN-LAST:event_btnClearActionPerformed
+
+    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
+        String keyword = txtSearch.getText().trim();
+        List<Product> list = ProductsSql.getInstance().searchByName(keyword);
+        fillTable(list);
+    }//GEN-LAST:event_btnSearchActionPerformed
+
+    private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
+        showPanel(new HomePanel());
+    }//GEN-LAST:event_btnBackActionPerformed
+    
+    private void tblProductsMouseClicked(java.awt.event.MouseEvent evt) {
+        int row = tblProducts.getSelectedRow();
+        if (row >= 0) {
+            txtName.setText(tblProducts.getValueAt(row, 1).toString());
+            txtPrice.setText(tblProducts.getValueAt(row, 2).toString());
+            txtQuantity.setText(tblProducts.getValueAt(row, 3).toString());
+            txtCategory.setText(tblProducts.getValueAt(row, 4).toString());
+        }
+    }
+    
     public void loadDataToTable() {
         // 2. Lấy model của cái bảng mà Quỳnh đã đặt tên
         DefaultTableModel model = (DefaultTableModel) tblProducts.getModel();
