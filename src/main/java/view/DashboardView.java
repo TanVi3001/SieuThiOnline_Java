@@ -49,9 +49,9 @@ public class DashboardView extends javax.swing.JFrame {
         authorize();
     }
 
-    DashboardView() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+    /*DashboardView() {
+    throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }*/
 
 
     private void authorize() {

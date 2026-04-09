@@ -367,7 +367,17 @@ public class ProductView extends javax.swing.JPanel {
     }//GEN-LAST:event_btnSearchActionPerformed
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
-        showPanel(new HomePanel());
+        // 1. Tìm JFrame đang chứa Panel này
+        java.awt.Window win = javax.swing.SwingUtilities.getWindowAncestor(this);
+
+        if (win instanceof javax.swing.JFrame frame) {
+            // 2. Thay nội dung của Frame bằng Dashboard mới (hoặc Dashboard cũ nếu bạn lưu biến)
+            frame.setContentPane(new DashboardView()); 
+
+            // 3. Cập nhật lại giao diện ngay lập tức
+            frame.revalidate();
+            frame.repaint();
+        }
     }//GEN-LAST:event_btnBackActionPerformed
     
     private void tblProductsMouseClicked(java.awt.event.MouseEvent evt) {
