@@ -131,6 +131,7 @@ public class SellPanel extends javax.swing.JPanel {
 
         jButton2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jButton2.setText("Quay lại");
+        jButton2.addActionListener(this::jButton2ActionPerformed);
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel5.setText("Tổng cộng:");
@@ -179,6 +180,21 @@ public class SellPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // 1. Tìm JFrame đang chứa SellPanel này
+        java.awt.Window win = javax.swing.SwingUtilities.getWindowAncestor(this);
+
+        if (win instanceof javax.swing.JFrame frame) {
+            // 2. Thay nội dung của Frame bằng DashboardView mới
+            // Lưu ý: Đảm bảo bạn đã import view.DashboardView hoặc class Dashboard của bạn
+            frame.setContentPane(new DashboardView()); 
+
+            // 3. Cập nhật lại giao diện ngay lập tức để chuyển cảnh mượt mà
+            frame.revalidate();
+            frame.repaint();
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
