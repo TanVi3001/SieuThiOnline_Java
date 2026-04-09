@@ -22,13 +22,127 @@ public class LoginView extends javax.swing.JFrame {
         txtPassword.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                // Kiểm tra nếu phím vừa nhấn là phím ENTER
                 if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
-                    // Gọi thẳng cái hàm xử lý của nút Đăng nhập
                     btnLoginActionPerformed(null);
                 }
             }
         });
+        
+        setupModernUI();
+    }
+
+    private void setupModernUI() {
+        // 1. Dọn dẹp content pane
+        this.getContentPane().removeAll();
+        this.getContentPane().setLayout(new java.awt.GridBagLayout()); // Căn giữa Card
+        this.getContentPane().setBackground(java.awt.Color.WHITE); // Đổi bề mặt thành Trắng tinh
+
+        // 2. Tạo Card chứa form 
+        javax.swing.JPanel cardPanel = new javax.swing.JPanel(null);
+        cardPanel.setBackground(java.awt.Color.WHITE);
+        cardPanel.setPreferredSize(new java.awt.Dimension(450, 480)); // Tăng chiều dọc card lên xíu để chứa form cao hơn
+
+        // Logo góc trên
+        javax.swing.JLabel lblLogoCircle = new javax.swing.JLabel() {
+             @Override
+             protected void paintComponent(java.awt.Graphics g) {
+                 java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                 g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                 g2.setStroke(new java.awt.BasicStroke(3));
+                 g2.setColor(new java.awt.Color(255, 69, 0));
+                 g2.drawOval(2, 2, 16, 16);
+                 g2.dispose();
+             }
+        };
+        lblLogoCircle.setBounds(30, 20, 20, 20);
+        cardPanel.add(lblLogoCircle);
+
+        javax.swing.JLabel lblAppName = new javax.swing.JLabel("Smart Supermarket");
+        lblAppName.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 15));
+        lblAppName.setBounds(55, 17, 180, 26);
+        cardPanel.add(lblAppName);
+
+        // Sign up Button góc trên (Viền xanh than)
+        javax.swing.JButton btnSignUp = new javax.swing.JButton("Đăng ký") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new java.awt.Color(44, 62, 80));
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 15, 15);
+                super.paintComponent(g);
+                g2.dispose();
+            }
+        };
+        btnSignUp.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+        btnSignUp.setForeground(new java.awt.Color(44, 62, 80));
+        btnSignUp.setBounds(340, 15, 80, 30);
+        btnSignUp.setContentAreaFilled(false);
+        btnSignUp.setBorderPainted(false);
+        btnSignUp.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        cardPanel.add(btnSignUp);
+
+        // Header "Sign In"
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel("Đăng nhập");
+        lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 30));
+        lblTitle.setForeground(new java.awt.Color(20, 30, 50));
+        lblTitle.setBounds(100, 80, 250, 40);
+        cardPanel.add(lblTitle);
+
+        // Chuyển txtUsername từ cũ sang (Thu hẹp rộng, tăng cao)
+        txtUsername.setBounds(100, 140, 250, 50);
+        txtUsername.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+        txtUsername.putClientProperty("JComponent.roundRect", true);
+        txtUsername.putClientProperty("JTextField.placeholderText", "Email or Username");
+        txtUsername.putClientProperty("JTextField.padding", new java.awt.Insets(0, 15, 0, 15));
+        cardPanel.add(txtUsername);
+
+        // Chuyển txtPassword từ cũ sang (Thu hẹp rộng, tăng cao)
+        txtPassword.setBounds(100, 210, 250, 50);
+        txtPassword.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+        txtPassword.putClientProperty("JComponent.roundRect", true);
+        txtPassword.putClientProperty("JTextField.placeholderText", "Password");
+        txtPassword.putClientProperty("JPasswordField.showRevealButton", true);
+        txtPassword.putClientProperty("JTextField.padding", new java.awt.Insets(0, 15, 0, 15));
+        cardPanel.add(txtPassword);
+
+        // Forgot password
+        javax.swing.JLabel lblForgot = new javax.swing.JLabel("Quên mật khẩu?");
+        lblForgot.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 12));
+        lblForgot.setForeground(new java.awt.Color(44, 62, 80));
+        lblForgot.setBounds(100, 275, 200, 20);
+        lblForgot.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        cardPanel.add(lblForgot);
+
+        // Nút Đăng Nhập Xanh Than (Thu hẹp rộng, tăng cao)
+        javax.swing.JButton btnGradientLogin = new javax.swing.JButton("Đăng nhập") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new java.awt.Color(44, 62, 80)); 
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
+                super.paintComponent(g);
+                g2.dispose();
+            }
+        };
+        btnGradientLogin.setBounds(100, 315, 250, 50);
+        btnGradientLogin.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 15));
+        btnGradientLogin.setForeground(java.awt.Color.WHITE);
+        btnGradientLogin.setContentAreaFilled(false);
+        btnGradientLogin.setBorderPainted(false);
+        btnGradientLogin.setFocusPainted(false);
+        btnGradientLogin.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        
+        // Link chức năng từ btnLogin cũ sang nút mới
+        btnGradientLogin.addActionListener(evt -> btnLoginActionPerformed(null));
+        cardPanel.add(btnGradientLogin);
+
+        this.getContentPane().add(cardPanel, new java.awt.GridBagConstraints());
+        this.setSize(500, 600); // Thu hẹp rộng, tăng chiều cao cho form ngoài cùng theo tỉ lệ!
+        this.setLocationRelativeTo(null);
+        this.revalidate();
+        this.repaint();
     }
 
     /**
