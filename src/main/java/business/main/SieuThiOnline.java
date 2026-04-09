@@ -147,12 +147,7 @@ public class SieuThiOnline {
         System.out.println("KẾT THÚC QUY TRÌNH KIỂM THỬ TÍCH HỢP");
         System.out.println("-------------------------------------------------------");
         try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
+            com.formdev.flatlaf.FlatLightLaf.setup();
         } catch (Exception e) {
             e.printStackTrace();
         }
