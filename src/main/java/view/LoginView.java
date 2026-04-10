@@ -117,6 +117,31 @@ public class LoginView extends javax.swing.JFrame {
         lblForgot.setBounds(100, 275, 200, 20);
         lblForgot.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         cardPanel.add(lblForgot);
+        // Thêm sự kiện Click cho nhãn Quên mật khẩu
+        lblForgot.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                // Mở form Quên mật khẩu
+                ForgotPasswordView forgotPass = new ForgotPasswordView();
+                forgotPass.setVisible(true);
+                forgotPass.setLocationRelativeTo(null);
+
+                // Đóng form Đăng nhập hiện tại
+                dispose();
+            }
+
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                // Hiệu ứng đổi màu khi rê chuột vào cho giống link web
+                lblForgot.setForeground(new java.awt.Color(255, 69, 0)); // Màu cam giống logo
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                // Trả lại màu cũ khi rê chuột ra
+                lblForgot.setForeground(new java.awt.Color(44, 62, 80));
+            }
+        });
 
         // Nút Đăng Nhập Xanh Than (Thu hẹp rộng, tăng cao)
         javax.swing.JButton btnGradientLogin = new javax.swing.JButton("Đăng nhập") {
