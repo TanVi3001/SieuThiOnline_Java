@@ -95,4 +95,8 @@ public class AccountSql implements SqlInterface<Account> {
     public List<Account> selectByCondition(String condition) {
         return null;
     }
+
+    public String findPasswordByEmail(String userEmail) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }
