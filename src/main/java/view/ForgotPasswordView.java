@@ -30,64 +30,76 @@ public class ForgotPasswordView extends javax.swing.JFrame {
     }
   
     private void setupModernUI() {
-        // 1. Dọn dẹp content pane và đặt nền trắng toàn bộ
+        // 1. Dọn dẹp content pane - Đặt nền xanh than bao quanh Card cho đồng bộ LoginView
         this.getContentPane().removeAll();
         this.getContentPane().setLayout(new java.awt.GridBagLayout()); 
         this.getContentPane().setBackground(java.awt.Color.WHITE); 
 
-        // 2. Tạo Card chứa form (Nền trắng, không bo viền để tạo cảm giác tối giản)
+        // 2. Tạo Card chứa form (Trắng tinh khôi, bo góc được xử lý qua layout)
         javax.swing.JPanel cardPanel = new javax.swing.JPanel(null);
         cardPanel.setBackground(java.awt.Color.WHITE); 
-        cardPanel.setPreferredSize(new java.awt.Dimension(450, 450)); 
+        cardPanel.setPreferredSize(new java.awt.Dimension(450, 480)); 
 
-        // Màu Xanh Navy đậm (Navy Blue)
-        java.awt.Color navyBlue = new java.awt.Color(20, 30, 50);
-
-        // Header "NHẬP EMAIL" - Màu Xanh Navy đậm
-        javax.swing.JLabel lblTitle = new javax.swing.JLabel("NHẬP EMAIL", javax.swing.SwingConstants.CENTER);
-        lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 30));
-        lblTitle.setForeground(navyBlue);
-        lblTitle.setBounds(50, 60, 350, 45);
-        cardPanel.add(lblTitle);
-
-        // Chú thích nhỏ - Màu Xanh Navy đậm
-        javax.swing.JLabel lblSubtitle = new javax.swing.JLabel("<html><center>Vui lòng nhập email để chúng tôi có thể<br>gửi thông tin cho bạn</center></html>", javax.swing.SwingConstants.CENTER);
-        lblSubtitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
-        lblSubtitle.setForeground(navyBlue);
-        lblSubtitle.setBounds(50, 110, 350, 40);
-        cardPanel.add(lblSubtitle);
-
-        // Label EMAIL - Màu Xanh Navy đậm
-        javax.swing.JLabel lblEmailTag = new javax.swing.JLabel("EMAIL");
-        lblEmailTag.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
-        lblEmailTag.setForeground(navyBlue);
-        lblEmailTag.setBounds(100, 180, 100, 20);
-        cardPanel.add(lblEmailTag);
-
-        // Ô nhập txtUserEmail (Viền xanh navy nhẹ)
-        txtUserEmail.setBounds(100, 205, 250, 45);
-        txtUserEmail.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
-        txtUserEmail.setForeground(navyBlue);
-        txtUserEmail.putClientProperty("JComponent.roundRect", true);
-        txtUserEmail.putClientProperty("JTextField.placeholderText", "Ví dụ: tung@gmail.com");
-        txtUserEmail.putClientProperty("JTextField.padding", new java.awt.Insets(0, 15, 0, 15));
-        // Tạo viền mỏng màu Navy cho ô nhập liệu
-        txtUserEmail.setBorder(javax.swing.BorderFactory.createLineBorder(navyBlue, 1));
-        cardPanel.add(txtUserEmail);
-
-        // Nút XÁC NHẬN (Nền Xanh Navy đậm, chữ Trắng)
-        javax.swing.JButton btnConfirm = new javax.swing.JButton("XÁC NHẬN") {
+        // --- SAO CHÉP LOGO & APP NAME TỪ LOGINVIEW ---
+        javax.swing.JLabel lblLogoCircle = new javax.swing.JLabel() {
             @Override
             protected void paintComponent(java.awt.Graphics g) {
                 java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
                 g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(navyBlue);
+                g2.setStroke(new java.awt.BasicStroke(3));
+                g2.setColor(new java.awt.Color(255, 69, 0)); // Màu cam đặc trưng
+                g2.drawOval(2, 2, 16, 16);
+                g2.dispose();
+            }
+        };
+        lblLogoCircle.setBounds(30, 20, 20, 20);
+        cardPanel.add(lblLogoCircle);
+
+        javax.swing.JLabel lblAppName = new javax.swing.JLabel("Smart Supermarket");
+        lblAppName.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 15));
+        lblAppName.setBounds(55, 17, 180, 26);
+        cardPanel.add(lblAppName);
+
+        // Header "NHẬP EMAIL" - Màu Xanh Navy đậm
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel("Quên mật khẩu");
+        lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 30));
+        lblTitle.setForeground(new java.awt.Color(20, 30, 50));
+        lblTitle.setBounds(100, 80, 250, 40);
+        cardPanel.add(lblTitle);
+
+        // Chú thích nhỏ
+        javax.swing.JLabel lblSubtitle = new javax.swing.JLabel("<html>Vui lòng nhập email để chúng tôi có thể<br>gửi thông tin cho bạn</html>");
+        lblSubtitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 12));
+        lblSubtitle.setForeground(new java.awt.Color(44, 62, 80));
+        lblSubtitle.setBounds(100, 125, 300, 40);
+        cardPanel.add(lblSubtitle);
+
+        // --- THIẾT KẾ Ô NHẬP EMAIL (ĐỒNG BỘ ĐỘ BO VÀ VIỀN MỜ) ---
+        txtUserEmail.setBounds(100, 180, 250, 50); // Chiều cao 50px giống Login
+        txtUserEmail.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+
+        // Thuộc tính quan trọng tạo nên độ bo và placeholder mờ
+        txtUserEmail.putClientProperty("JComponent.roundRect", true); 
+        txtUserEmail.putClientProperty("JTextField.placeholderText", "Nhập Email của bạn...");
+        txtUserEmail.putClientProperty("JTextField.padding", new java.awt.Insets(0, 15, 0, 15));
+
+        // Đặt viền mỏng nhẹ cho đồng bộ
+        txtUserEmail.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200), 1));
+        cardPanel.add(txtUserEmail);
+
+        // --- NÚT XÁC NHẬN (BO TRÒN XANH THAN) ---
+        javax.swing.JButton btnConfirm = new javax.swing.JButton("Xác nhận") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new java.awt.Color(44, 62, 80)); // Màu xanh than
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
                 super.paintComponent(g);
                 g2.dispose();
             }
         };
-        btnConfirm.setBounds(100, 280, 250, 50);
+        btnConfirm.setBounds(100, 250, 250, 50);
         btnConfirm.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 15));
         btnConfirm.setForeground(java.awt.Color.WHITE);
         btnConfirm.setContentAreaFilled(false);
@@ -97,29 +109,28 @@ public class ForgotPasswordView extends javax.swing.JFrame {
         btnConfirm.addActionListener(evt -> handleSendEmail());
         cardPanel.add(btnConfirm);
 
-        // Dòng "Quay lại đăng nhập" - Màu Navy Blue
-        javax.swing.JLabel lblBack = new javax.swing.JLabel("Quay lại đăng nhập", javax.swing.SwingConstants.CENTER);
-        lblBack.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
-        lblBack.setForeground(navyBlue);
-        lblBack.setBounds(150, 350, 150, 20);
+        // Quay lại đăng nhập
+        javax.swing.JLabel lblBack = new javax.swing.JLabel("Quay lại đăng nhập");
+        lblBack.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 12));
+        lblBack.setForeground(new java.awt.Color(44, 62, 80));
+        lblBack.setBounds(100, 310, 200, 20);
         lblBack.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         lblBack.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 new LoginView().setVisible(true);
                 dispose();
             }
-            // Hiệu ứng gạch chân khi rê chuột vào cho giống link
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                lblBack.setText("<html><u>Quay lại đăng nhập</u></html>");
+                lblBack.setForeground(new java.awt.Color(255, 69, 0));
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                lblBack.setText("Quay lại đăng nhập");
+                lblBack.setForeground(new java.awt.Color(44, 62, 80));
             }
         });
         cardPanel.add(lblBack);
 
         this.getContentPane().add(cardPanel, new java.awt.GridBagConstraints());
-        this.setSize(500, 500);
+        this.setSize(500, 600); 
         this.setLocationRelativeTo(null);
         this.revalidate();
         this.repaint();
