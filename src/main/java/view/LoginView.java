@@ -93,6 +93,14 @@ public class LoginView extends javax.swing.JFrame {
         btnSignUp.setContentAreaFilled(false);
         btnSignUp.setBorderPainted(false);
         btnSignUp.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnSignUp.addActionListener(e -> {
+            // Khởi tạo trang đăng ký
+            RegisterView regView = new RegisterView();
+            regView.setVisible(true);
+            
+            // Đóng trang đăng nhập hiện tại
+            this.dispose(); 
+        });
         cardPanel.add(btnSignUp);
 
         // Header "Sign In"
