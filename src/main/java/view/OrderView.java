@@ -115,22 +115,20 @@ public class OrderView extends javax.swing.JPanel {
         Status.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         Status.setText("Trạng thái");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 3;
-        gridBagConstraints.ipady = 16;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 87, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(8, 184, 0, 0);
         pnTop.add(Status, gridBagConstraints);
 
         cbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Đang xử lý", "Đã giao", "Đã hủy", " " }));
         cbStatus.addActionListener(this::cbStatusActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.ipadx = -24;
+        gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 222);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 5, 172);
         pnTop.add(cbStatus, gridBagConstraints);
 
         add(pnTop, java.awt.BorderLayout.PAGE_START);

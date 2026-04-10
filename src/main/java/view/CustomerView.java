@@ -199,6 +199,7 @@ public class CustomerView extends javax.swing.JPanel {
         pnTop = new javax.swing.JPanel();
         jTextField1 = new javax.swing.JTextField();
         btnSearch = new javax.swing.JButton();
+        btnBack = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -337,13 +338,18 @@ public class CustomerView extends javax.swing.JPanel {
         btnSearch.setText("Tìm kiếm");
         btnSearch.addActionListener(this::btnSearchActionPerformed);
 
+        btnBack.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnBack.setText("Quay lại");
+
         javax.swing.GroupLayout pnTopLayout = new javax.swing.GroupLayout(pnTop);
         pnTop.setLayout(pnTopLayout);
         pnTopLayout.setHorizontalGroup(
             pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnTopLayout.createSequentialGroup()
-                .addContainerGap(308, Short.MAX_VALUE)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 431, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addComponent(btnBack)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 197, Short.MAX_VALUE)
+                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 457, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnSearch)
                 .addGap(16, 16, 16))
@@ -354,7 +360,8 @@ public class CustomerView extends javax.swing.JPanel {
                 .addContainerGap(11, Short.MAX_VALUE)
                 .addGroup(pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSearch))
+                    .addComponent(btnSearch)
+                    .addComponent(btnBack))
                 .addContainerGap())
         );
 
@@ -503,6 +510,7 @@ public class CustomerView extends javax.swing.JPanel {
     private javax.swing.JLabel CustomerName;
     private javax.swing.JLabel Email;
     private javax.swing.JLabel Phone;
+    private javax.swing.JButton btnBack;
     private javax.swing.JButton btnCapNhat;
     private javax.swing.JButton btnLamMoi;
     private javax.swing.JButton btnSearch;
