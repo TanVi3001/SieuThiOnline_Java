@@ -16,6 +16,7 @@ public class LoginService {
      * @return true nếu khớp, false nếu sai tài khoản/mật khẩu
      */
     public static boolean authenticate(String username, String password) {
+        System.out.println("DEBUG: Dang nhap voi User = [" + username + "] | Pass = [" + password + "]");
         // 1. Gọi xuống SQL để lấy thông tin tài khoản theo username
         // Giả sử AccountSql đã có hàm selectByUsername hoặc dùng selectById nếu username là ID
         Account acc = AccountSql.getInstance().selectByUsername(username);

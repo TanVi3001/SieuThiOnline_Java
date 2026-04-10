@@ -96,7 +96,24 @@ public class AccountSql implements SqlInterface<Account> {
         return null;
     }
 
-    public String findPasswordByEmail(String userEmail) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public String findPassByUsernameAndEmail(String username, String email) {
+        String password = null;
+        // Query Join giữa ACCOUNTS và USERS để check cả 2 điều kiện
+        String sql = "SELECT a.password FROM ACCOUNTS a " +
+                     "JOIN USERS u ON a.user_id = u.user_id " +
+                     "WHERE a.username = ? AND u.email = ? AND a.is_deleted = 0";
+
+        try (Connection con = common.db.DatabaseConnection.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, username);
+            pst.setString(2, email);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                password = rs.getString("password");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return password;
     }
 }

@@ -131,9 +131,9 @@ public class LoginView extends javax.swing.JFrame {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 // Mở form Quên mật khẩu
-                ForgotPasswordView forgotPass = new ForgotPasswordView();
+                String name = txtUsername.getText().trim(); // QUAN TRỌNG: Phải lấy text ở đây
+                ForgotPasswordView forgotPass = new ForgotPasswordView(name); // Truyền nó vào đây
                 forgotPass.setVisible(true);
-                forgotPass.setLocationRelativeTo(null);
 
                 // Đóng form Đăng nhập hiện tại
                 dispose();

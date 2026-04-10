@@ -16,13 +16,19 @@ public class ForgotPasswordView extends javax.swing.JFrame {
     /**
      * Creates new form ForgotPasswordView
      */
-    public ForgotPasswordView() {
+    
+    private String usernameFromLogin; // Biến lưu tên đăng nhập từ LoginView truyền sang
+    
+    public ForgotPasswordView(String username) {
+        this.usernameFromLogin = username;
         initComponents();
-        // Căn giữa màn hình khi chạy
-        this.setLocationRelativeTo(null);
         setupModernUI();
     }
     
+    public ForgotPasswordView() {
+        this(""); // Gọi lại constructor ở trên với chuỗi rỗng
+    }
+  
     private void setupModernUI() {
         // 1. Dọn dẹp content pane và đặt nền trắng toàn bộ
         this.getContentPane().removeAll();
@@ -123,43 +129,33 @@ public class ForgotPasswordView extends javax.swing.JFrame {
      * Logic xử lý gửi mail
      */
     private void handleSendEmail() {
-        // 1. CẤU HÌNH CỐ ĐỊNH GMAIL GỬI (Thay bằng thông tin của Tùng)
-        String systemEmail = "nguyentung28012006@gmail.com"; // Gmail dùng để gửi
-        String appPassword = "abcd efgh ijkl mnop"; // 16 ký tự Mật khẩu ứng dụng Tùng đã lấy
-
-        // 2. LẤY EMAIL NGƯỜI NHẬN TỪ GIAO DIỆN
-        // Tùng kiểm tra xem ô nhập email ở Design đã đặt tên biến là txtUserEmail chưa nhé
+        String systemEmail = "nguyentung28012006@gmail.com"; 
+        String appPassword = "zulx asyc wosl hagf"; // Mã 16 ký tự của Tùng
         String userEmail = txtUserEmail.getText().trim();
 
-        // 3. KIỂM TRA ĐẦU VÀO
         if (userEmail.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập Email của bạn!", 
-                    "Nhắc nhở", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập Email để nhận mật khẩu!");
             return;
         }
 
         try {
-            // 4. TRUY VẤN DATABASE: Tìm mật khẩu dựa trên Email người dùng nhập
-            // Hàm này Tùng đã thêm vào AccountSql như mình hướng dẫn trước đó
-            String passwordFromDB = business.sql.rbac.AccountSql.getInstance().findPasswordByEmail(userEmail);
+            // TRUY VẤN: Lấy mật khẩu của USERNAME đang chọn và có EMAIL tương ứng
+            // Tùng cần sửa hàm findPasswordByEmail trong AccountSql để nhận thêm tham số username
+            String passwordFromDB = business.sql.rbac.AccountSql.getInstance()
+                    .findPassByUsernameAndEmail(usernameFromLogin, userEmail);
 
             if (passwordFromDB != null) {
-                // 5. NẾU TÌM THẤY -> TIẾN HÀNH GỬI MAIL
                 EmailUtils.sendEmail(systemEmail, appPassword, userEmail, 
-                        "Khôi phục mật khẩu - Smart Supermarket", 
-                        "Chào bạn,\n\nMật khẩu tài khoản của bạn là: " + passwordFromDB + 
-                        "\n\nVui lòng bảo mật thông tin này!");
+                        "Khoi phuc mat khau cho tai khoan: " + usernameFromLogin, 
+                        "Chao ban, mat khau cua tai khoan '" + usernameFromLogin + "' la: " + passwordFromDB);
 
-                JOptionPane.showMessageDialog(this, "Mật khẩu đã được gửi thành công đến Gmail của bạn!");
+                JOptionPane.showMessageDialog(this, "Mat khau da duoc gui den Email cua ban!");
             } else {
-                // 6. NẾU KHÔNG TÌM THẤY EMAIL TRONG DATABASE
-                JOptionPane.showMessageDialog(this, "Email này chưa được đăng ký trong hệ thống!", 
-                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Email khong khop voi tai khoan '" + usernameFromLogin + "'!", 
+                        "Loi xac thuc", JOptionPane.ERROR_MESSAGE);
             }
-
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi hệ thống hoặc Gmail gửi chưa đúng cấu hình: " + ex.getMessage());
-            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Loi: " + ex.getMessage());
         }
     }
 
