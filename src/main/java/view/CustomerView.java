@@ -192,14 +192,13 @@ public class CustomerView extends javax.swing.JPanel {
         tbCustomer = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         pnButton = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        btnThem = new javax.swing.JButton();
+        btnCapNhat = new javax.swing.JButton();
+        btnXoa = new javax.swing.JButton();
+        btnLamMoi = new javax.swing.JButton();
         pnTop = new javax.swing.JPanel();
         jTextField1 = new javax.swing.JTextField();
         btnSearch = new javax.swing.JButton();
-        btnBack = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -306,26 +305,26 @@ public class CustomerView extends javax.swing.JPanel {
         pnButton.setBackground(new java.awt.Color(236, 240, 241));
         pnButton.setPreferredSize(new java.awt.Dimension(0, 60));
 
-        jButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton1.setText("Thêm");
-        jButton1.addActionListener(this::jButton1ActionPerformed);
-        pnButton.add(jButton1);
+        btnThem.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnThem.setText("Thêm");
+        btnThem.addActionListener(this::btnThemActionPerformed);
+        pnButton.add(btnThem);
 
-        jButton2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton2.setText("Cập nhật");
-        jButton2.addActionListener(this::jButton2ActionPerformed);
-        pnButton.add(jButton2);
+        btnCapNhat.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnCapNhat.setText("Cập nhật");
+        btnCapNhat.addActionListener(this::btnCapNhatActionPerformed);
+        pnButton.add(btnCapNhat);
 
-        jButton3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton3.setText("Xóa");
-        jButton3.addActionListener(this::jButton3ActionPerformed);
-        pnButton.add(jButton3);
+        btnXoa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnXoa.setText("Xóa");
+        btnXoa.addActionListener(this::btnXoaActionPerformed);
+        pnButton.add(btnXoa);
 
-        jButton4.setBackground(new java.awt.Color(255, 255, 204));
-        jButton4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton4.setText("Làm mới");
-        jButton4.addActionListener(this::jButton4ActionPerformed);
-        pnButton.add(jButton4);
+        btnLamMoi.setBackground(new java.awt.Color(255, 255, 204));
+        btnLamMoi.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnLamMoi.setText("Làm mới");
+        btnLamMoi.addActionListener(this::btnLamMoiActionPerformed);
+        pnButton.add(btnLamMoi);
 
         add(pnButton, java.awt.BorderLayout.PAGE_END);
 
@@ -338,18 +337,12 @@ public class CustomerView extends javax.swing.JPanel {
         btnSearch.setText("Tìm kiếm");
         btnSearch.addActionListener(this::btnSearchActionPerformed);
 
-        btnBack.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnBack.setText("Quay lại");
-        btnBack.addActionListener(this::btnBackActionPerformed);
-
         javax.swing.GroupLayout pnTopLayout = new javax.swing.GroupLayout(pnTop);
         pnTop.setLayout(pnTopLayout);
         pnTopLayout.setHorizontalGroup(
             pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnTopLayout.createSequentialGroup()
-                .addGap(18, 18, 18)
-                .addComponent(btnBack)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 211, Short.MAX_VALUE)
+                .addContainerGap(308, Short.MAX_VALUE)
                 .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 431, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnSearch)
@@ -361,28 +354,18 @@ public class CustomerView extends javax.swing.JPanel {
                 .addContainerGap(11, Short.MAX_VALUE)
                 .addGroup(pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSearch)
-                    .addComponent(btnBack))
+                    .addComponent(btnSearch))
                 .addContainerGap())
         );
 
         add(pnTop, java.awt.BorderLayout.PAGE_START);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
-        // TODO add your handling code here:
-        java.awt.Window w = javax.swing.SwingUtilities.getWindowAncestor(this);
-        if (w != null) {
-            w.dispose();   // đóng cửa sổ hiện tại (CustomerView)
-        }
-        new DashboardView().setVisible(true); // mở lại dashboard
-    }//GEN-LAST:event_btnBackActionPerformed
-
     private void txtCustomerIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCustomerIDActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtCustomerIDActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void btnThemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemActionPerformed
         // TODO add your handling code here:
         try {
             if (!validateInput(true)) {
@@ -395,7 +378,7 @@ public class CustomerView extends javax.swing.JPanel {
             if (result > 0) {
                 JOptionPane.showMessageDialog(this, "Thêm khách hàng thành công!");
                 loadDataToTable();
-                jButton4ActionPerformed(null);
+                btnLamMoiActionPerformed(null);
             } else {
                 JOptionPane.showMessageDialog(this, "Thêm khách hàng thất bại!");
             }
@@ -403,9 +386,9 @@ public class CustomerView extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Lỗi thêm khách hàng: " + ex.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_btnThemActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void btnCapNhatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCapNhatActionPerformed
         // TODO add your handling code here:
         try {
             int row = jTable1.getSelectedRow();
@@ -432,9 +415,9 @@ public class CustomerView extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Lỗi cập nhật khách hàng: " + ex.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_btnCapNhatActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaActionPerformed
         // TODO add your handling code here:
         try {
             int row = jTable1.getSelectedRow();
@@ -458,7 +441,7 @@ public class CustomerView extends javax.swing.JPanel {
             if (result > 0) {
                 JOptionPane.showMessageDialog(this, "Xóa khách hàng thành công!");
                 loadDataToTable();
-                jButton4ActionPerformed(null);
+                btnXoaActionPerformed(null);
             } else {
                 JOptionPane.showMessageDialog(this, "Xóa khách hàng thất bại!");
             }
@@ -466,9 +449,9 @@ public class CustomerView extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Lỗi xóa khách hàng: " + ex.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_btnXoaActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    private void btnLamMoiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLamMoiActionPerformed
         // TODO add your handling code here:
         txtCustomerID.setText("");
         txtCustomerName.setText("");
@@ -478,7 +461,7 @@ public class CustomerView extends javax.swing.JPanel {
         jTextField1.setText("");
         jTable1.clearSelection();
         txtCustomerID.requestFocus();
-    }//GEN-LAST:event_jButton4ActionPerformed
+    }//GEN-LAST:event_btnLamMoiActionPerformed
 
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         // TODO add your handling code here:
@@ -520,12 +503,11 @@ public class CustomerView extends javax.swing.JPanel {
     private javax.swing.JLabel CustomerName;
     private javax.swing.JLabel Email;
     private javax.swing.JLabel Phone;
-    private javax.swing.JButton btnBack;
+    private javax.swing.JButton btnCapNhat;
+    private javax.swing.JButton btnLamMoi;
     private javax.swing.JButton btnSearch;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
+    private javax.swing.JButton btnThem;
+    private javax.swing.JButton btnXoa;
     private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JPanel pnButton;

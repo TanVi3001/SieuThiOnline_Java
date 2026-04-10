@@ -97,7 +97,6 @@ public class OrderView extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         pnTop = new javax.swing.JPanel();
-        btnBack = new javax.swing.JButton();
         Status = new javax.swing.JLabel();
         cbStatus = new javax.swing.JComboBox<>();
         tbOrder = new javax.swing.JScrollPane();
@@ -112,11 +111,6 @@ public class OrderView extends javax.swing.JPanel {
         pnTop.setBackground(new java.awt.Color(236, 240, 241));
         pnTop.setPreferredSize(new java.awt.Dimension(342, 32));
         pnTop.setLayout(new java.awt.GridBagLayout());
-
-        btnBack.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnBack.setText("Quay lại");
-        btnBack.addActionListener(this::btnBackActionPerformed);
-        pnTop.add(btnBack, new java.awt.GridBagConstraints());
 
         Status.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         Status.setText("Trạng thái");
@@ -269,24 +263,9 @@ public class OrderView extends javax.swing.JPanel {
         // new PDFExporter().exportOrder(jTable1.getValueAt(row, 0).toString());
     }//GEN-LAST:event_btnIssueAnInvoiceActionPerformed
 
-    private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
-        // 1. Tìm JFrame đang chứa Panel này
-        java.awt.Window win = javax.swing.SwingUtilities.getWindowAncestor(this);
-
-        if (win instanceof javax.swing.JFrame frame) {
-            // 2. Thay nội dung của Frame bằng Dashboard mới (hoặc Dashboard cũ nếu bạn lưu biến)
-            frame.setContentPane(new DashboardView()); 
-
-            // 3. Cập nhật lại giao diện ngay lập tức
-            frame.revalidate();
-            frame.repaint();
-        }
-    }//GEN-LAST:event_btnBackActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel Status;
-    private javax.swing.JButton btnBack;
     private javax.swing.JButton btnDetail;
     private javax.swing.JButton btnIssueAnInvoice;
     private javax.swing.JButton btnUpdate;

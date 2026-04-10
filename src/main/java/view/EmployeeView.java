@@ -171,7 +171,6 @@ public class EmployeeView extends javax.swing.JPanel {
         btnDelete = new javax.swing.JButton();
         btnClear = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
-        btnBack = new javax.swing.JButton();
         txtSearch = new javax.swing.JTextField();
         btnSearch = new javax.swing.JButton();
 
@@ -324,10 +323,6 @@ public class EmployeeView extends javax.swing.JPanel {
         jPanel1.setBackground(new java.awt.Color(236, 240, 241));
         jPanel1.setPreferredSize(new java.awt.Dimension(1051, 40));
 
-        btnBack.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnBack.setText("Quay lại");
-        btnBack.addActionListener(this::btnBackActionPerformed);
-
         txtSearch.addActionListener(this::txtSearchActionPerformed);
 
         btnSearch.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -339,20 +334,17 @@ public class EmployeeView extends javax.swing.JPanel {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(btnBack)
-                .addGap(236, 236, 236)
+                .addGap(315, 315, 315)
                 .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 616, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnSearch)
-                .addContainerGap(27, Short.MAX_VALUE))
+                .addContainerGap(33, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(11, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnBack)
                     .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnSearch))
                 .addContainerGap())
@@ -476,15 +468,6 @@ public class EmployeeView extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_rdoFemaleActionPerformed
 
-    private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
-        // TODO add your handling code here:
-        java.awt.Window w = javax.swing.SwingUtilities.getWindowAncestor(this);
-        if (w != null) {
-            w.dispose(); // đóng cửa sổ hiện tại (đang chứa EmployeeView)
-        }
-        new DashboardView().setVisible(true); // mở lại Dashboard
-    }//GEN-LAST:event_btnBackActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel EmloyeeName;
@@ -492,7 +475,6 @@ public class EmployeeView extends javax.swing.JPanel {
     private javax.swing.JLabel EmployeePhone;
     private javax.swing.JLabel EmployeeRole;
     private javax.swing.JButton btnAdd;
-    private javax.swing.JButton btnBack;
     private javax.swing.JButton btnClear;
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnSearch;

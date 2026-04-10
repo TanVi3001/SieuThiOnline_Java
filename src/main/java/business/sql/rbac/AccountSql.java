@@ -15,7 +15,7 @@ public class AccountSql implements SqlInterface<Account> {
     // 1. Singleton chuẩn (Duy nhất 1 thực thể)
     private static AccountSql instance;
 
-    private AccountSql() {
+    public AccountSql() {
     }
 
     public static AccountSql getInstance() {

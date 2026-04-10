@@ -137,7 +137,6 @@ public class ProductView extends javax.swing.JPanel {
         btnDelete = new javax.swing.JButton();
         btnClear = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
-        btnBack = new javax.swing.JButton();
         txtSearch = new javax.swing.JTextField();
         btnSearch = new javax.swing.JButton();
 
@@ -277,17 +276,6 @@ public class ProductView extends javax.swing.JPanel {
         jPanel1.setBackground(new java.awt.Color(236, 240, 241));
         jPanel1.setPreferredSize(new java.awt.Dimension(877, 35));
         jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        btnBack.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnBack.setText("Quay lại");
-        btnBack.addActionListener(this::btnBackActionPerformed);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 0);
-        jPanel1.add(btnBack, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -365,20 +353,6 @@ public class ProductView extends javax.swing.JPanel {
         List<Product> list = ProductsSql.getInstance().searchByName(keyword);
         fillTable(list);
     }//GEN-LAST:event_btnSearchActionPerformed
-
-    private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
-        // 1. Tìm JFrame đang chứa Panel này
-        java.awt.Window win = javax.swing.SwingUtilities.getWindowAncestor(this);
-
-        if (win instanceof javax.swing.JFrame frame) {
-            // 2. Thay nội dung của Frame bằng Dashboard mới (hoặc Dashboard cũ nếu bạn lưu biến)
-            frame.setContentPane(new DashboardView()); 
-
-            // 3. Cập nhật lại giao diện ngay lập tức
-            frame.revalidate();
-            frame.repaint();
-        }
-    }//GEN-LAST:event_btnBackActionPerformed
     
     private void tblProductsMouseClicked(java.awt.event.MouseEvent evt) {
         int row = tblProducts.getSelectedRow();
@@ -422,7 +396,6 @@ public class ProductView extends javax.swing.JPanel {
     private javax.swing.JLabel ProductName;
     private javax.swing.JLabel Quantity;
     private javax.swing.JButton btnAdd;
-    private javax.swing.JButton btnBack;
     private javax.swing.JButton btnClear;
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnSearch;
