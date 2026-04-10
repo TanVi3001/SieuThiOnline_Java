@@ -116,4 +116,41 @@ public class AccountSql implements SqlInterface<Account> {
         }
         return password;
     }
+    
+    public boolean register(String fullName, String email, String phone, String username, String password) {
+    String userId = "USR" + System.currentTimeMillis() % 10000;
+    String accId = "ACC" + System.currentTimeMillis() % 10000;
+
+    String sqlUser = "INSERT INTO USERS (user_id, full_name, email, phone_number) VALUES (?, ?, ?, ?)";
+    String sqlAccount = "INSERT INTO ACCOUNTS (account_id, user_id, username, password, status) VALUES (?, ?, ?, ?, 'Hoạt động')";
+
+    Connection con = null;
+    try {
+        con = common.db.DatabaseConnection.getConnection();
+        con.setAutoCommit(false); // Bắt đầu Transaction để đảm bảo lưu cả 2 bảng
+
+        // 1. Chèn vào bảng USERS
+        PreparedStatement pstUser = con.prepareStatement(sqlUser);
+        pstUser.setString(1, userId);
+        pstUser.setString(2, fullName);
+        pstUser.setString(3, email);
+        pstUser.setString(4, phone);
+        pstUser.executeUpdate();
+
+        // 2. Chèn vào bảng ACCOUNTS
+        PreparedStatement pstAcc = con.prepareStatement(sqlAccount);
+        pstAcc.setString(1, accId);
+        pstAcc.setString(2, userId);
+        pstAcc.setString(3, username);
+        pstAcc.setString(4, password);
+        pstAcc.executeUpdate();
+
+        con.commit(); // Lưu vĩnh viễn
+        return true;
+    } catch (Exception e) {
+        if (con != null) try { con.rollback(); } catch (Exception ex) {}
+        e.printStackTrace();
+        return false;
+    }
+}
 }

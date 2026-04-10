@@ -12,6 +12,13 @@ import java.awt.*;
  */
 public class RegisterView extends javax.swing.JFrame {
     
+    private javax.swing.JTextField txtFullName;
+    private javax.swing.JTextField txtEmail;
+    private javax.swing.JTextField txtPhone;
+    private javax.swing.JTextField txtUsername;
+    private javax.swing.JPasswordField txtPass;
+    private javax.swing.JPasswordField txtConfirmPass;
+    
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(RegisterView.class.getName());
 
     /**
@@ -23,7 +30,7 @@ public class RegisterView extends javax.swing.JFrame {
     }
     
     private void setupModernUI() {
-        // 1. Chỉnh nền toàn bộ thành màu trắng để mất cái padding xanh than dư thừa
+        // 1. Chỉnh nền toàn bộ thành màu trắng
         this.getContentPane().removeAll();
         this.getContentPane().setLayout(new java.awt.GridBagLayout());
         this.getContentPane().setBackground(java.awt.Color.WHITE); 
@@ -31,10 +38,9 @@ public class RegisterView extends javax.swing.JFrame {
         // 2. Tạo Card chứa form (Màu trắng)
         javax.swing.JPanel cardPanel = new javax.swing.JPanel(null);
         cardPanel.setBackground(java.awt.Color.WHITE);
-        // Tăng chiều cao lên 650 để chứa thêm các trường Họ tên, SĐT
-        cardPanel.setPreferredSize(new java.awt.Dimension(450, 650)); 
+        cardPanel.setPreferredSize(new java.awt.Dimension(450, 750)); // Tăng chiều cao để chứa 6 ô
 
-        // --- LOGO & APP NAME (Đồng bộ LoginView) ---
+        // --- LOGO & APP NAME ---
         javax.swing.JLabel lblLogoCircle = new javax.swing.JLabel() {
             @Override
             protected void paintComponent(java.awt.Graphics g) {
@@ -61,40 +67,42 @@ public class RegisterView extends javax.swing.JFrame {
         lblTitle.setBounds(100, 60, 300, 40);
         cardPanel.add(lblTitle);
 
-        // --- DANH SÁCH CÁC TRƯỜNG THÔNG TIN MỚI ---
-        String[] labels = {"HỌ VÀ TÊN", "EMAIL", "SỐ ĐIỆN THOẠI", "MẬT KHẨU", "XÁC NHẬN MẬT KHẨU"};
-        String[] placeholders = {"Nguyễn Văn A", "example@gmail.com", "09xxxxxxx", "Nhập mật khẩu", "Nhập lại mật khẩu"};
-        
-        int startY = 120; // Vị trí bắt đầu
-        int gap = 75;    // Khoảng cách giữa các ô
-        
+        // --- KHỞI TẠO BIẾN Ô NHẬP LIỆU ---
+        txtFullName = new JTextField();
+        txtEmail = new JTextField();
+        txtPhone = new JTextField();
+        txtUsername = new JTextField();
+        txtPass = new JPasswordField();
+        txtConfirmPass = new JPasswordField();
+
+        JTextField[] fields = {txtFullName, txtEmail, txtPhone, txtUsername, txtPass, txtConfirmPass};
+        String[] labels = {"HỌ VÀ TÊN", "EMAIL", "SỐ ĐIỆN THOẠI", "TÊN ĐĂNG NHẬP", "MẬT KHẨU", "XÁC NHẬN MẬT KHẨU"};
+        String[] placeholders = {"Nguyễn Văn A", "example@gmail.com", "09xxxxxxx", "Admin_UIT", "********", "********"};
+
+        int startY = 110;
+        int gap = 70;
         for (int i = 0; i < labels.length; i++) {
-            // Label tiêu đề nhỏ
             javax.swing.JLabel lbl = new javax.swing.JLabel(labels[i]);
             lbl.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 11));
             lbl.setForeground(new java.awt.Color(44, 62, 80));
             lbl.setBounds(100, startY + (i * gap), 200, 20);
             cardPanel.add(lbl);
 
-            // Ô nhập liệu (TextField hoặc PasswordField)
-            javax.swing.JTextField txt;
-            if (labels[i].contains("MẬT KHẨU")) {
-                txt = new javax.swing.JPasswordField();
-                ((javax.swing.JPasswordField)txt).putClientProperty("JPasswordField.showRevealButton", true);
-            } else {
-                txt = new javax.swing.JTextField();
+            fields[i].setBounds(100, startY + (i * gap) + 22, 250, 38);
+            fields[i].setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
+            fields[i].putClientProperty("JComponent.roundRect", true);
+            fields[i].putClientProperty("JTextField.placeholderText", placeholders[i]);
+            fields[i].putClientProperty("JTextField.padding", new java.awt.Insets(0, 12, 0, 12));
+
+            // Hiện nút xem mật khẩu cho 2 ô pass
+            if (fields[i] instanceof JPasswordField) {
+                ((JPasswordField) fields[i]).putClientProperty("JPasswordField.showRevealButton", true);
             }
-            
-            txt.setBounds(100, startY + (i * gap) + 22, 250, 40);
-            txt.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
-            txt.putClientProperty("JComponent.roundRect", true); // Bo tròn
-            txt.putClientProperty("JTextField.placeholderText", placeholders[i]); // Chữ mờ
-            txt.putClientProperty("JTextField.padding", new java.awt.Insets(0, 12, 0, 12));
-            
-            cardPanel.add(txt);
+
+            cardPanel.add(fields[i]);
         }
 
-        // --- NÚT ĐĂNG KÝ XANH THAN ---
+        // --- NÚT ĐĂNG KÝ ---
         javax.swing.JButton btnReg = new javax.swing.JButton("ĐĂNG KÝ") {
             @Override
             protected void paintComponent(java.awt.Graphics g) {
@@ -106,19 +114,49 @@ public class RegisterView extends javax.swing.JFrame {
                 g2.dispose();
             }
         };
-        btnReg.setBounds(100, 520, 250, 45);
+        btnReg.setBounds(100, 550, 250, 48);
         btnReg.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
         btnReg.setForeground(java.awt.Color.WHITE);
         btnReg.setContentAreaFilled(false);
         btnReg.setBorderPainted(false);
         btnReg.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+
+        // Xử lý sự kiện Đăng ký
+        btnReg.addActionListener(e -> {
+            String name = txtFullName.getText().trim();
+            String email = txtEmail.getText().trim();
+            String phone = txtPhone.getText().trim();
+            String user = txtUsername.getText().trim();
+            String pass = new String(txtPass.getPassword());
+            String confirm = new String(txtConfirmPass.getPassword());
+
+            if (name.isEmpty() || user.isEmpty() || pass.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ các trường bắt buộc!");
+                return;
+            }
+            if (!pass.equals(confirm)) {
+                JOptionPane.showMessageDialog(this, "Mật khẩu xác nhận không khớp!");
+                return;
+            }
+
+            // Gọi hàm lưu vào CSDL
+            boolean success = business.sql.rbac.AccountSql.getInstance().register(name, email, phone, user, pass);
+
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Đăng ký thành công! Bạn có thể đăng nhập ngay.");
+                new LoginView().setVisible(true);
+                this.dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Lỗi đăng ký! Tên tài khoản hoặc Email có thể đã tồn tại.");
+            }
+        });
         cardPanel.add(btnReg);
 
-        // Nút Quay lại
+        // Link Quay lại
         javax.swing.JLabel lblBack = new javax.swing.JLabel("Đã có tài khoản? Đăng nhập", javax.swing.SwingConstants.CENTER);
         lblBack.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 12));
         lblBack.setForeground(new java.awt.Color(44, 62, 80));
-        lblBack.setBounds(125, 580, 200, 20);
+        lblBack.setBounds(125, 615, 200, 20);
         lblBack.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         lblBack.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -130,11 +168,8 @@ public class RegisterView extends javax.swing.JFrame {
         });
         cardPanel.add(lblBack);
 
-        // Gắn Card vào Center
         this.getContentPane().add(cardPanel, new java.awt.GridBagConstraints());
-        
-        // Chỉnh Size JFrame vừa đủ cao để không bị cắt form
-        this.setSize(500, 720); 
+        this.setSize(500, 800); 
         this.setLocationRelativeTo(null);
         this.revalidate();
         this.repaint();
