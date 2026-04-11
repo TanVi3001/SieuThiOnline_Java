@@ -9,16 +9,20 @@ public class Product {
 
     private String productId;
     private String productName;
-    private BigDecimal basePrice; // Để BigDecimal cho tiền tệ là chuẩn nhất
+    private BigDecimal basePrice;
     private String categoryId;
     private String supplierId;
     private int isDeleted;
-    private int quantity; // THÊM MỚI: Biến lưu số lượng từ bảng Inventory
+    private int quantity;
+
+    // THÊM MỚI để khớp INVENTORY
+    private String storeId;
+    private String unit;
 
     public Product() {
     }
 
-    // Constructor đầy đủ để sau này dùng cho nhanh
+    // Constructor cũ
     public Product(String productId, String productName, BigDecimal basePrice,
                    String categoryId, String supplierId, int isDeleted, int quantity) {
         this.productId = productId;
@@ -30,7 +34,20 @@ public class Product {
         this.quantity = quantity;
     }
 
-    // --- GETTER & SETTER ---
+    // Constructor đầy đủ hơn (khuyên dùng)
+    public Product(String productId, String productName, BigDecimal basePrice,
+                   String categoryId, String supplierId, int isDeleted, int quantity,
+                   String storeId, String unit) {
+        this.productId = productId;
+        this.productName = productName;
+        this.basePrice = basePrice;
+        this.categoryId = categoryId;
+        this.supplierId = supplierId;
+        this.isDeleted = isDeleted;
+        this.quantity = quantity;
+        this.storeId = storeId;
+        this.unit = unit;
+    }
 
     public String getProductId() {
         return productId;
@@ -80,12 +97,28 @@ public class Product {
         this.isDeleted = isDeleted;
     }
 
-    // SỬA LẠI HÀM NÀY: Không còn UnsupportedOperationException nữa!
     public int getQuantity() {
         return quantity;
     }
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    // ===== SỬA CHÍNH Ở ĐÂY =====
+    public String getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(String storeId) {
+        this.storeId = storeId;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 }

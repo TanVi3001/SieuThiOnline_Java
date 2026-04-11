@@ -93,6 +93,14 @@ public class LoginView extends javax.swing.JFrame {
         btnSignUp.setContentAreaFilled(false);
         btnSignUp.setBorderPainted(false);
         btnSignUp.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnSignUp.addActionListener(e -> {
+            // Khởi tạo trang đăng ký
+            RegisterView regView = new RegisterView();
+            regView.setVisible(true);
+            
+            // Đóng trang đăng nhập hiện tại
+            this.dispose(); 
+        });
         cardPanel.add(btnSignUp);
 
         // Header "Sign In"
@@ -131,9 +139,9 @@ public class LoginView extends javax.swing.JFrame {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 // Mở form Quên mật khẩu
-                ForgotPasswordView forgotPass = new ForgotPasswordView();
+                String name = txtUsername.getText().trim(); // QUAN TRỌNG: Phải lấy text ở đây
+                ForgotPasswordView forgotPass = new ForgotPasswordView(name); // Truyền nó vào đây
                 forgotPass.setVisible(true);
-                forgotPass.setLocationRelativeTo(null);
 
                 // Đóng form Đăng nhập hiện tại
                 dispose();
@@ -357,10 +365,9 @@ public class LoginView extends javax.swing.JFrame {
 
         // SỬA DÒNG NÀY: JPasswordField dùng getPassword() trả về mảng char,
         // mình phải bọc nó trong new String(...) để lấy chuỗi mật khẩu.
-        String pass = new String(txtPassword.getPassword()).trim();
+        String pass = new String(txtPassword.getPassword());
 
         System.out.println("User nhap: [" + user + "]");
-        System.out.println("Pass nhap: [" + pass + "]");
         // 2. Kiểm tra nhanh (Validation)
         if (user.isEmpty() || pass.isEmpty()) {
             javax.swing.JOptionPane.showMessageDialog(this,

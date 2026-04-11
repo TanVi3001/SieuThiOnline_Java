@@ -173,7 +173,6 @@ public class EmployeeView extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         txtSearch = new javax.swing.JTextField();
         btnSearch = new javax.swing.JButton();
-        btnBack = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(236, 240, 241));
         setLayout(new java.awt.BorderLayout());
@@ -330,21 +329,16 @@ public class EmployeeView extends javax.swing.JPanel {
         btnSearch.setText("Tìm kiếm");
         btnSearch.addActionListener(this::btnSearchActionPerformed);
 
-        btnBack.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnBack.setText("Quay lại");
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(btnBack)
-                .addGap(218, 218, 218)
+                .addGap(297, 297, 297)
                 .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 644, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnSearch)
-                .addContainerGap(17, Short.MAX_VALUE))
+                .addContainerGap(23, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -352,8 +346,7 @@ public class EmployeeView extends javax.swing.JPanel {
                 .addContainerGap(11, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSearch)
-                    .addComponent(btnBack))
+                    .addComponent(btnSearch))
                 .addContainerGap())
         );
 
@@ -482,7 +475,6 @@ public class EmployeeView extends javax.swing.JPanel {
     private javax.swing.JLabel EmployeePhone;
     private javax.swing.JLabel EmployeeRole;
     private javax.swing.JButton btnAdd;
-    private javax.swing.JButton btnBack;
     private javax.swing.JButton btnClear;
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnSearch;
