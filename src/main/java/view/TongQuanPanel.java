@@ -275,6 +275,7 @@ public class TongQuanPanel extends JPanel {
     static class ChartPlaceholder extends JPanel {
 
         private int[] data = new int[7];
+        // Vietnamese day-of-week abbreviations: T2=Monday .. T7=Saturday, CN=Sunday
         private static final String[] DAY_LABELS = {"T2", "T3", "T4", "T5", "T6", "T7", "CN"};
         private static final Color BAR_COLOR = new Color(0, 123, 255);
         private static final Color BAR_HOVER = new Color(0, 86, 179);
