@@ -38,14 +38,12 @@ public class StatisticView extends javax.swing.JPanel {
         tbStatistic = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
 
-        setLayout(new java.awt.BorderLayout());
-
         pnTop.setPreferredSize(new java.awt.Dimension(0, 40));
-        pnTop.setLayout(new java.awt.GridLayout());
+        pnTop.setLayout(new java.awt.GridLayout(1, 0));
 
         pnTotalRevenue.setBackground(new java.awt.Color(46, 204, 113));
         pnTotalRevenue.setPreferredSize(new java.awt.Dimension(150, 40));
-        pnTotalRevenue.setLayout(new java.awt.GridLayout());
+        pnTotalRevenue.setLayout(new java.awt.GridLayout(1, 0));
 
         TotalRevenue.setBackground(new java.awt.Color(46, 204, 113));
         TotalRevenue.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -57,7 +55,7 @@ public class StatisticView extends javax.swing.JPanel {
 
         pnTotalCustomers.setBackground(new java.awt.Color(243, 156, 18));
         pnTotalCustomers.setPreferredSize(new java.awt.Dimension(150, 40));
-        pnTotalCustomers.setLayout(new java.awt.GridLayout());
+        pnTotalCustomers.setLayout(new java.awt.GridLayout(1, 0));
 
         TotalCustomers.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         TotalCustomers.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -68,7 +66,7 @@ public class StatisticView extends javax.swing.JPanel {
 
         pnTotalOder.setBackground(new java.awt.Color(52, 152, 219));
         pnTotalOder.setPreferredSize(new java.awt.Dimension(150, 40));
-        pnTotalOder.setLayout(new java.awt.GridLayout());
+        pnTotalOder.setLayout(new java.awt.GridLayout(1, 0));
 
         TotalOrder.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         TotalOrder.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -76,8 +74,6 @@ public class StatisticView extends javax.swing.JPanel {
         pnTotalOder.add(TotalOrder);
 
         pnTop.add(pnTotalOder);
-
-        add(pnTop, java.awt.BorderLayout.PAGE_START);
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -92,7 +88,21 @@ public class StatisticView extends javax.swing.JPanel {
         ));
         tbStatistic.setViewportView(jTable1);
 
-        add(tbStatistic, java.awt.BorderLayout.CENTER);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(pnTop, javax.swing.GroupLayout.PREFERRED_SIZE, 453, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(tbStatistic, javax.swing.GroupLayout.PREFERRED_SIZE, 453, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(pnTop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tbStatistic, javax.swing.GroupLayout.PREFERRED_SIZE, 281, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
     }// </editor-fold>//GEN-END:initComponents
 
 
