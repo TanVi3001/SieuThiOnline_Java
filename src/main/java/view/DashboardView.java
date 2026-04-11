@@ -65,7 +65,12 @@ public class DashboardView extends javax.swing.JFrame {
         mainContentPanel.setBackground(new java.awt.Color(245, 245, 247));
 
         // 4. Khởi tạo Sidebar mới và nhận tín hiệu click
-        view.components.Sidebar newSidebar = new view.components.Sidebar();
+        model.account.Account currentUser = business.service.LoginService.getCurrentUser();
+        String role = (currentUser != null) ? currentUser.getRole() : "";
+
+        // QUAN TRỌNG: truyền role vào Sidebar
+        view.components.Sidebar newSidebar = new view.components.Sidebar(role);
+
         newSidebar.setMenuClickListener(title -> {
             switch (title) {
                 case "Tổng quan":
@@ -109,7 +114,6 @@ public class DashboardView extends javax.swing.JFrame {
      * nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
      * }
      */
-
     private void authorize() {
         try {
             // 1. Lấy thông tin người dùng
