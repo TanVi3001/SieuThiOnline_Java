@@ -60,7 +60,7 @@ public class DashboardView extends javax.swing.JFrame {
         newSidebar.setMenuClickListener(title -> {
             switch (title) {
                 case "Tổng quan":
-                    showPanel(new TongQuanPanel());
+                    showPanel(new view.components.TongQuanPanel());
                     break;
 
                 case "Quản lý sản phẩm":
@@ -102,7 +102,7 @@ public class DashboardView extends javax.swing.JFrame {
                     break;
 
                 case "Cài đặt":
-                    showPanel(new SettingsView());
+                    showPanel(new view.components.SettingsView());
                     break;
 
                 case "Đăng xuất":
@@ -116,7 +116,7 @@ public class DashboardView extends javax.swing.JFrame {
         this.getContentPane().add(mainContentPanel, java.awt.BorderLayout.CENTER);
 
         // Hiển thị TongQuanPanel làm màn hình mặc định
-        showPanel(new TongQuanPanel());
+        showPanel(new view.components.TongQuanPanel());
 
         this.revalidate();
         this.repaint();
