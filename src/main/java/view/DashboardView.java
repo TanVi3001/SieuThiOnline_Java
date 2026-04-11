@@ -60,9 +60,7 @@ public class DashboardView extends javax.swing.JFrame {
         newSidebar.setMenuClickListener(title -> {
             switch (title) {
                 case "Tổng quan":
-                    mainContentPanel.removeAll();
-                    mainContentPanel.revalidate();
-                    mainContentPanel.repaint();
+                    showPanel(new TongQuanPanel());
                     break;
 
                 case "Quản lý sản phẩm":
