@@ -28,6 +28,7 @@ public class SettingsView extends JPanel {
     // ===== Constants =====
     private static final String FONT_FAMILY = "Segoe UI";
     private static final int CARD_PADDING = 15;
+    private static final int CARD_SPACING = 15;
     private static final int PANEL_PADDING = 20;
 
     // ===== Dữ liệu mặc định =====
@@ -244,11 +245,11 @@ public class SettingsView extends JPanel {
 
         // Card 1: Giao diện & Hiển thị
         panel.add(createAppearanceCard());
-        panel.add(Box.createRigidArea(new Dimension(0, CARD_PADDING)));
+        panel.add(Box.createRigidArea(new Dimension(0, CARD_SPACING)));
 
         // Card 2: Thông báo & Bảo mật
         panel.add(createNotificationSecurityCard());
-        panel.add(Box.createRigidArea(new Dimension(0, CARD_PADDING)));
+        panel.add(Box.createRigidArea(new Dimension(0, CARD_SPACING)));
 
         // Card 3: Lưu trữ & Hệ thống
         panel.add(createStorageCard());
