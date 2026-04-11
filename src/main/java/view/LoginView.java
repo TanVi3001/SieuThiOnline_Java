@@ -342,7 +342,7 @@ public class LoginView extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(6, 138, 69, 0);
         HomePanel.add(ClassName, gridBagConstraints);
 
-        IconMarket.setIcon(new javax.swing.ImageIcon("C:\\Users\\Admin\\Downloads\\market-Photoroom.png")); // NOI18N
+        IconMarket.setIcon(new javax.swing.ImageIcon("D:\\IS216\\SieuThiOnline_Java\\view.images\\market-Photoroom.png")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

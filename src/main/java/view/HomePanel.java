@@ -34,7 +34,7 @@ public class HomePanel extends javax.swing.JPanel {
 
         setBackground(new java.awt.Color(236, 240, 241));
 
-        Icon.setIcon(new javax.swing.ImageIcon("C:\\Users\\Admin\\Downloads\\market-Photoroom.png")); // NOI18N
+        Icon.setIcon(new javax.swing.ImageIcon("D:\\IS216\\SieuThiOnline_Java\\view.images\\market-Photoroom.png")); // NOI18N
 
         SystemName.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         SystemName.setForeground(new java.awt.Color(0, 22, 151));
