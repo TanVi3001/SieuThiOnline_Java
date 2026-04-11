@@ -353,20 +353,28 @@ public class SettingsView extends javax.swing.JPanel {
         cboTheme.setFont(FONT_LABEL);
 
         // Xác định chủ đề hiện tại để đặt giá trị mặc định
-        if (UIManager.getLookAndFeel() instanceof FlatDarkLaf) {
-            cboTheme.setSelectedItem("Tối");
-        } else {
-            cboTheme.setSelectedItem("Sáng");
-        }
+        boolean isDark = UIManager.getLookAndFeel() instanceof FlatDarkLaf;
+        cboTheme.setSelectedItem(isDark ? "Tối" : "Sáng");
 
         // --- Event Listener: Chuyển đổi chủ đề ---
+        // Dùng cờ để tránh kích hoạt khi đặt giá trị mặc định lần đầu
+        final boolean[] initialized = {false};
         cboTheme.addActionListener(e -> {
+            if (!initialized[0]) {
+                initialized[0] = true;
+                return;
+            }
             try {
                 String selected = (String) cboTheme.getSelectedItem();
-                if ("Tối".equals(selected)) {
+                boolean currentIsDark = UIManager.getLookAndFeel() instanceof FlatDarkLaf;
+
+                // Chỉ chuyển đổi nếu chủ đề thực sự thay đổi
+                if ("Tối".equals(selected) && !currentIsDark) {
                     UIManager.setLookAndFeel(new FlatDarkLaf());
-                } else {
+                } else if ("Sáng".equals(selected) && currentIsDark) {
                     UIManager.setLookAndFeel(new FlatLightLaf());
+                } else {
+                    return; // Không có thay đổi, bỏ qua
                 }
                 // Cập nhật giao diện toàn bộ cây component
                 Window topWindow = SwingUtilities.getWindowAncestor(this);
@@ -374,9 +382,13 @@ public class SettingsView extends javax.swing.JPanel {
                     SwingUtilities.updateComponentTreeUI(topWindow);
                 }
             } catch (UnsupportedLookAndFeelException ex) {
-                System.err.println("Không thể chuyển đổi chủ đề: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this,
+                        "Không thể chuyển đổi chủ đề: " + ex.getMessage(),
+                        "Lỗi giao diện",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
+        initialized[0] = true;
         card.add(cboTheme, gbc);
 
         return card;
