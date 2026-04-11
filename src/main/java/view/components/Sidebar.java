@@ -60,7 +60,12 @@ public class Sidebar extends JPanel {
 
         addMenuItem("Khách hàng");
         addMenuItem("Hóa đơn");
-        addMenuItem("Thống kê");
+
+        // Chỉ hiển thị "Thống kê" cho Admin
+        if (!isStaff()) {
+            addMenuItem("Thống kê");
+        }
+
         addMenuItem("Cài đặt");
 
         JScrollPane scrollPane = new JScrollPane(menuPanel);
