@@ -98,8 +98,16 @@ public class ExcelExporter {
                 Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(String.valueOf(product.get("productId")));
                 row.createCell(1).setCellValue(String.valueOf(product.get("productName")));
-                row.createCell(2).setCellValue(Double.parseDouble(String.valueOf(product.get("price"))));
-                row.createCell(3).setCellValue(Integer.parseInt(String.valueOf(product.get("quantity"))));
+                try {
+                    row.createCell(2).setCellValue(Double.parseDouble(String.valueOf(product.get("price"))));
+                } catch (NumberFormatException e) {
+                    row.createCell(2).setCellValue(String.valueOf(product.get("price")));
+                }
+                try {
+                    row.createCell(3).setCellValue(Integer.parseInt(String.valueOf(product.get("quantity"))));
+                } catch (NumberFormatException e) {
+                    row.createCell(3).setCellValue(String.valueOf(product.get("quantity")));
+                }
             }
 
             // Auto-fit columns
