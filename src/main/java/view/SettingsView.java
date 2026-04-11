@@ -386,10 +386,11 @@ public class SettingsView extends JPanel {
      * Xử lý sự kiện khi nhấn "Cập nhật mật khẩu".
      */
     private void onUpdatePassword() {
+        String currentPass = new String(txtCurrentPassword.getPassword());
         String newPass = new String(txtNewPassword.getPassword());
         String confirmPass = new String(txtConfirmPassword.getPassword());
 
-        if (newPass.isEmpty() || confirmPass.isEmpty()) {
+        if (currentPass.isEmpty() || newPass.isEmpty() || confirmPass.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "Vui lòng điền đầy đủ thông tin mật khẩu!",
                     "Cảnh báo",
