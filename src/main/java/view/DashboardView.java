@@ -328,6 +328,11 @@ public class DashboardView extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnStatisticActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnStatisticActionPerformed  
+        // TODO add your handling code here:
+        showPanel(new view.StatisticView());// Gọi cái JPanel
+    }// GEN-LAST:event_btnStatisticActionPerformed
+    
     private void btnProductActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnProductActionPerformed
         // TODO add your handling code here:
         showPanel(new ProductView()); // Gọi cái JPanel
@@ -363,11 +368,6 @@ public class DashboardView extends javax.swing.JFrame {
         }
 
     }// GEN-LAST:event_btnLogoutActionPerformed
-
-    private void btnStatisticActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnStatisticActionPerformed
-        // TODO add your handling code here:
-        showPanel(new StatisticView());
-    }// GEN-LAST:event_btnStatisticActionPerformed
 
     private void btnOrderActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnOrderActionPerformed
         // TODO add your handling code here:
