@@ -1,11 +1,12 @@
 package business.main;
 
-// Import thư viện hệ thống
 import common.db.DatabaseConnection;
+import common.report.ExcelExporter;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
-// Import Model
+// Model
 import model.product.Supplier;
 import model.product.Store;
 import model.product.Inventory;
@@ -13,148 +14,135 @@ import model.order.DeliveryManagement;
 import model.order.Order;
 import model.order.OrderDetail;
 
+// SQL
 import business.sql.prod_inventory.SuppliersSql;
 import business.sql.prod_inventory.StoresSql;
 import business.sql.prod_inventory.InventorySql;
 import business.sql.sales_order.DeliveryManagementSql;
+
+// Service
 import business.service.PaymentService;
 
-// Import xuất báo cáo
-import common.report.ExcelExporter;
-import java.util.ArrayList;
-
-/**
- * Dự án: Hệ thống Quản lý Siêu thị Online Mô tả: Module kiểm thử tích hợp các
- * thành phần hệ thống Người thực hiện: Lê Tấn Vĩ (Nhóm trưởng)
- */
 public class SieuThiOnline {
 
     public static void main(String[] args) {
-//        // Thiết lập luồng xuất dữ liệu chuẩn UTF-8 để hiển thị Tiếng Việt
+        // UTF-8 output
         try {
             System.setOut(new java.io.PrintStream(System.out, true, "UTF-8"));
         } catch (java.io.UnsupportedEncodingException e) {
-            System.err.println("[LỖI] Hệ thống không hỗ trợ định dạng UTF-8.");
+            System.err.println("[LỖI] Hệ thống không hỗ trợ UTF-8: " + e.getMessage());
         }
 
         System.out.println("-------------------------------------------------------");
         System.out.println("BẮT ĐẦU KIỂM THỬ TÍCH HỢP HỆ THỐNG");
         System.out.println("-------------------------------------------------------");
 
-        // =====================================================
-        // GIAI ĐOẠN 0: KIỂM TRA KẾT NỐI CƠ SỞ DỮ LIỆU
-        // =====================================================
-        System.out.println("[THÔNG BÁO] Đang thực thi Giai đoạn 0: Kiểm tra kết nối Oracle...");
+        // GIAI ĐOẠN 0: DB Connection
+        System.out.println("[THÔNG BÁO] GĐ0 - Kiểm tra kết nối Oracle...");
         try (Connection con = DatabaseConnection.getConnection()) {
             if (con != null) {
-                System.out.println("[HOÀN TẤT] Kết nối cơ sở dữ liệu được thiết lập thành công.");
+                System.out.println("[HOÀN TẤT] Kết nối DB thành công.");
             } else {
-                System.out.println("[THẤT BẠI] Không thể thiết lập kết nối cơ sở dữ liệu.");
+                System.out.println("[THẤT BẠI] Kết nối DB trả về null.");
             }
         } catch (Exception e) {
-            System.out.println("[CẢNH BÁO] Ngoại lệ kết nối: " + e.getMessage());
+            System.out.println("[CẢNH BÁO] Lỗi kết nối DB: " + e.getMessage());
         }
 
-        // =====================================================
-        // GIAI ĐOẠN 1: KIỂM THỬ TÍNH TOÀN VẸN CỦA MODEL (NGUYÊN) & SQL (TÙNG)
-        // =====================================================
-        System.out.println("\n[THÔNG BÁO] Đang thực thi Giai đoạn 1: Kiểm tra Model và Mapping dữ liệu...");
-        
+        // GIAI ĐOẠN 1: Model + SQL Mapping
+        System.out.println("\n[THÔNG BÁO] GĐ1 - Kiểm tra Model/SQL mapping...");
         try {
-            // 1. Kiểm tra Model Nhà cung cấp (Supplier) - Test dữ liệu danh mục gốc
-            System.out.println("--- 1.1 Kiểm tra Model Supplier ---");
+            System.out.println("--- 1.1 Supplier ---");
             List<Supplier> dsNhaCC = SuppliersSql.getInstance().selectAll();
-            if (dsNhaCC.isEmpty()) {
-                System.out.println("[!] Cảnh báo: DB chưa có dữ liệu Nhà cung cấp.");
+            if (dsNhaCC == null || dsNhaCC.isEmpty()) {
+                System.out.println("[!] DB chưa có dữ liệu Supplier.");
             } else {
                 for (Supplier s : dsNhaCC) {
-                    // Test các Getter mà Nguyên đã viết trong class Supplier
-                    System.out.printf("ID: %-10s | Tên NCC: %-20s | SĐT: %s\n", 
-                        s.getSupplierId(), s.getSupplierName(), s.getPhoneNumber());
+                    System.out.printf("ID: %-10s | Tên NCC: %-20s | SĐT: %s%n",
+                            s.getSupplierId(), s.getSupplierName(), s.getPhoneNumber());
                 }
             }
 
-            // 2. Kiểm tra Model Cửa hàng (Store)
-            System.out.println("\n--- 1.2 Kiểm tra Model Store ---");
+            System.out.println("\n--- 1.2 Store ---");
             List<Store> dsCuaHang = StoresSql.getInstance().selectAll();
-            for (Store st : dsCuaHang) {
-                System.out.println("Cửa hàng: " + st.getStoreName() + " - Địa chỉ: " + st.getAddress());
+            if (dsCuaHang != null) {
+                for (Store st : dsCuaHang) {
+                    System.out.println("Cửa hàng: " + st.getStoreName() + " - Địa chỉ: " + st.getAddress());
+                }
             }
 
-            // 3. Kiểm tra Model Quản lý giao hàng (DeliveryManagement)
-            System.out.println("\n--- 1.3 Kiểm tra Model DeliveryManagement ---");
+            System.out.println("\n--- 1.3 DeliveryManagement ---");
             List<DeliveryManagement> dsGiaoHang = DeliveryManagementSql.getInstance().selectAll();
-            if (!dsGiaoHang.isEmpty()) {
+            if (dsGiaoHang != null && !dsGiaoHang.isEmpty()) {
                 DeliveryManagement dm = dsGiaoHang.get(0);
-                System.out.println("Đơn giao thử nghiệm: " + dm.getOrderId() + " | Trạng thái: " + dm.getDeliveryStatus());
+                System.out.println("Đơn giao thử nghiệm: " + dm.getOrderId()
+                        + " | Trạng thái: " + dm.getDeliveryStatus());
+            } else {
+                System.out.println("[!] Chưa có dữ liệu DeliveryManagement.");
             }
 
         } catch (Exception e) {
-            System.out.println("[CẢNH BÁO] Lỗi mapping dữ liệu giữa Model và SQL: " + e.getMessage());
+            System.out.println("[CẢNH BÁO] Lỗi mapping Model/SQL: " + e.getMessage());
+            e.printStackTrace();
         }
-        
-        // =====================================================
-        // GIAI ĐOẠN 5: KIỂM TRA MODULE XUẤT BÁO CÁO EXCEL
-        // =====================================================
-        System.out.println("\n[THÔNG BÁO] Đang thực thi Giai đoạn 5: Kiểm tra xuất báo cáo kho...");
+
+        // GIAI ĐOẠN 5: Export Excel
+        System.out.println("\n[THÔNG BÁO] GĐ5 - Kiểm tra xuất báo cáo kho...");
         try {
             List<Inventory> dsTonKho = InventorySql.getInstance().selectAll();
             String filePath = "E:\\Inventory_Report_Vi.xlsx";
 
-            ExcelExporter.exportInventory(dsTonKho, filePath);
-            System.out.println("[HOÀN TẤT] Báo cáo hàng tồn kho đã được xuất tại: " + filePath);
+            if (dsTonKho == null || dsTonKho.isEmpty()) {
+                System.out.println("[!] Không có dữ liệu tồn kho để xuất.");
+            } else {
+                ExcelExporter.exportInventory(dsTonKho, filePath);
+                System.out.println("[HOÀN TẤT] Export Excel thành công: " + filePath);
+            }
         } catch (Exception e) {
-            System.out.println("[CẢNH BÁO] Lỗi xuất dữ liệu Excel: " + e.getMessage());
+            System.out.println("[CẢNH BÁO] Lỗi export Excel: " + e.getMessage());
+            e.printStackTrace();
         }
 
-        // =====================================================
-        // GIAI ĐOẠN 6: KIỂM TRA GIAO DỊCH THANH TOÁN (LOGIC CỐT LÕI)
-        // =====================================================
-        System.out.println("\n[THÔNG BÁO] Đang thực thi Giai đoạn 6: Kiểm tra giao dịch thanh toán...");
+        // GIAI ĐOẠN 6: Payment Transaction
+        System.out.println("\n[THÔNG BÁO] GĐ6 - Kiểm tra giao dịch thanh toán...");
+        String maHD = "HD_ST_1002";
 
-        // Định danh duy nhất cho mã hóa đơn kiểm thử
-        String maHD = "HD_ST_1002"; 
-
-        // Khởi tạo dữ liệu Hóa đơn
         Order hd = new Order(
                 maHD,
-                "KH001", 
-                "EMP_01", 
+                "KH001",
+                "EMP_01",
                 new java.sql.Date(System.currentTimeMillis()),
                 150000.0,
                 "ĐÃ THANH TOÁN"
         );
 
-        // Khởi tạo danh sách Chi tiết hóa đơn (Giỏ hàng)
         List<OrderDetail> gioHang = new ArrayList<>();
         gioHang.add(new OrderDetail(maHD, "PROD_MILK_01", 2, 20000.0));
         gioHang.add(new OrderDetail(maHD, "PROD_MILK_02", 5, 8000.0));
 
-        // Thực thi giao dịch thông qua PaymentService (Áp dụng Transaction)
         try {
-            boolean isTransactionSuccess = PaymentService.thanhToan(hd, gioHang);
-
-            if (isTransactionSuccess) {
-                System.out.println("[HOÀN TẤT] Giao dịch thành công: Đã lưu hóa đơn và cập nhật kho hàng.");
+            boolean ok = PaymentService.thanhToan(hd, gioHang);
+            if (ok) {
+                System.out.println("[HOÀN TẤT] Giao dịch thành công: đã lưu hóa đơn + cập nhật tồn kho.");
             } else {
-                System.out.println("[THẤT BẠI] Giao dịch không thành công: Cơ chế Rollback đã được kích hoạt.");
+                System.out.println("[THẤT BẠI] Giao dịch thất bại: đã rollback.");
             }
         } catch (Exception e) {
-            System.out.println("[NGHIÊM TRỌNG] Lỗi hệ thống trong quá trình giao dịch: " + e.getMessage());
+            System.out.println("[NGHIÊM TRỌNG] Lỗi giao dịch: " + e.getMessage());
+            e.printStackTrace();
         }
 
         System.out.println("\n-------------------------------------------------------");
         System.out.println("KẾT THÚC QUY TRÌNH KIỂM THỬ TÍCH HỢP");
         System.out.println("-------------------------------------------------------");
+
+        // UI
         try {
             com.formdev.flatlaf.FlatLightLaf.setup();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        // 2. Mở cổng Login
-        java.awt.EventQueue.invokeLater(() -> {
-            new view.LoginView().setVisible(true);
-        });
+        java.awt.EventQueue.invokeLater(() -> new view.LoginView().setVisible(true));
     }
 }

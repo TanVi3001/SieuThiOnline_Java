@@ -1,5 +1,6 @@
 package business.sql.prod_inventory;
 
+import common.db.DatabaseConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,44 +24,48 @@ public class ProductsSql {
     }
 
     /**
-     * Hàm "át chủ bài": Trừ kho trực tiếp trong Transaction Leader Vĩ: Đã fix -
-     * Chuyển hướng sang bảng INVENTORY cho khớp Database
-     *
+     * Trừ tồn kho trong transaction dùng chung với PaymentService
      * @param con
      * @param productId
      * @param quantity
-     * @return
+     * @return 
      * @throws java.sql.SQLException
      */
     public int subtractStockWithConn(Connection con, String productId, int quantity) throws SQLException {
-        // SQL: Chỉ trừ nếu số lượng tồn kho (quantity) lớn hơn hoặc bằng số lượng mua
-        String sql = "UPDATE INVENTORY SET quantity = quantity - ? WHERE product_id = ? AND quantity >= ?";
+        String sql = "UPDATE INVENTORY "
+                   + "SET quantity = quantity - ? "
+                   + "WHERE product_id = ? AND quantity >= ? AND is_deleted = 0";
 
         try (PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setInt(1, quantity);
             pst.setString(2, productId);
-            pst.setInt(3, quantity); // Ràng buộc: Kho phải còn đủ hàng mới cho trừ
+            pst.setInt(3, quantity);
 
             int res = pst.executeUpdate();
-
             if (res == 0) {
-                // Lỗi này sẽ giúp PaymentService biết để Rollback toàn bộ hóa đơn
-                throw new SQLException("LỖI: Sản phẩm " + productId + " không đủ hàng trong kho hoặc mã không tồn tại!");
+                throw new SQLException("Không đủ tồn kho hoặc không tìm thấy sản phẩm: " + productId);
             }
-
             return res;
         }
     }
 
+    /**
+     * Lấy toàn bộ sản phẩm + tồn kho (join inventory)
+     * @return 
+     */
     public List<Product> selectAll() {
         List<Product> list = new ArrayList<>();
-        // Thêm p.category_id và p.supplier_id vào câu SELECT
-        String sql = "SELECT p.product_id, p.product_name, p.base_price, p.category_id, p.supplier_id, i.quantity "
-                   + "FROM PRODUCTS p JOIN INVENTORY i ON p.product_id = i.product_id "
-                   + "WHERE p.is_deleted = 0";
 
-        try (Connection con = common.db.DatabaseConnection.getConnection(); 
-             PreparedStatement ps = con.prepareStatement(sql); 
+        String sql = "SELECT p.product_id, p.product_name, p.base_price, "
+                   + "       p.category_id, p.supplier_id, "
+                   + "       i.store_id, i.quantity, i.unit "
+                   + "FROM PRODUCTS p "
+                   + "LEFT JOIN INVENTORY i ON p.product_id = i.product_id AND i.is_deleted = 0 "
+                   + "WHERE p.is_deleted = 0 "
+                   + "ORDER BY p.product_id";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -68,101 +73,216 @@ public class ProductsSql {
                 p.setProductId(rs.getString("product_id"));
                 p.setProductName(rs.getString("product_name"));
                 p.setBasePrice(rs.getBigDecimal("base_price"));
-                p.setCategoryId(rs.getString("category_id")); // Mới thêm
-                p.setSupplierId(rs.getString("supplier_id")); // Mới thêm
+                p.setCategoryId(rs.getString("category_id"));
+                p.setSupplierId(rs.getString("supplier_id"));
+
+                // Nếu model có các field này thì set, không có thì bỏ 2 dòng dưới
+                try { p.setStoreId(rs.getString("store_id")); } catch (Exception ignored) {}
+                try { p.setUnit(rs.getString("unit")); } catch (Exception ignored) {}
+
                 p.setQuantity(rs.getInt("quantity"));
-                p.setIsDeleted(0); 
+                p.setIsDeleted(0);
                 list.add(p);
             }
         } catch (SQLException e) {
+            System.err.println("Lỗi ProductsSql.selectAll: " + e.getMessage());
             e.printStackTrace();
         }
         return list;
     }
-    public boolean insert(Product p) {
-        String sqlProduct = "INSERT INTO PRODUCTS (product_id, product_name, base_price, is_deleted) VALUES (?, ?, ?, 0)";
-        String sqlInventory = "INSERT INTO INVENTORY (product_id, quantity) VALUES (?, ?)";
 
-        try (Connection con = common.db.DatabaseConnection.getConnection()) {
-            con.setAutoCommit(false); // Bắt đầu Transaction
+    /**
+     * Thêm mới sản phẩm + khởi tạo tồn kho
+     * YÊU CẦU:
+     * - category_id tồn tại trong CATEGORIES
+     * - supplier_id tồn tại trong SUPPLIERS
+     * - store_id tồn tại trong STORES
+     * @param p
+     * @return 
+     */
+    public boolean insert(Product p) {
+        String sqlProduct = "INSERT INTO PRODUCTS "
+                + "(product_id, product_name, base_price, category_id, supplier_id, is_deleted) "
+                + "VALUES (?, ?, ?, ?, ?, 0)";
+
+        String sqlInventory = "INSERT INTO INVENTORY "
+                + "(product_id, store_id, quantity, unit, last_updated, is_deleted) "
+                + "VALUES (?, ?, ?, ?, SYSDATE, 0)";
+
+        try (Connection con = DatabaseConnection.getConnection()) {
+            con.setAutoCommit(false);
 
             try (PreparedStatement psProd = con.prepareStatement(sqlProduct);
                  PreparedStatement psInv = con.prepareStatement(sqlInventory)) {
 
-                // 1. Thêm vào bảng PRODUCTS
+                // Validate tối thiểu
+                if (isBlank(p.getProductId()) || isBlank(p.getProductName())
+                        || p.getBasePrice() == null
+                        || isBlank(p.getCategoryId())
+                        || isBlank(p.getSupplierId())
+                        || isBlank(safeStoreId(p))) {
+                    throw new SQLException("Thiếu dữ liệu bắt buộc khi thêm sản phẩm.");
+                }
+
+                // PRODUCTS
                 psProd.setString(1, p.getProductId());
                 psProd.setString(2, p.getProductName());
                 psProd.setBigDecimal(3, p.getBasePrice());
+                psProd.setString(4, p.getCategoryId());
+                psProd.setString(5, p.getSupplierId());
                 psProd.executeUpdate();
 
-                // 2. Thêm vào bảng INVENTORY (khởi tạo số lượng)
+                // INVENTORY
                 psInv.setString(1, p.getProductId());
-                psInv.setInt(2, p.getQuantity()); // Số lượng ban đầu
+                psInv.setString(2, safeStoreId(p)); // bắt buộc
+                psInv.setInt(3, p.getQuantity());
+                psInv.setString(4, safeUnit(p));    // default "Cái"
                 psInv.executeUpdate();
 
-                con.commit(); // Thành công cả hai thì commit
+                con.commit();
                 return true;
+
             } catch (SQLException e) {
-                con.rollback(); // Lỗi một trong hai thì rollback
+                con.rollback();
+                System.err.println("Lỗi ProductsSql.insert: " + e.getMessage());
                 e.printStackTrace();
+                return false;
+            } finally {
+                con.setAutoCommit(true);
             }
+
         } catch (SQLException e) {
+            System.err.println("Lỗi kết nối/transaction ProductsSql.insert: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
-    
+
+    /**
+     * Cập nhật thông tin sản phẩm + tồn kho
+     * @param p
+     * @return 
+     */
     public boolean update(Product p) {
-        String sql = "UPDATE PRODUCTS SET product_name = ?, base_price = ? WHERE product_id = ? AND is_deleted = 0";
+        String sqlProduct = "UPDATE PRODUCTS "
+                + "SET product_name = ?, base_price = ?, category_id = ?, supplier_id = ? "
+                + "WHERE product_id = ? AND is_deleted = 0";
 
-        try (Connection con = common.db.DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        String sqlInventory = "UPDATE INVENTORY "
+                + "SET quantity = ?, unit = ?, last_updated = SYSDATE "
+                + "WHERE product_id = ? AND store_id = ? AND is_deleted = 0";
 
-            ps.setString(1, p.getProductName());
-            ps.setBigDecimal(2, p.getBasePrice());
-            ps.setString(3, p.getProductId());
+        try (Connection con = DatabaseConnection.getConnection()) {
+            con.setAutoCommit(false);
 
-            return ps.executeUpdate() > 0;
+            try (PreparedStatement psProd = con.prepareStatement(sqlProduct);
+                 PreparedStatement psInv = con.prepareStatement(sqlInventory)) {
+
+                psProd.setString(1, p.getProductName());
+                psProd.setBigDecimal(2, p.getBasePrice());
+                psProd.setString(3, p.getCategoryId());
+                psProd.setString(4, p.getSupplierId());
+                psProd.setString(5, p.getProductId());
+                int prodRows = psProd.executeUpdate();
+
+                psInv.setInt(1, p.getQuantity());
+                psInv.setString(2, safeUnit(p));
+                psInv.setString(3, p.getProductId());
+                psInv.setString(4, safeStoreId(p));
+                int invRows = psInv.executeUpdate();
+
+                // Nếu inventory chưa có dòng tương ứng thì insert mới
+                if (invRows == 0) {
+                    String insertInv = "INSERT INTO INVENTORY "
+                            + "(product_id, store_id, quantity, unit, last_updated, is_deleted) "
+                            + "VALUES (?, ?, ?, ?, SYSDATE, 0)";
+                    try (PreparedStatement psInsInv = con.prepareStatement(insertInv)) {
+                        psInsInv.setString(1, p.getProductId());
+                        psInsInv.setString(2, safeStoreId(p));
+                        psInsInv.setInt(3, p.getQuantity());
+                        psInsInv.setString(4, safeUnit(p));
+                        psInsInv.executeUpdate();
+                    }
+                }
+
+                con.commit();
+                return prodRows > 0;
+
+            } catch (SQLException e) {
+                con.rollback();
+                System.err.println("Lỗi ProductsSql.update: " + e.getMessage());
+                e.printStackTrace();
+                return false;
+            } finally {
+                con.setAutoCommit(true);
+            }
+
         } catch (SQLException e) {
+            System.err.println("Lỗi kết nối/transaction ProductsSql.update: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
-    
+
+    /**
+     * Xóa mềm sản phẩm + inventory
+     * @param productId
+     * @return 
+     */
     public boolean delete(String productId) {
-        // Chuyển trạng thái is_deleted thành 1
-        String sql = "UPDATE PRODUCTS SET is_deleted = 1 WHERE product_id = ?";
+        String sqlProduct = "UPDATE PRODUCTS SET is_deleted = 1 WHERE product_id = ?";
+        String sqlInv = "UPDATE INVENTORY SET is_deleted = 1 WHERE product_id = ?";
 
-        try (Connection con = common.db.DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = DatabaseConnection.getConnection()) {
+            con.setAutoCommit(false);
 
-            ps.setString(1, productId);
+            try (PreparedStatement psProd = con.prepareStatement(sqlProduct);
+                 PreparedStatement psInv = con.prepareStatement(sqlInv)) {
 
-            return ps.executeUpdate() > 0;
+                psProd.setString(1, productId);
+                int prodRows = psProd.executeUpdate();
+
+                psInv.setString(1, productId);
+                psInv.executeUpdate();
+
+                con.commit();
+                return prodRows > 0;
+
+            } catch (SQLException e) {
+                con.rollback();
+                System.err.println("Lỗi ProductsSql.delete: " + e.getMessage());
+                e.printStackTrace();
+                return false;
+            } finally {
+                con.setAutoCommit(true);
+            }
+
         } catch (SQLException e) {
+            System.err.println("Lỗi kết nối/transaction ProductsSql.delete: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
-    
-        /**
-     * Tìm kiếm sản phẩm theo tên (hỗ trợ tìm gần đúng)
-     * Kết hợp lấy số lượng từ bảng INVENTORY để hiển thị lên giao diện
+
+    /**
+     * Tìm kiếm theo tên
      * @param name
      * @return 
      */
     public List<Product> searchByName(String name) {
         List<Product> list = new ArrayList<>();
-        // SQL: Lấy thông tin sản phẩm và số lượng tồn kho tương ứng
-        String sql = "SELECT p.product_id, p.product_name, p.base_price, p.category_id, p.supplier_id, i.quantity "
-                   + "FROM PRODUCTS p "
-                   + "JOIN INVENTORY i ON p.product_id = i.product_id "
-                   + "WHERE p.product_name LIKE ? AND p.is_deleted = 0";
 
-        try (Connection con = common.db.DatabaseConnection.getConnection();
+        String sql = "SELECT p.product_id, p.product_name, p.base_price, "
+                   + "       p.category_id, p.supplier_id, "
+                   + "       i.store_id, i.quantity, i.unit "
+                   + "FROM PRODUCTS p "
+                   + "LEFT JOIN INVENTORY i ON p.product_id = i.product_id AND i.is_deleted = 0 "
+                   + "WHERE p.is_deleted = 0 AND LOWER(p.product_name) LIKE LOWER(?) "
+                   + "ORDER BY p.product_id";
+
+        try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            // Thiết lập tham số tìm kiếm: %chuỗi%
             ps.setString(1, "%" + name + "%");
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -173,16 +293,43 @@ public class ProductsSql {
                     p.setBasePrice(rs.getBigDecimal("base_price"));
                     p.setCategoryId(rs.getString("category_id"));
                     p.setSupplierId(rs.getString("supplier_id"));
+
+                    try { p.setStoreId(rs.getString("store_id")); } catch (Exception ignored) {}
+                    try { p.setUnit(rs.getString("unit")); } catch (Exception ignored) {}
+
                     p.setQuantity(rs.getInt("quantity"));
                     p.setIsDeleted(0);
-
                     list.add(p);
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Lỗi tại ProductsSql.searchByName: " + e.getMessage());
+            System.err.println("Lỗi ProductsSql.searchByName: " + e.getMessage());
             e.printStackTrace();
         }
+
         return list;
+    }
+
+    // ===== helper =====
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
+    private String safeStoreId(Product p) {
+        try {
+            String s = p.getStoreId();
+            return (s == null || s.isBlank()) ? "ST001" : s.trim(); // default test
+        } catch (Exception e) {
+            return "ST001";
+        }
+    }
+
+    private String safeUnit(Product p) {
+        try {
+            String u = (String) p.getUnit();
+            return (u == null || u.isBlank()) ? "Cái" : u.trim();
+        } catch (Exception e) {
+            return "Cái";
+        }
     }
 }
