@@ -289,13 +289,13 @@ public class CustomerView extends javax.swing.JPanel {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "Mã khách hàng", "Tên khách hàng", "Số điện thoại", "Email"
+                "Mã khách hàng", "Tên khách hàng", "Số điện thoại", "Email", "Địa chỉ"
             }
         ));
         tbCustomer.setViewportView(jTable1);

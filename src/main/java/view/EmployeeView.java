@@ -34,7 +34,7 @@ public class EmployeeView extends javax.swing.JPanel {
     private void initTable() {
         tableModel = (DefaultTableModel) jTable1.getModel();
         jTable1.setModel(new DefaultTableModel(
-                new Object[]{"Mã nhân viên", "Tên nhân viên", "SĐT", "Email", "Chức vụ", "Giới tính"}, 0
+                new Object[]{"Mã nhân viên", "Tên nhân viên", "Số điện thoại", "Email", "Chức vụ", "Giới tính"}, 0
         ));
     }
 
@@ -287,7 +287,7 @@ public class EmployeeView extends javax.swing.JPanel {
                 {null, null, null, null, null, null}
             },
             new String [] {
-                "Mã nhân viên", "Tên nhân viên", "SĐT", "Email", "Chức vụ", "Giới tính"
+                "Mã nhân viên", "Tên nhân viên", "Số điện thoại", "Email", "Chức vụ", "Giới tính"
             }
         ));
         tbEmployee.setViewportView(jTable1);
