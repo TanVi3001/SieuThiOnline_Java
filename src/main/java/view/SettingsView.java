@@ -258,7 +258,10 @@ public class SettingsView extends JPanel {
         JPanel card = new JPanel(new GridBagLayout());
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createTitledBorder(
-                        UIManager.getBorder("TitledBorder.border"),
+                        BorderFactory.createMatteBorder(1, 1, 1, 1,
+                                UIManager.getColor("Component.borderColor") != null
+                                        ? UIManager.getColor("Component.borderColor")
+                                        : new Color(200, 200, 200)),
                         "Giao diện & Hiển thị",
                         TitledBorder.LEFT,
                         TitledBorder.TOP,
@@ -272,13 +275,13 @@ public class SettingsView extends JPanel {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Dòng 1: Chủ đề
+        // Dòng 1: Chủ đề (☀️ icon)
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0;
-        card.add(new JLabel("Chủ đề:"), gbc);
+        card.add(new JLabel("☀️ Chủ đề:"), gbc);
 
-        cboTheme = new JComboBox<>(new String[]{"Sáng (Light)", "Tối (Dark)"});
+        cboTheme = new JComboBox<>(new String[]{"☀️ Sáng (Light)", "\uD83C\uDF19 Tối (Dark)"});
         cboTheme.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 String selected = (String) cboTheme.getSelectedItem();
@@ -292,12 +295,12 @@ public class SettingsView extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         card.add(cboTheme, gbc);
 
-        // Dòng 2: Kích cỡ chữ (JComboBox thay cho JSlider)
+        // Dòng 2: Kích cỡ chữ (📏 icon, JComboBox thay cho JSlider)
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("Kích cỡ chữ:"), gbc);
+        card.add(new JLabel("\uD83D\uDCCF Kích cỡ chữ:"), gbc);
 
         cboFontSize = new JComboBox<>(new String[]{"Nhỏ (12px)", "Vừa (14px)", "Lớn (16px)", "Rất lớn (18px)"});
         cboFontSize.setSelectedIndex(1); // Mặc định "Vừa (14px)"
@@ -321,7 +324,10 @@ public class SettingsView extends JPanel {
         JPanel card = new JPanel(new GridBagLayout());
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createTitledBorder(
-                        UIManager.getBorder("TitledBorder.border"),
+                        BorderFactory.createMatteBorder(1, 1, 1, 1,
+                                UIManager.getColor("Component.borderColor") != null
+                                        ? UIManager.getColor("Component.borderColor")
+                                        : new Color(200, 200, 200)),
                         "Thông báo & Bảo mật",
                         TitledBorder.LEFT,
                         TitledBorder.TOP,
@@ -335,11 +341,11 @@ public class SettingsView extends JPanel {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Dòng 1: Bật thông báo
+        // Dòng 1: Bật thông báo (🔔 icon)
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0;
-        card.add(new JLabel("Thông báo:"), gbc);
+        card.add(new JLabel("\uD83D\uDD14 Thông báo:"), gbc);
 
         chkNotification = new JCheckBox("Bật thông báo hệ thống");
         chkNotification.setSelected(true);
@@ -348,12 +354,12 @@ public class SettingsView extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         card.add(chkNotification, gbc);
 
-        // Dòng 2: Số điện thoại
+        // Dòng 2: Số điện thoại (📱 icon)
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("Số điện thoại:"), gbc);
+        card.add(new JLabel("\uD83D\uDCF1 Số điện thoại:"), gbc);
 
         txtPhone = new JTextField(DEFAULT_PHONE, 20);
         gbc.gridx = 1;
@@ -361,12 +367,12 @@ public class SettingsView extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         card.add(txtPhone, gbc);
 
-        // Dòng 3: Email
+        // Dòng 3: Email (✉️ icon)
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("Email:"), gbc);
+        card.add(new JLabel("✉️ Email:"), gbc);
 
         txtEmail = new JTextField(DEFAULT_EMAIL, 20);
         gbc.gridx = 1;
@@ -395,12 +401,12 @@ public class SettingsView extends JPanel {
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Dòng 5: Mật khẩu hiện tại
+        // Dòng 5: Mật khẩu hiện tại (🔐 icon)
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("Mật khẩu hiện tại:"), gbc);
+        card.add(new JLabel("\uD83D\uDD10 Mật khẩu hiện tại:"), gbc);
 
         txtCurrentPassword = new JPasswordField(20);
         gbc.gridx = 1;
@@ -408,12 +414,12 @@ public class SettingsView extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         card.add(txtCurrentPassword, gbc);
 
-        // Dòng 6: Mật khẩu mới
+        // Dòng 6: Mật khẩu mới (🔐 icon)
         gbc.gridx = 0;
         gbc.gridy = 6;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("Mật khẩu mới:"), gbc);
+        card.add(new JLabel("\uD83D\uDD10 Mật khẩu mới:"), gbc);
 
         txtNewPassword = new JPasswordField(20);
         gbc.gridx = 1;
@@ -421,12 +427,12 @@ public class SettingsView extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         card.add(txtNewPassword, gbc);
 
-        // Dòng 7: Xác nhận mật khẩu mới
+        // Dòng 7: Xác nhận mật khẩu mới (🔐 icon)
         gbc.gridx = 0;
         gbc.gridy = 7;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("Xác nhận mật khẩu:"), gbc);
+        card.add(new JLabel("\uD83D\uDD10 Xác nhận mật khẩu:"), gbc);
 
         txtConfirmPassword = new JPasswordField(20);
         gbc.gridx = 1;
@@ -509,7 +515,10 @@ public class SettingsView extends JPanel {
         JPanel card = new JPanel(new GridBagLayout());
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createTitledBorder(
-                        UIManager.getBorder("TitledBorder.border"),
+                        BorderFactory.createMatteBorder(1, 1, 1, 1,
+                                UIManager.getColor("Component.borderColor") != null
+                                        ? UIManager.getColor("Component.borderColor")
+                                        : new Color(200, 200, 200)),
                         "Lưu trữ & Hệ thống",
                         TitledBorder.LEFT,
                         TitledBorder.TOP,
@@ -523,11 +532,11 @@ public class SettingsView extends JPanel {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Dòng 1: Lưu tự động
+        // Dòng 1: Lưu tự động (💾 icon)
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0;
-        card.add(new JLabel("Lưu trữ:"), gbc);
+        card.add(new JLabel("\uD83D\uDCBE Lưu trữ:"), gbc);
 
         chkAutoSave = new JCheckBox("Lưu tự động");
         chkAutoSave.setSelected(true);
@@ -536,12 +545,12 @@ public class SettingsView extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         card.add(chkAutoSave, gbc);
 
-        // Dòng 2: Xóa bộ nhớ cache
+        // Dòng 2: Xóa bộ nhớ cache (🗑️ icon)
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("Bộ nhớ cache:"), gbc);
+        card.add(new JLabel("\uD83D\uDDD1️ Bộ nhớ cache:"), gbc);
 
         JButton btnClearCache = new JButton("Xóa bộ nhớ cache");
         btnClearCache.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -557,12 +566,12 @@ public class SettingsView extends JPanel {
         gbc.anchor = GridBagConstraints.WEST;
         card.add(btnClearCache, gbc);
 
-        // Dòng 3: Phiên bản hệ thống
+        // Dòng 3: Phiên bản hệ thống (ℹ️ icon)
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("Phiên bản:"), gbc);
+        card.add(new JLabel("ℹ️ Phiên bản:"), gbc);
 
         JLabel lblVersion = new JLabel("v1.0.0 - SNAPSHOT");
         lblVersion.setForeground(UIManager.getColor("Label.disabledForeground"));
