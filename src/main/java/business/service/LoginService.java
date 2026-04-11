@@ -1,36 +1,63 @@
 package business.service;
 
 import business.sql.rbac.AccountSql;
+import common.security.PasswordUtil;
 import model.account.Account;
 
 public class LoginService {
 
-    // Biến static để lưu thông tin người dùng đang đăng nhập (Session giả lập)
     private static Account currentUser;
 
     /**
-     * Hàm xử lý đăng nhập
+     * Xác thực đăng nhập:
+     * - Nếu DB lưu BCrypt -> verify BCrypt
+     * - Nếu DB còn plain text -> so khớp plain, nếu đúng thì auto-upgrade sang BCrypt
      *
-     * @param username tên đăng nhập từ LoginView
-     * @param password mật khẩu từ LoginView
-     * @return true nếu khớp, false nếu sai tài khoản/mật khẩu
+     * @param username tên đăng nhập
+     * @param password mật khẩu người dùng nhập
+     * @return true nếu đăng nhập thành công, ngược lại false
      */
     public static boolean authenticate(String username, String password) {
-        System.out.println("DEBUG: Dang nhap voi User = [" + username + "] | Pass = [" + password + "]");
-        // 1. Gọi xuống SQL để lấy thông tin tài khoản theo username
-        // Giả sử AccountSql đã có hàm selectByUsername hoặc dùng selectById nếu username là ID
-        Account acc = AccountSql.getInstance().selectByUsername(username);
+        System.out.println("DEBUG: Dang nhap voi User = [" + username + "]");
 
-        // 2. Kiểm tra tài khoản có tồn tại không
+        AccountSql accountSql = AccountSql.getInstance();
+        Account acc = accountSql.selectByUsername(username);
+
         if (acc == null) {
             System.out.println("❌ Đăng nhập thất bại: Tài khoản không tồn tại.");
             return false;
         }
 
-        // 3. So khớp mật khẩu (Ở mức độ đồ án, AE mình so khớp chuỗi trực tiếp)
-        if (acc.getPassword().equals(password)) {
-            currentUser = acc; // Lưu lại phiên đăng nhập
-            System.out.println("✅ Đăng nhập thành công! Chào mừng " + acc.getUsername() + " [" + acc.getRole() + "]");
+        String stored = acc.getPassword();
+        if (stored == null || stored.isEmpty()) {
+            System.out.println("❌ Đăng nhập thất bại: Tài khoản chưa có mật khẩu hợp lệ.");
+            return false;
+        }
+
+        boolean ok;
+        if (PasswordUtil.isBCryptHash(stored)) {
+            // DB đã là hash
+            ok = PasswordUtil.verify(password, stored);
+        } else {
+            // DB còn plain text (legacy)
+            ok = stored.equals(password);
+
+            // Auto-upgrade sang hash nếu login đúng
+            if (ok) {
+                String newHash = PasswordUtil.hash(password);
+                boolean upgraded = accountSql.updatePasswordByAccountId(acc.getAccountId(), newHash);
+                if (upgraded) {
+                    acc.setPassword(newHash); // cập nhật object hiện tại
+                    System.out.println("INFO: Đã auto-upgrade mật khẩu sang BCrypt cho account: " + acc.getAccountId());
+                } else {
+                    System.out.println("WARN: Không auto-upgrade được mật khẩu (DB update fail).");
+                }
+            }
+        }
+
+        if (ok) {
+            currentUser = acc;
+            System.out.println("✅ Đăng nhập thành công! Chào mừng " + acc.getUsername());
             return true;
         } else {
             System.out.println("❌ Đăng nhập thất bại: Sai mật khẩu.");
@@ -39,16 +66,16 @@ public class LoginService {
     }
 
     /**
-     * Hàm lấy thông tin người dùng hiện tại
+     * Lấy user đang đăng nhập.
      *
-     * @return
+     * @return account hiện tại hoặc null
      */
     public static Account getCurrentUser() {
         return currentUser;
     }
 
     /**
-     * Hàm đăng xuất
+     * Đăng xuất.
      */
     public static void logout() {
         currentUser = null;
@@ -56,11 +83,11 @@ public class LoginService {
     }
 
     /**
-     * Hàm kiểm tra quyền Admin để hỗ trợ Quỳnh ẩn/hiện nút
+     * Tạm thời trả false vì schema hiện tại không có role trực tiếp trong ACCOUNTS.
      *
-     * @return
+     * @return false
      */
     public static boolean isAdmin() {
-        return currentUser != null && "ADMIN".equalsIgnoreCase(currentUser.getRole());
+        return false;
     }
 }

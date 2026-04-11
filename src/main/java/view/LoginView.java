@@ -365,10 +365,9 @@ public class LoginView extends javax.swing.JFrame {
 
         // SỬA DÒNG NÀY: JPasswordField dùng getPassword() trả về mảng char,
         // mình phải bọc nó trong new String(...) để lấy chuỗi mật khẩu.
-        String pass = new String(txtPassword.getPassword()).trim();
+        String pass = new String(txtPassword.getPassword());
 
         System.out.println("User nhap: [" + user + "]");
-        System.out.println("Pass nhap: [" + pass + "]");
         // 2. Kiểm tra nhanh (Validation)
         if (user.isEmpty() || pass.isEmpty()) {
             javax.swing.JOptionPane.showMessageDialog(this,

@@ -21,56 +21,42 @@ public class DashboardView extends javax.swing.JFrame {
     public DashboardView() {
         initComponents();
 
-        // 1. Chỉnh kích thước & Tiêu đề (Thêm setTitle để thanh Taskbar hiện tên app)
         this.setTitle("Hệ Thống Quản Lý Siêu Thị");
         this.setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
         this.setMinimumSize(new java.awt.Dimension(1280, 720));
         this.setLocationRelativeTo(null);
-
-        // Đảm bảo đóng app là tắt hẳn tiến trình (Tránh chạy ngầm tốn RAM)
         this.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
 
-        // 2. Căn giữa cái Title
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
-        // 3. Xử lý thông tin người dùng (Thêm kiểm tra null và format chuỗi)
-        try {
-            model.account.Account currentUser = business.service.LoginService.getCurrentUser();
-            if (currentUser != null) {
-                // Dùng String.format để code nhìn sạch và dễ chỉnh sửa sau này
-                String welcomeMsg = String.format("HỆ THỐNG SIÊU THỊ - Chào, %s", currentUser.getUsername());
-                jLabel2.setText(welcomeMsg);
-            } else {
-                jLabel2.setText("HỆ THỐNG SIÊU THỊ - Chưa đăng nhập");
-            }
-        } catch (Exception e) {
-            // Nếu lấy user bị lỗi thì app vẫn chạy được chứ không "văng" ra ngoài
-            System.err.println("Lỗi load user: " + e.getMessage());
+        // Lấy user hiện tại 1 lần
+        model.account.Account currentUser = business.service.LoginService.getCurrentUser();
+        String username = "";
+        if (currentUser != null && currentUser.getUsername() != null) {
+            username = currentUser.getUsername().trim();
+            jLabel2.setText(String.format("HỆ THỐNG SIÊU THỊ - Chào, %s", username));
+        } else {
+            jLabel2.setText("HỆ THỐNG SIÊU THỊ - Chưa đăng nhập");
         }
 
-        // 4. Thực thi phân quyền
-        authorize();
+        // ===== PHÂN QUYỀN THEO USERNAME =====
+        boolean isStaff = "staff".equalsIgnoreCase(username);
 
-        // --- [MỚI] TÍCH HỢP SIDEBAR FLATLAF ---
-        // 1. Tắt Sidebar cũ đi
+        // Sidebar cũ (NetBeans) không dùng nữa
         jPanel3.setVisible(false);
 
-        // 2. Chuyển layout tổng sang BorderLayout để tránh đụng độ GroupLayout của
-        // Netbeans
+        // Dựng layout mới
         this.getContentPane().removeAll();
         this.getContentPane().setLayout(new java.awt.BorderLayout());
 
-        // 3. Khởi tạo Content Panel đúng chỗ
         mainContentPanel = new javax.swing.JPanel(new java.awt.BorderLayout());
         mainContentPanel.setBackground(new java.awt.Color(245, 245, 247));
 
-        // 4. Khởi tạo Sidebar mới và nhận tín hiệu click
-        model.account.Account currentUser = business.service.LoginService.getCurrentUser();
-        String role = (currentUser != null) ? currentUser.getRole() : "";
+        // Truyền role cho Sidebar mới dựa trên username
+        String roleForSidebar = isStaff ? "STAFF" : "ADMIN";
+        view.components.Sidebar newSidebar = new view.components.Sidebar(roleForSidebar);
 
-        // QUAN TRỌNG: truyền role vào Sidebar
-        view.components.Sidebar newSidebar = new view.components.Sidebar(role);
-
+        // Menu click
         newSidebar.setMenuClickListener(title -> {
             switch (title) {
                 case "Tổng quan":
@@ -78,33 +64,57 @@ public class DashboardView extends javax.swing.JFrame {
                     mainContentPanel.revalidate();
                     mainContentPanel.repaint();
                     break;
+
                 case "Quản lý sản phẩm":
                     showPanel(new ProductView());
                     break;
+
                 case "Quản lý nhân viên":
-                    showPanel(new view.EmployeeView());
+                    if (isStaff) {
+                        javax.swing.JOptionPane.showMessageDialog(
+                                this,
+                                "Bạn không có quyền truy cập chức năng này!",
+                                "Từ chối truy cập",
+                                javax.swing.JOptionPane.WARNING_MESSAGE
+                        );
+                    } else {
+                        showPanel(new view.EmployeeView());
+                    }
                     break;
+
                 case "Khách hàng":
                     showPanel(new CustomerView());
                     break;
+
                 case "Hóa đơn":
                     showPanel(new OrderView());
                     break;
+
                 case "Thống kê":
-                    showPanel(new StatisticView());
+                    if (isStaff) {
+                        javax.swing.JOptionPane.showMessageDialog(
+                                this,
+                                "Bạn không có quyền truy cập chức năng này!",
+                                "Từ chối truy cập",
+                                javax.swing.JOptionPane.WARNING_MESSAGE
+                        );
+                    } else {
+                        showPanel(new StatisticView());
+                    }
                     break;
+
                 case "Đăng xuất":
                     btnLogoutActionPerformed(null);
                     break;
             }
         });
 
-        // 5. Gắn lại các thành phần vào JFrame với BorderLayout
         this.getContentPane().add(jPanel1, java.awt.BorderLayout.NORTH);
         this.getContentPane().add(newSidebar, java.awt.BorderLayout.WEST);
         this.getContentPane().add(mainContentPanel, java.awt.BorderLayout.CENTER);
 
         this.revalidate();
+        this.repaint();
     }
 
     /*
