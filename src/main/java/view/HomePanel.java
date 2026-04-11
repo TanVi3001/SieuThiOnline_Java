@@ -34,7 +34,7 @@ public class HomePanel extends javax.swing.JPanel {
 
         setBackground(new java.awt.Color(236, 240, 241));
 
-        Icon.setIcon(new javax.swing.ImageIcon("D:\\IS216\\SieuThiOnline_Java\\src\\view.image\\market-Photoroom.png")); // NOI18N
+        Icon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/view.image/market-Photoroom.png"))); // NOI18N
 
         SystemName.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         SystemName.setForeground(new java.awt.Color(0, 22, 151));
@@ -89,7 +89,7 @@ public class HomePanel extends javax.swing.JPanel {
                 .addComponent(Greeting)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ClassName)
-                .addContainerGap(85, Short.MAX_VALUE))
+                .addContainerGap(61, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
