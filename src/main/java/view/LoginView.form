@@ -220,7 +220,7 @@
         <Component class="javax.swing.JLabel" name="IconMarket">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/view.image/market-Photoroom.png"/>
+              <Image iconType="3" name="/view/image/market-Photoroom.png"/>
             </Property>
           </Properties>
           <Constraints>
