@@ -103,6 +103,10 @@ public class DashboardView extends javax.swing.JFrame {
                     }
                     break;
 
+                case "Cài đặt":
+                    showPanel(new SettingsView());
+                    break;
+
                 case "Đăng xuất":
                     btnLogoutActionPerformed(null);
                     break;
