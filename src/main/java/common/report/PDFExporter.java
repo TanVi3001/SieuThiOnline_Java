@@ -10,6 +10,7 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.UnitValue;
 import java.util.List;
+import java.util.Map;
 import model.product.Inventory;
 
 /**
@@ -70,11 +71,55 @@ public class PDFExporter {
                     .setItalic()
                     .setFontSize(10));
 
-            System.out.println("✅ Đã xuất PDF thành công tại: " + filePath);
+            System.out.println("Đã xuất PDF thành công tại: " + filePath);
 
         } catch (Exception e) {
-            System.err.println("❌ Lỗi nghiêm trọng khi xuất PDF: " + e.getMessage());
+            System.err.println("Lỗi nghiêm trọng khi xuất PDF: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    public static void exportProducts(List<Map<String, Object>> products, String filePath) throws Exception {
+        try (PdfWriter writer = new PdfWriter(filePath);
+             PdfDocument pdf = new PdfDocument(writer);
+             Document document = new Document(pdf)) {
+
+            // Tiêu đề
+            Paragraph title = new Paragraph("DANH SÁCH SẢN PHẨM")
+                    .setBold()
+                    .setFontSize(20)
+                    .setMarginBottom(15);
+            document.add(title);
+
+            // Tạo bảng (4 cột)
+            float[] columnWidths = {100, 150, 100, 80};
+            Table table = new Table(UnitValue.createPointArray(columnWidths));
+            table.setWidth(UnitValue.createPercentValue(100));
+
+            // Header
+            table.addHeaderCell(new Paragraph("Mã SP").setBold());
+            table.addHeaderCell(new Paragraph("Tên Sản Phẩm").setBold());
+            table.addHeaderCell(new Paragraph("Giá").setBold());
+            table.addHeaderCell(new Paragraph("Số Lượng").setBold());
+
+            // Dữ liệu
+            if (products == null || products.isEmpty()) {
+                document.add(new Paragraph("Không có dữ liệu sản phẩm để hiển thị."));
+            } else {
+                for (Map<String, Object> product : products) {
+                    table.addCell(String.valueOf(product.get("productId")));
+                    table.addCell(String.valueOf(product.get("productName")));
+                    table.addCell(String.valueOf(product.get("price")));
+                    table.addCell(String.valueOf(product.get("quantity")));
+                }
+            }
+
+            document.add(table);
+
+            // Ngày xuất
+            document.add(new Paragraph("\nNgày xuất báo cáo: " + new java.util.Date().toString())
+                    .setItalic()
+                    .setFontSize(10));
         }
     }
 }

@@ -15,6 +15,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import model.product.Product;
 
 public class ProductView extends javax.swing.JPanel {
@@ -136,6 +139,8 @@ public class ProductView extends javax.swing.JPanel {
         btnUpdate = new javax.swing.JButton();
         btnDelete = new javax.swing.JButton();
         btnClear = new javax.swing.JButton();
+        btnExportPDF = new javax.swing.JButton();
+        btnExportExcel = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         txtSearch = new javax.swing.JTextField();
         btnSearch = new javax.swing.JButton();
@@ -272,6 +277,16 @@ public class ProductView extends javax.swing.JPanel {
         btnClear.addActionListener(this::btnClearActionPerformed);
         pnlButton.add(btnClear);
 
+        btnExportPDF.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnExportPDF.setText("Xuất PDF");
+        btnExportPDF.addActionListener(this::btnExportPDFActionPerformed);
+        pnlButton.add(btnExportPDF);
+
+        btnExportExcel.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnExportExcel.setText("Xuất Excel");
+        btnExportExcel.addActionListener(this::btnExportExcelActionPerformed);
+        pnlButton.add(btnExportExcel);
+
         add(pnlButton, java.awt.BorderLayout.PAGE_END);
 
         jPanel1.setBackground(new java.awt.Color(236, 240, 241));
@@ -404,6 +419,91 @@ public class ProductView extends javax.swing.JPanel {
     }
 
 
+    private void btnExportPDFActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            List<Map<String, Object>> productList = getAllProductsFromTable();
+
+            if (productList.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "Không có dữ liệu để xuất!",
+                        "Thông báo",
+                        JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
+            fileChooser.setDialogTitle("Lưu file PDF");
+            fileChooser.setSelectedFile(new java.io.File("SanPham_" + System.currentTimeMillis() + ".pdf"));
+
+            int result = fileChooser.showSaveDialog(this);
+            if (result == javax.swing.JFileChooser.APPROVE_OPTION) {
+                String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+                common.report.PDFExporter.exportProducts(productList, filePath);
+                JOptionPane.showMessageDialog(this,
+                        "Xuất PDF thành công!\nFile: " + filePath,
+                        "Thành công",
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (Exception ex) {
+            String msg = ex.getMessage() != null ? ex.getMessage() : "Lỗi không xác định";
+            JOptionPane.showMessageDialog(this,
+                    "Lỗi xuất PDF: " + msg,
+                    "Lỗi",
+                    JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
+    }
+
+    private void btnExportExcelActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            List<Map<String, Object>> productList = getAllProductsFromTable();
+
+            if (productList.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "Không có dữ liệu để xuất!",
+                        "Thông báo",
+                        JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
+            fileChooser.setDialogTitle("Lưu file Excel");
+            fileChooser.setSelectedFile(new java.io.File("SanPham_" + System.currentTimeMillis() + ".xlsx"));
+
+            int result = fileChooser.showSaveDialog(this);
+            if (result == javax.swing.JFileChooser.APPROVE_OPTION) {
+                String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+                common.report.ExcelExporter.exportProducts(productList, filePath);
+                JOptionPane.showMessageDialog(this,
+                        "Xuất Excel thành công!\nFile: " + filePath,
+                        "Thành công",
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (Exception ex) {
+            String msg = ex.getMessage() != null ? ex.getMessage() : "Lỗi không xác định";
+            JOptionPane.showMessageDialog(this,
+                    "Lỗi xuất Excel: " + msg,
+                    "Lỗi",
+                    JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
+    }
+
+    private List<Map<String, Object>> getAllProductsFromTable() {
+        List<Map<String, Object>> list = new ArrayList<>();
+        int rowCount = tblProducts.getRowCount();
+
+        for (int i = 0; i < rowCount; i++) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("productId", tblProducts.getValueAt(i, 0));
+            row.put("productName", tblProducts.getValueAt(i, 1));
+            row.put("price", tblProducts.getValueAt(i, 2));
+            row.put("quantity", tblProducts.getValueAt(i, 3));
+            list.add(row);
+        }
+        return list;
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel Category;
     private javax.swing.JLabel ProductName;
@@ -412,6 +512,8 @@ public class ProductView extends javax.swing.JPanel {
     private javax.swing.JButton btnBack;
     private javax.swing.JButton btnClear;
     private javax.swing.JButton btnDelete;
+    private javax.swing.JButton btnExportExcel;
+    private javax.swing.JButton btnExportPDF;
     private javax.swing.JButton btnSearch;
     private javax.swing.JButton btnUpdate;
     private javax.swing.JPanel jPanel1;
