@@ -79,13 +79,17 @@ public class MenuItem extends JPanel {
     
     public void setFramed(boolean framed) {
         this.isFramed = framed;
-        setOpaque(!framed);
+        setOpaque(false); // background is drawn manually
         if (framed) {
-            lblIcon.setForeground(new Color(220, 53, 69)); // Màu đỏ
-            lblText.setForeground(new Color(220, 53, 69));
-            lblText.setFont(new Font("Segoe UI", Font.BOLD, 14));
-            setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 15)); // Giữ padding
-            setPreferredSize(new Dimension(220, 45)); // Thu nhỏ chiều ngang một xíu để cách mép
+            lblIcon.setVisible(false); // Xóa dấu chấm
+            lblText.setForeground(Color.WHITE); // Chữ trắng
+            lblText.setFont(new Font("Segoe UI", Font.BOLD, 14)); // Chữ in đậm
+            setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 15));
+            setPreferredSize(new Dimension(220, 45));
+        } else {
+            lblIcon.setVisible(true);
+            lblText.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            lblText.setForeground(textNormalColor);
         }
         repaint();
     }
@@ -96,12 +100,12 @@ public class MenuItem extends JPanel {
              Graphics2D g2 = (Graphics2D) g.create();
              g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
              
-             // Draw background
-             g2.setColor(getBackground());
+             // Draw background (màu đỏ fill nền)
+             g2.setColor(new Color(220, 53, 69));
              g2.fillRoundRect(2, 2, getWidth() - 4, getHeight() - 4, 15, 15);
              
-             // Draw border
-             g2.setColor(new Color(220, 53, 69)); // Viền đỏ bao quanh
+             // Draw border (viền đậm hơn hoặc cùng màu)
+             g2.setColor(new Color(200, 35, 51));
              g2.drawRoundRect(2, 2, getWidth() - 4, getHeight() - 4, 15, 15);
              
              g2.dispose();

@@ -4,8 +4,11 @@
  */
 package view;
 
+import business.service.LoginService;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
+import model.account.Account;
+
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.geom.Ellipse2D;
@@ -16,46 +19,53 @@ import javax.swing.border.TitledBorder;
 
 /**
  * SettingsView - Màn hình Cài đặt cho Hệ thống Quản lý Siêu thị.
- * Giao diện 2 cột tỉ lệ 4:6 với GridBagLayout.
- * Cột trái: Hồ sơ cá nhân. Cột phải: 3 Card cài đặt hệ thống.
- * Sử dụng FlatLaf theme colors để tương thích Light/Dark mode.
- *
- * @author Le Tan Vi
  */
 public class SettingsView extends JPanel {
 
     // ===== Dữ liệu mặc định =====
-    private static final String DEFAULT_NAME = "Nguyễn Văn A";
-    private static final String DEFAULT_POSITION = "Quản trị viên";
-    private static final String DEFAULT_PHONE = "0123456789";
-    private static final String DEFAULT_EMAIL = "admin@supermarket.com";
-    private static final String DEFAULT_DEPARTMENT = "Quản lý";
-    private static final String DEFAULT_JOIN_DATE = "01/01/2024";
+    private String userName = "Nguyễn Văn A";
+    private String userRole = "Quản trị viên";
+    private String userEmail = "admin@supermarket.com";
+    private String userDepartment = "Quản lý";
+    private String joinDate = "01/01/2024";
+    private String usernameId = "admin";
 
     // ===== Các thành phần giao diện =====
-    private JTextField txtPhone;
-    private JTextField txtEmail;
     private JPasswordField txtCurrentPassword;
     private JPasswordField txtNewPassword;
     private JPasswordField txtConfirmPassword;
+    private JCheckBox chkShowPassword;
+    
     private JComboBox<String> cboTheme;
     private JComboBox<String> cboFontSize;
-    private JCheckBox chkNotification;
+    private JComboBox<String> cboLanguage;
+    
+    private JCheckBox chkSysNotification;
+    private JCheckBox chkStockAlert;
+    private JCheckBox chkTransactionAlert;
+    private JTextField txtNotifyPhone;
+    private JTextField txtNotifyEmail;
+    
     private JCheckBox chkAutoSave;
     private JLabel lblAvatar;
     private JLabel lblName;
     private JLabel lblPosition;
 
-    /**
-     * Constructor - Khởi tạo giao diện SettingsView.
-     */
     public SettingsView() {
+        loadCurrentUser();
         initUI();
     }
 
-    /**
-     * Khởi tạo toàn bộ giao diện chính với GridBagLayout chia 2 cột tỉ lệ 4:6.
-     */
+    private void loadCurrentUser() {
+        Account currentUser = LoginService.getCurrentUser();
+        if (currentUser != null) {
+            userName = currentUser.getUsername();
+            usernameId = currentUser.getUsername();
+            userRole = currentUser.getRole() != null ? currentUser.getRole() : "Người dùng";
+            // Optional: Map other fields if Account model has them
+        }
+    }
+
     private void initUI() {
         setLayout(new GridBagLayout());
         setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -64,14 +74,14 @@ public class SettingsView extends JPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridy = 0;
         gbc.weighty = 1.0;
-        gbc.insets = new Insets(0, 0, 0, 10);
-
-        // === Cột trái: Hồ sơ (40%) ===
+        
+        // Cột trái: Hồ sơ (35%)
         gbc.gridx = 0;
-        gbc.weightx = 0.4;
+        gbc.weightx = 0.35;
+        gbc.insets = new Insets(0, 0, 0, 10);
         add(createProfilePanel(), gbc);
 
-        // === Cột phải: Cài đặt hệ thống (60%) bọc trong JScrollPane ===
+        // Cột phải: Cài đặt hệ thống (65%)
         JPanel settingsPanel = createSettingsPanel();
         JScrollPane scrollPane = new JScrollPane(settingsPanel);
         scrollPane.setBorder(null);
@@ -80,118 +90,102 @@ public class SettingsView extends JPanel {
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
         gbc.gridx = 1;
-        gbc.weightx = 0.6;
+        gbc.weightx = 0.65;
         gbc.insets = new Insets(0, 10, 0, 0);
         add(scrollPane, gbc);
     }
 
-    // =========================================================================
-    // CỘT TRÁI - PANEL HỒ SƠ (40%)
-    // =========================================================================
-
-    /**
-     * Tạo panel hồ sơ (cột trái) với avatar hình tròn, tên, chức vụ,
-     * thông tin liên hệ có icon emoji, và nút "Chỉnh sửa hồ sơ".
-     */
     private JPanel createProfilePanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(UIManager.getColor("Component.borderColor"), 1),
-                new EmptyBorder(20, 20, 20, 20)
+                new EmptyBorder(30, 20, 30, 20)
         ));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.insets = new Insets(5, 0, 5, 0);
 
-        // --- Avatar (hình tròn) ---
+        // Avatar
         gbc.gridy = 0;
-        gbc.insets = new Insets(20, 0, 10, 0);
+        gbc.insets = new Insets(0, 0, 15, 0);
         lblAvatar = new JLabel();
-        lblAvatar.setIcon(createDefaultAvatarIcon(100));
+        lblAvatar.setIcon(createDefaultAvatarIcon(120));
         panel.add(lblAvatar, gbc);
 
-        // --- Tên nhân viên (in đậm) ---
+        // Name
         gbc.gridy = 1;
         gbc.insets = new Insets(5, 0, 2, 0);
-        lblName = new JLabel(DEFAULT_NAME);
-        lblName.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lblName = new JLabel(userName);
+        lblName.setFont(new Font("Segoe UI", Font.BOLD, 22));
         panel.add(lblName, gbc);
 
-        // --- Chức vụ (in đậm) ---
+        // Position
         gbc.gridy = 2;
-        gbc.insets = new Insets(0, 0, 15, 0);
-        lblPosition = new JLabel(DEFAULT_POSITION);
-        lblPosition.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        gbc.insets = new Insets(0, 0, 20, 0);
+        lblPosition = new JLabel(userRole);
+        lblPosition.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         lblPosition.setForeground(UIManager.getColor("Label.disabledForeground"));
         panel.add(lblPosition, gbc);
 
-        // --- Thông tin chi tiết với emoji icon ---
-        gbc.gridy = 3;
-        gbc.insets = new Insets(4, 0, 4, 0);
-        panel.add(createInfoLabel("\uD83D\uDCE7", "Email: " + DEFAULT_EMAIL), gbc);
-
+        // Details
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        
+        gbc.gridy = 3; gbc.insets = new Insets(6, 10, 6, 10);
+        panel.add(createInfoLabel("\uD83D\uDC64", "Tên đăng nhập: " + usernameId), gbc);
+        
         gbc.gridy = 4;
-        panel.add(createInfoLabel("\uD83C\uDFE2", "Bộ phận: " + DEFAULT_DEPARTMENT), gbc);
+        panel.add(createInfoLabel("\uD83D\uDCE7", "Email: " + userEmail), gbc);
 
         gbc.gridy = 5;
-        panel.add(createInfoLabel("\uD83D\uDCC5", "Ngày tham gia: " + DEFAULT_JOIN_DATE), gbc);
+        panel.add(createInfoLabel("\uD83C\uDFE2", "Bộ phận: " + userDepartment), gbc);
 
-        // --- Đẩy phần còn lại xuống dưới ---
         gbc.gridy = 6;
+        panel.add(createInfoLabel("\uD83D\uDCC5", "Ngày tham gia: " + joinDate), gbc);
+
+        // Spacer
+        gbc.gridy = 7;
         gbc.weighty = 1.0;
-        gbc.fill = GridBagConstraints.BOTH;
         panel.add(Box.createGlue(), gbc);
 
-        // --- Nút "Chỉnh sửa hồ sơ" - kéo dài hết chiều ngang ---
-        gbc.gridy = 7;
+        // Edit Button
+        gbc.gridy = 8;
         gbc.weighty = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 0, 10, 0);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(20, 10, 0, 10);
         JButton btnEditProfile = new JButton("Chỉnh sửa hồ sơ");
         btnEditProfile.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnEditProfile.putClientProperty("JButton.buttonType", "roundRect");
+        btnEditProfile.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnEditProfile.setPreferredSize(new Dimension(200, 36));
         btnEditProfile.addActionListener(e -> onEditProfile());
         panel.add(btnEditProfile, gbc);
 
         return panel;
     }
 
-    /**
-     * Tạo JLabel hiển thị thông tin với icon emoji phía trước.
-     */
-    private JLabel createInfoLabel(String emoji, String text) {
-        JLabel label = new JLabel(emoji + "  " + text);
-        label.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+    private JLabel createInfoLabel(String iconStr, String text) {
+        JLabel label = new JLabel(iconStr + "  " + text);
+        label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         return label;
     }
 
-    /**
-     * Tạo icon avatar mặc định hình tròn với chữ cái đầu.
-     *
-     * @param size Kích thước icon (pixel)
-     * @return ImageIcon hình tròn
-     */
     private ImageIcon createDefaultAvatarIcon(int size) {
         BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = image.createGraphics();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Vẽ hình tròn nền - sử dụng màu FlatLaf tương thích theme
         Color avatarBg = UIManager.getColor("Component.accentColor");
-        if (avatarBg == null) {
-            avatarBg = new Color(41, 128, 185);
-        }
+        if (avatarBg == null) avatarBg = new Color(41, 128, 185);
         g2.setColor(avatarBg);
         g2.fill(new Ellipse2D.Double(0, 0, size, size));
 
-        // Vẽ chữ cái đầu tiên của tên
         g2.setColor(Color.WHITE);
         g2.setFont(new Font("Segoe UI", Font.BOLD, size / 2));
         FontMetrics fm = g2.getFontMetrics();
-        String initial = DEFAULT_NAME.isEmpty() ? "?" : DEFAULT_NAME.substring(0, 1).toUpperCase();
+        String initial = userName.isEmpty() ? "?" : userName.substring(0, 1).toUpperCase();
         int textX = (size - fm.stringWidth(initial)) / 2;
         int textY = (size - fm.getHeight()) / 2 + fm.getAscent();
         g2.drawString(initial, textX, textY);
@@ -200,388 +194,277 @@ public class SettingsView extends JPanel {
         return new ImageIcon(image);
     }
 
-    /**
-     * Xử lý sự kiện khi nhấn nút "Chỉnh sửa hồ sơ".
-     */
     private void onEditProfile() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Chọn ảnh đại diện");
-        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                "Hình ảnh (*.jpg, *.png, *.gif)", "jpg", "jpeg", "png", "gif"));
-
-        int result = fileChooser.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            JOptionPane.showMessageDialog(this,
-                    "Đã chọn ảnh: " + fileChooser.getSelectedFile().getName(),
-                    "Thông báo",
-                    JOptionPane.INFORMATION_MESSAGE);
-        }
+        // Placeholder for edit profile
+        JOptionPane.showMessageDialog(this,
+                "Chức năng chỉnh sửa hồ sơ đang được phát triển.",
+                "Thông báo", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    // =========================================================================
-    // CỘT PHẢI - CÁC CARD CÀI ĐẶT (60%)
-    // =========================================================================
-
-    /**
-     * Tạo panel chứa 3 Card cài đặt xếp chồng theo chiều dọc.
-     */
     private JPanel createSettingsPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBorder(new EmptyBorder(0, 0, 0, 0));
+        panel.setBorder(new EmptyBorder(0, 0, 0, 10));
 
-        // Card 1: Giao diện & Hiển thị
         panel.add(createAppearanceCard());
-        panel.add(Box.createRigidArea(new Dimension(0, 15)));
-
-        // Card 2: Thông báo & Bảo mật
-        panel.add(createNotificationSecurityCard());
-        panel.add(Box.createRigidArea(new Dimension(0, 15)));
-
-        // Card 3: Lưu trữ & Hệ thống
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
+        
+        panel.add(createNotificationCard());
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
+        
+        panel.add(createSecurityCard());
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
+        
         panel.add(createStorageCard());
-
-        // Đẩy phần thừa xuống dưới
         panel.add(Box.createVerticalGlue());
 
         return panel;
     }
 
-    // =========================================================================
-    // CARD 1: GIAO DIỆN & HIỂN THỊ
-    // =========================================================================
-
-    /**
-     * Tạo Card "Giao diện & Hiển thị" với JComboBox cho theme và kích cỡ chữ.
-     */
-    private JPanel createAppearanceCard() {
+    private JPanel createCardPanel(String title) {
         JPanel card = new JPanel(new GridBagLayout());
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createTitledBorder(
                         UIManager.getBorder("TitledBorder.border"),
-                        "Giao diện & Hiển thị",
-                        TitledBorder.LEFT,
-                        TitledBorder.TOP,
-                        new Font("Segoe UI", Font.BOLD, 14)
+                        title, TitledBorder.LEFT, TitledBorder.TOP,
+                        new Font("Segoe UI", Font.BOLD, 15)
                 ),
-                new EmptyBorder(15, 15, 15, 15)
+                new EmptyBorder(15, 20, 15, 20)
         ));
-        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 160));
+        // Giới hạn chiều cao card để không bị kéo dãn quá đà
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 400));
+        return card;
+    }
 
+    private JPanel createAppearanceCard() {
+        JPanel card = createCardPanel("Giao diện & Hiển thị");
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(8, 5, 8, 15);
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Dòng 1: Chủ đề
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 0;
+        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0.2;
         card.add(new JLabel("Chủ đề:"), gbc);
 
         cboTheme = new JComboBox<>(new String[]{"Sáng (Light)", "Tối (Dark)"});
         cboTheme.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                String selected = (String) cboTheme.getSelectedItem();
-                if (selected != null) {
-                    switchTheme(selected.contains("Tối"));
-                }
+                switchTheme(((String) cboTheme.getSelectedItem()).contains("Tối"));
             }
         });
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 1; gbc.weightx = 0.8; gbc.fill = GridBagConstraints.HORIZONTAL;
         card.add(cboTheme, gbc);
 
-        // Dòng 2: Kích cỡ chữ (JComboBox thay cho JSlider)
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.weightx = 0;
-        gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("Kích cỡ chữ:"), gbc);
+        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0.2; gbc.fill = GridBagConstraints.NONE;
+        card.add(new JLabel("Ngôn ngữ:"), gbc);
 
-        cboFontSize = new JComboBox<>(new String[]{"Nhỏ (12px)", "Vừa (14px)", "Lớn (16px)", "Rất lớn (18px)"});
-        cboFontSize.setSelectedIndex(1); // Mặc định "Vừa (14px)"
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        card.add(cboFontSize, gbc);
+        cboLanguage = new JComboBox<>(new String[]{"Tiếng Việt", "English"});
+        gbc.gridx = 1; gbc.weightx = 0.8; gbc.fill = GridBagConstraints.HORIZONTAL;
+        card.add(cboLanguage, gbc);
 
         return card;
     }
 
-    // =========================================================================
-    // CARD 2: THÔNG BÁO & BẢO MẬT
-    // =========================================================================
-
-    /**
-     * Tạo Card "Thông báo & Bảo mật" với các trường đổi Email/SĐT,
-     * bật/tắt thông báo, và đổi mật khẩu.
-     */
-    private JPanel createNotificationSecurityCard() {
-        JPanel card = new JPanel(new GridBagLayout());
-        card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder(
-                        UIManager.getBorder("TitledBorder.border"),
-                        "Thông báo & Bảo mật",
-                        TitledBorder.LEFT,
-                        TitledBorder.TOP,
-                        new Font("Segoe UI", Font.BOLD, 14)
-                ),
-                new EmptyBorder(15, 15, 15, 15)
-        ));
-        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 350));
-
+    private JPanel createNotificationCard() {
+        JPanel card = createCardPanel("Thông báo & Liên hệ");
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(5, 5, 5, 15);
         gbc.anchor = GridBagConstraints.WEST;
+        
+        // Các Checkbox
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2; gbc.weightx = 1.0;
+        chkSysNotification = new JCheckBox("Bật thông báo trạng thái hệ thống");
+        chkSysNotification.setSelected(true);
+        card.add(chkSysNotification, gbc);
 
-        // Dòng 1: Bật thông báo
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 0;
-        card.add(new JLabel("Thông báo:"), gbc);
+        gbc.gridy = 1; 
+        chkStockAlert = new JCheckBox("Nhận cảnh báo khi tồn kho thấp");
+        chkStockAlert.setSelected(true);
+        card.add(chkStockAlert, gbc);
 
-        chkNotification = new JCheckBox("Bật thông báo hệ thống");
-        chkNotification.setSelected(true);
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        card.add(chkNotification, gbc);
+        gbc.gridy = 2; 
+        chkTransactionAlert = new JCheckBox("Thông báo qua SMS/Email khi có giao dịch mới");
+        card.add(chkTransactionAlert, gbc);
+        
+        // Đường phân cách
+        gbc.gridy = 3; gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(10, 5, 10, 15);
+        card.add(new JSeparator(), gbc);
+        
+        // Nhập thông tin liên hệ nhận thông báo
+        gbc.gridwidth = 1; gbc.fill = GridBagConstraints.NONE;
+        gbc.insets = new Insets(5, 5, 5, 15);
+        
+        gbc.gridy = 4; gbc.gridx = 0; gbc.weightx = 0.3;
+        card.add(new JLabel("Số điện thoại nhận SMS:"), gbc);
+        txtNotifyPhone = new JTextField(currentUserPhone); // Hoặc load từ account
+        gbc.gridx = 1; gbc.weightx = 0.7; gbc.fill = GridBagConstraints.HORIZONTAL;
+        card.add(txtNotifyPhone, gbc);
 
-        // Dòng 2: Số điện thoại
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.weightx = 0;
-        gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("Số điện thoại:"), gbc);
+        gbc.gridy = 5; gbc.gridx = 0; gbc.weightx = 0.3; gbc.fill = GridBagConstraints.NONE;
+        card.add(new JLabel("Email nhận thông báo:"), gbc);
+        txtNotifyEmail = new JTextField(userEmail);
+        gbc.gridx = 1; gbc.weightx = 0.7; gbc.fill = GridBagConstraints.HORIZONTAL;
+        card.add(txtNotifyEmail, gbc);
 
-        txtPhone = new JTextField(DEFAULT_PHONE, 20);
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        card.add(txtPhone, gbc);
-
-        // Dòng 3: Email
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.weightx = 0;
-        gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("Email:"), gbc);
-
-        txtEmail = new JTextField(DEFAULT_EMAIL, 20);
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        card.add(txtEmail, gbc);
-
-        // Nút cập nhật thông tin
-        JButton btnUpdateContact = new JButton("Cập nhật thông tin");
+        // Nút Cập nhật liên hệ
+        JButton btnUpdateContact = new JButton("Lưu cấu hình thông báo");
         btnUpdateContact.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnUpdateContact.addActionListener(e -> onUpdateContact());
-        gbc.gridx = 1;
-        gbc.gridy = 3;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.insets = new Insets(10, 5, 10, 5);
+        btnUpdateContact.putClientProperty("JButton.buttonType", "roundRect");
+        btnUpdateContact.addActionListener(e -> onUpdateNotificationContact());
+        
+        gbc.gridy = 6; gbc.gridx = 1; gbc.anchor = GridBagConstraints.EAST; gbc.fill = GridBagConstraints.NONE;
+        gbc.insets = new Insets(10, 5, 5, 15);
         card.add(btnUpdateContact, gbc);
 
-        // Separator
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 5, 5, 5);
-        card.add(new JSeparator(), gbc);
-        gbc.gridwidth = 1;
+        return card;
+    }
+    
+    // Thêm biến currentUserPhone
+    private String currentUserPhone = "0123456789";
+
+    private void onUpdateNotificationContact() {
+        String phone = txtNotifyPhone.getText().trim();
+        String email = txtNotifyEmail.getText().trim();
+        
+        // Validate
+        if (!chkSysNotification.isSelected() && !chkStockAlert.isSelected() && !chkTransactionAlert.isSelected()) {
+            JOptionPane.showMessageDialog(this, "Đã tắt tất cả các thông báo.", "Thông tin", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            // Validate Phone (10-11 chữ số)
+            if (!phone.isEmpty() && !phone.matches("\\d{10,11}")) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập số điện thoại hợp lệ (10-11 chữ số).", "Lỗi", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            // Validate Email đơn giản
+            if (!email.isEmpty() && !email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập Email hợp lệ.", "Lỗi", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
+            JOptionPane.showMessageDialog(this, "Đã cập nhật cấu hình và thông tin nhận thông báo thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private JPanel createSecurityCard() {
+        JPanel card = createCardPanel("Bảo mật (Đổi mật khẩu)");
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 5, 8, 15);
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Dòng 5: Mật khẩu hiện tại
-        gbc.gridx = 0;
-        gbc.gridy = 5;
-        gbc.weightx = 0;
-        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0.3;
         card.add(new JLabel("Mật khẩu hiện tại:"), gbc);
-
-        txtCurrentPassword = new JPasswordField(20);
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        txtCurrentPassword = new JPasswordField();
+        gbc.gridx = 1; gbc.weightx = 0.7; gbc.fill = GridBagConstraints.HORIZONTAL;
         card.add(txtCurrentPassword, gbc);
 
-        // Dòng 6: Mật khẩu mới
-        gbc.gridx = 0;
-        gbc.gridy = 6;
-        gbc.weightx = 0;
-        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0.3; gbc.fill = GridBagConstraints.NONE;
         card.add(new JLabel("Mật khẩu mới:"), gbc);
-
-        txtNewPassword = new JPasswordField(20);
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        txtNewPassword = new JPasswordField();
+        gbc.gridx = 1; gbc.weightx = 0.7; gbc.fill = GridBagConstraints.HORIZONTAL;
         card.add(txtNewPassword, gbc);
 
-        // Dòng 7: Xác nhận mật khẩu mới
-        gbc.gridx = 0;
-        gbc.gridy = 7;
-        gbc.weightx = 0;
-        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0.3; gbc.fill = GridBagConstraints.NONE;
         card.add(new JLabel("Xác nhận mật khẩu:"), gbc);
-
-        txtConfirmPassword = new JPasswordField(20);
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        txtConfirmPassword = new JPasswordField();
+        gbc.gridx = 1; gbc.weightx = 0.7; gbc.fill = GridBagConstraints.HORIZONTAL;
         card.add(txtConfirmPassword, gbc);
+        
+        // Hiện mật khẩu
+        chkShowPassword = new JCheckBox("Hiển thị mật khẩu");
+        chkShowPassword.addActionListener(e -> {
+            char echo = chkShowPassword.isSelected() ? (char) 0 : '•';
+            txtCurrentPassword.setEchoChar(echo);
+            txtNewPassword.setEchoChar(echo);
+            txtConfirmPassword.setEchoChar(echo);
+        });
+        gbc.gridx = 1; gbc.gridy = 3; gbc.weightx = 0.7; gbc.fill = GridBagConstraints.NONE;
+        card.add(chkShowPassword, gbc);
 
-        // Nút cập nhật mật khẩu
-        JButton btnUpdatePassword = new JButton("Cập nhật mật khẩu");
+        JButton btnUpdatePassword = new JButton("Đổi mật khẩu");
         btnUpdatePassword.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnUpdatePassword.putClientProperty("JButton.buttonType", "roundRect");
+        btnUpdatePassword.setBackground(UIManager.getColor("Component.accentColor"));
+        btnUpdatePassword.setForeground(Color.WHITE);
         btnUpdatePassword.addActionListener(e -> onUpdatePassword());
-        gbc.gridx = 1;
-        gbc.gridy = 8;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.insets = new Insets(10, 5, 5, 5);
+        
+        gbc.gridx = 1; gbc.gridy = 4; gbc.anchor = GridBagConstraints.EAST;
         card.add(btnUpdatePassword, gbc);
 
         return card;
     }
 
-    /**
-     * Xử lý sự kiện khi nhấn "Cập nhật thông tin".
-     */
-    private void onUpdateContact() {
-        String phone = txtPhone.getText().trim();
-        String email = txtEmail.getText().trim();
-        JOptionPane.showMessageDialog(this,
-                "Cập nhật thông tin liên hệ thành công!\n"
-                + "Số điện thoại: " + phone + "\n"
-                + "Email: " + email,
-                "Thông báo",
-                JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    /**
-     * Xử lý sự kiện khi nhấn "Cập nhật mật khẩu".
-     */
     private void onUpdatePassword() {
         String currentPass = new String(txtCurrentPassword.getPassword());
         String newPass = new String(txtNewPassword.getPassword());
         String confirmPass = new String(txtConfirmPassword.getPassword());
 
         if (currentPass.isEmpty() || newPass.isEmpty() || confirmPass.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Vui lòng điền đầy đủ thông tin mật khẩu!",
-                    "Cảnh báo",
-                    JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ các trường mật khẩu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        if (newPass.length() < 6) {
+            JOptionPane.showMessageDialog(this, "Mật khẩu mới phải có ít nhất 6 ký tự!", "Lỗi xác thực", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         if (!newPass.equals(confirmPass)) {
-            JOptionPane.showMessageDialog(this,
-                    "Mật khẩu mới và xác nhận mật khẩu không khớp!",
-                    "Lỗi",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Xác nhận mật khẩu không khớp!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        JOptionPane.showMessageDialog(this,
-                "Cập nhật mật khẩu thành công!",
-                "Thông báo",
-                JOptionPane.INFORMATION_MESSAGE);
-
-        // Xóa trắng các trường mật khẩu sau khi cập nhật
+        
+        // TODO: Call Backend service to change password here
+        JOptionPane.showMessageDialog(this, "Đổi mật khẩu thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+        
         txtCurrentPassword.setText("");
         txtNewPassword.setText("");
         txtConfirmPassword.setText("");
+        chkShowPassword.setSelected(false);
+        txtCurrentPassword.setEchoChar('•');
+        txtNewPassword.setEchoChar('•');
+        txtConfirmPassword.setEchoChar('•');
     }
 
-    // =========================================================================
-    // CARD 3: LƯU TRỮ & HỆ THỐNG
-    // =========================================================================
-
-    /**
-     * Tạo Card "Lưu trữ & Hệ thống" với các cài đặt lưu trữ và xóa cache.
-     */
     private JPanel createStorageCard() {
-        JPanel card = new JPanel(new GridBagLayout());
-        card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder(
-                        UIManager.getBorder("TitledBorder.border"),
-                        "Lưu trữ & Hệ thống",
-                        TitledBorder.LEFT,
-                        TitledBorder.TOP,
-                        new Font("Segoe UI", Font.BOLD, 14)
-                ),
-                new EmptyBorder(15, 15, 15, 15)
-        ));
-        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 180));
-
+        JPanel card = createCardPanel("Lưu trữ & Dữ liệu");
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(8, 5, 8, 15);
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Dòng 1: Lưu tự động
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 0;
-        card.add(new JLabel("Lưu trữ:"), gbc);
-
-        chkAutoSave = new JCheckBox("Lưu tự động");
+        chkAutoSave = new JCheckBox("Tự động lưu thay đổi cấu hình");
         chkAutoSave.setSelected(true);
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
         card.add(chkAutoSave, gbc);
 
-        // Dòng 2: Xóa bộ nhớ cache
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.weightx = 0;
-        gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("Bộ nhớ cache:"), gbc);
+        gbc.gridwidth = 1;
+        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0.3;
+        card.add(new JLabel("Dữ liệu hệ thống:"), gbc);
 
-        JButton btnClearCache = new JButton("Xóa bộ nhớ cache");
-        btnClearCache.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnClearCache.addActionListener(e ->
-            JOptionPane.showMessageDialog(this,
-                    "Bộ nhớ cache đã được xóa thành công!",
-                    "Thông báo",
-                    JOptionPane.INFORMATION_MESSAGE)
-        );
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.WEST;
-        card.add(btnClearCache, gbc);
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JButton btnBackup = new JButton("Sao lưu");
+        JButton btnRestore = new JButton("Khôi phục");
+        btnBackup.putClientProperty("JButton.buttonType", "roundRect");
+        btnRestore.putClientProperty("JButton.buttonType", "roundRect");
+        btnPanel.add(btnBackup);
+        btnPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        btnPanel.add(btnRestore);
+        
+        btnBackup.addActionListener(e -> JOptionPane.showMessageDialog(this, "Đang tiến hành sao lưu dữ liệu... (Placeholder)", "Thông báo", JOptionPane.INFORMATION_MESSAGE));
+        btnRestore.addActionListener(e -> JOptionPane.showMessageDialog(this, "Mở cửa sổ khôi phục dữ liệu... (Placeholder)", "Thông báo", JOptionPane.INFORMATION_MESSAGE));
 
-        // Dòng 3: Phiên bản hệ thống
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.weightx = 0;
-        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridx = 1; gbc.weightx = 0.7;
+        card.add(btnPanel, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0.3;
         card.add(new JLabel("Phiên bản:"), gbc);
-
-        JLabel lblVersion = new JLabel("v1.0.0 - SNAPSHOT");
-        lblVersion.setForeground(UIManager.getColor("Label.disabledForeground"));
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
+        JLabel lblVersion = new JLabel("v2.1.0 - Stable");
+        lblVersion.setFont(new Font("Segoe UI", Font.ITALIC, 13));
+        gbc.gridx = 1; gbc.weightx = 0.7;
         card.add(lblVersion, gbc);
 
         return card;
     }
 
-    // =========================================================================
-    // THEME SWITCHING
-    // =========================================================================
-
-    /**
-     * Chuyển đổi giữa FlatLightLaf và FlatDarkLaf.
-     *
-     * @param isDark true = Dark theme, false = Light theme
-     */
     private void switchTheme(boolean isDark) {
         try {
             if (isDark) {
@@ -589,18 +472,11 @@ public class SettingsView extends JPanel {
             } else {
                 UIManager.setLookAndFeel(new FlatLightLaf());
             }
-            // Cập nhật giao diện cho toàn bộ cây component
             Window topLevel = SwingUtilities.getWindowAncestor(this);
-            if (topLevel != null) {
-                SwingUtilities.updateComponentTreeUI(topLevel);
-            } else {
-                SwingUtilities.updateComponentTreeUI(this);
-            }
+            if (topLevel != null) SwingUtilities.updateComponentTreeUI(topLevel);
+            else SwingUtilities.updateComponentTreeUI(this);
         } catch (UnsupportedLookAndFeelException ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Không thể chuyển đổi giao diện: " + ex.getMessage(),
-                    "Lỗi",
-                    JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
         }
     }
 }
