@@ -281,7 +281,7 @@ public class SettingsView extends JPanel {
         gbc.weightx = 0;
         card.add(new JLabel("☀️ Chủ đề:"), gbc);
 
-        cboTheme = new JComboBox<>(new String[]{"☀️ Sáng (Light)", "\uD83C\uDF19 Tối (Dark)"});
+        cboTheme = new JComboBox<>(new String[]{"☀️ Sáng (Light)", "🌙 Tối (Dark)"});
         cboTheme.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 String selected = (String) cboTheme.getSelectedItem();
@@ -300,7 +300,7 @@ public class SettingsView extends JPanel {
         gbc.gridy = 1;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("\uD83D\uDCCF Kích cỡ chữ:"), gbc);
+        card.add(new JLabel("📏 Kích cỡ chữ:"), gbc);
 
         cboFontSize = new JComboBox<>(new String[]{"Nhỏ (12px)", "Vừa (14px)", "Lớn (16px)", "Rất lớn (18px)"});
         cboFontSize.setSelectedIndex(1); // Mặc định "Vừa (14px)"
@@ -345,7 +345,7 @@ public class SettingsView extends JPanel {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0;
-        card.add(new JLabel("\uD83D\uDD14 Thông báo:"), gbc);
+        card.add(new JLabel("🔔 Thông báo:"), gbc);
 
         chkNotification = new JCheckBox("Bật thông báo hệ thống");
         chkNotification.setSelected(true);
@@ -359,7 +359,7 @@ public class SettingsView extends JPanel {
         gbc.gridy = 1;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("\uD83D\uDCF1 Số điện thoại:"), gbc);
+        card.add(new JLabel("📱 Số điện thoại:"), gbc);
 
         txtPhone = new JTextField(DEFAULT_PHONE, 20);
         gbc.gridx = 1;
@@ -406,7 +406,7 @@ public class SettingsView extends JPanel {
         gbc.gridy = 5;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("\uD83D\uDD10 Mật khẩu hiện tại:"), gbc);
+        card.add(new JLabel("🔐 Mật khẩu hiện tại:"), gbc);
 
         txtCurrentPassword = new JPasswordField(20);
         gbc.gridx = 1;
@@ -419,7 +419,7 @@ public class SettingsView extends JPanel {
         gbc.gridy = 6;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("\uD83D\uDD10 Mật khẩu mới:"), gbc);
+        card.add(new JLabel("🔐 Mật khẩu mới:"), gbc);
 
         txtNewPassword = new JPasswordField(20);
         gbc.gridx = 1;
@@ -432,7 +432,7 @@ public class SettingsView extends JPanel {
         gbc.gridy = 7;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("\uD83D\uDD10 Xác nhận mật khẩu:"), gbc);
+        card.add(new JLabel("🔐 Xác nhận mật khẩu:"), gbc);
 
         txtConfirmPassword = new JPasswordField(20);
         gbc.gridx = 1;
@@ -536,7 +536,7 @@ public class SettingsView extends JPanel {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0;
-        card.add(new JLabel("\uD83D\uDCBE Lưu trữ:"), gbc);
+        card.add(new JLabel("💾 Lưu trữ:"), gbc);
 
         chkAutoSave = new JCheckBox("Lưu tự động");
         chkAutoSave.setSelected(true);
@@ -550,7 +550,7 @@ public class SettingsView extends JPanel {
         gbc.gridy = 1;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
-        card.add(new JLabel("\uD83D\uDDD1️ Bộ nhớ cache:"), gbc);
+        card.add(new JLabel("🗑️ Bộ nhớ cache:"), gbc);
 
         JButton btnClearCache = new JButton("Xóa bộ nhớ cache");
         btnClearCache.setCursor(new Cursor(Cursor.HAND_CURSOR));
