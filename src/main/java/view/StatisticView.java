@@ -28,52 +28,15 @@ public class StatisticView extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        pnTop = new javax.swing.JPanel();
-        pnTotalRevenue = new javax.swing.JPanel();
-        TotalRevenue = new javax.swing.JLabel();
-        pnTotalCustomers = new javax.swing.JPanel();
-        TotalCustomers = new javax.swing.JLabel();
-        pnTotalOder = new javax.swing.JPanel();
-        TotalOrder = new javax.swing.JLabel();
         tbStatistic = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
-
-        pnTop.setPreferredSize(new java.awt.Dimension(0, 40));
-        pnTop.setLayout(new java.awt.GridLayout(1, 0));
-
-        pnTotalRevenue.setBackground(new java.awt.Color(46, 204, 113));
-        pnTotalRevenue.setPreferredSize(new java.awt.Dimension(150, 40));
-        pnTotalRevenue.setLayout(new java.awt.GridLayout(1, 0));
-
-        TotalRevenue.setBackground(new java.awt.Color(46, 204, 113));
-        TotalRevenue.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        TotalRevenue.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        TotalRevenue.setText("Tổng doanh thu");
-        pnTotalRevenue.add(TotalRevenue);
-
-        pnTop.add(pnTotalRevenue);
-
-        pnTotalCustomers.setBackground(new java.awt.Color(243, 156, 18));
-        pnTotalCustomers.setPreferredSize(new java.awt.Dimension(150, 40));
-        pnTotalCustomers.setLayout(new java.awt.GridLayout(1, 0));
-
-        TotalCustomers.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        TotalCustomers.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        TotalCustomers.setText("Tổng khách hàng");
-        pnTotalCustomers.add(TotalCustomers);
-
-        pnTop.add(pnTotalCustomers);
-
-        pnTotalOder.setBackground(new java.awt.Color(52, 152, 219));
-        pnTotalOder.setPreferredSize(new java.awt.Dimension(150, 40));
-        pnTotalOder.setLayout(new java.awt.GridLayout(1, 0));
-
-        TotalOrder.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        TotalOrder.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        TotalOrder.setText("Tổng đơn hàng");
-        pnTotalOder.add(TotalOrder);
-
-        pnTop.add(pnTotalOder);
+        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -88,33 +51,96 @@ public class StatisticView extends javax.swing.JPanel {
         ));
         tbStatistic.setViewportView(jTable1);
 
+        jPanel1.setLayout(new java.awt.GridLayout(1, 0));
+
+        jPanel2.setBackground(new java.awt.Color(204, 255, 204));
+        jPanel2.setPreferredSize(new java.awt.Dimension(92, 38));
+
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/view/image/money-Photoroom.png"))); // NOI18N
+        jLabel1.setText("Tổng doanh thu");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 212, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
+        );
+
+        jPanel1.add(jPanel2);
+
+        jPanel3.setBackground(new java.awt.Color(255, 204, 153));
+
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/view/image/multiple-users-silhouette-Photoroom.png"))); // NOI18N
+        jLabel2.setText("Tổng khách hàng");
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 212, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
+        );
+
+        jPanel1.add(jPanel3);
+
+        jPanel4.setBackground(new java.awt.Color(153, 204, 255));
+        jPanel4.setPreferredSize(new java.awt.Dimension(92, 38));
+
+        jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/view/image/trolley-Photoroom.png"))); // NOI18N
+        jLabel3.setText("Tổng đơn hàng");
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 212, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
+        );
+
+        jPanel1.add(jPanel4);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pnTop, javax.swing.GroupLayout.PREFERRED_SIZE, 453, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(tbStatistic, javax.swing.GroupLayout.PREFERRED_SIZE, 453, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 638, Short.MAX_VALUE)
+            .addComponent(tbStatistic)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(pnTop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tbStatistic, javax.swing.GroupLayout.PREFERRED_SIZE, 281, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(tbStatistic, javax.swing.GroupLayout.DEFAULT_SIZE, 389, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel TotalCustomers;
-    private javax.swing.JLabel TotalOrder;
-    private javax.swing.JLabel TotalRevenue;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JTable jTable1;
-    private javax.swing.JPanel pnTop;
-    private javax.swing.JPanel pnTotalCustomers;
-    private javax.swing.JPanel pnTotalOder;
-    private javax.swing.JPanel pnTotalRevenue;
     private javax.swing.JScrollPane tbStatistic;
     // End of variables declaration//GEN-END:variables
 }
