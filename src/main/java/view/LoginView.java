@@ -218,6 +218,7 @@ public class LoginView extends javax.swing.JFrame {
         Separator = new javax.swing.JSeparator();
         Greeting = new javax.swing.JLabel();
         ClassName = new javax.swing.JLabel();
+        IconMarket = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(0, 0, 102));
@@ -305,7 +306,7 @@ public class LoginView extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 75, 0, 56);
+        gridBagConstraints.insets = new java.awt.Insets(12, 62, 0, 62);
         HomePanel.add(SystemName, gridBagConstraints);
 
         Separator.setForeground(new java.awt.Color(0, 0, 0));
@@ -313,10 +314,10 @@ public class LoginView extends javax.swing.JFrame {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.ipadx = 220;
-        gridBagConstraints.ipady = 14;
+        gridBagConstraints.ipadx = 219;
+        gridBagConstraints.ipady = 16;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 85, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 75, 0, 0);
         HomePanel.add(Separator, gridBagConstraints);
 
         Greeting.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -327,7 +328,7 @@ public class LoginView extends javax.swing.JFrame {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 105, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 103, 0, 0);
         HomePanel.add(Greeting, gridBagConstraints);
 
         ClassName.setFont(new java.awt.Font("Segoe UI", 1, 11)); // NOI18N
@@ -338,22 +339,30 @@ public class LoginView extends javax.swing.JFrame {
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 138, 60, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 138, 69, 0);
         HomePanel.add(ClassName, gridBagConstraints);
+
+        IconMarket.setIcon(new javax.swing.ImageIcon("C:\\Users\\Admin\\Downloads\\market-Photoroom.png")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(33, 148, 0, 0);
+        HomePanel.add(IconMarket, gridBagConstraints);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(HomePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(HomePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(LoginView, javax.swing.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE))
+                .addComponent(LoginView, javax.swing.GroupLayout.PREFERRED_SIZE, 366, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(LoginView, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-            .addComponent(HomePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+            .addComponent(HomePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -440,6 +449,7 @@ public class LoginView extends javax.swing.JFrame {
     private javax.swing.JLabel ClassName;
     private javax.swing.JLabel Greeting;
     private javax.swing.JPanel HomePanel;
+    private javax.swing.JLabel IconMarket;
     private javax.swing.JLabel Login;
     private javax.swing.JPanel LoginView;
     private javax.swing.JLabel Password;
