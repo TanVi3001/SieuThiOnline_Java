@@ -5,12 +5,21 @@
 package view;
 
 import com.mycompany.sieuthionline.common.utils.EmailUtils;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import javax.swing.JOptionPane;
 /**
  *
  * @author nguye
  */
 public class ForgotPasswordView extends javax.swing.JFrame {
+    private javax.swing.JTextField txtOTP;
+    private javax.swing.JPasswordField txtNewPass;
+    private javax.swing.JPasswordField txtConfirmPass;
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ForgotPasswordView.class.getName());
     /**
@@ -30,145 +39,183 @@ public class ForgotPasswordView extends javax.swing.JFrame {
     }
   
     private void setupModernUI() {
-        // 1. Dọn dẹp content pane - Đặt nền xanh than bao quanh Card cho đồng bộ LoginView
         this.getContentPane().removeAll();
         this.getContentPane().setLayout(new java.awt.GridBagLayout()); 
         this.getContentPane().setBackground(java.awt.Color.WHITE); 
 
-        // 2. Tạo Card chứa form (Trắng tinh khôi, bo góc được xử lý qua layout)
         javax.swing.JPanel cardPanel = new javax.swing.JPanel(null);
         cardPanel.setBackground(java.awt.Color.WHITE); 
-        cardPanel.setPreferredSize(new java.awt.Dimension(450, 480)); 
+        cardPanel.setPreferredSize(new java.awt.Dimension(450, 680)); // Tăng chiều cao để chứa form dài
 
-        // --- SAO CHÉP LOGO & APP NAME TỪ LOGINVIEW ---
-        javax.swing.JLabel lblLogoCircle = new javax.swing.JLabel() {
-            @Override
-            protected void paintComponent(java.awt.Graphics g) {
-                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
-                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setStroke(new java.awt.BasicStroke(3));
-                g2.setColor(new java.awt.Color(255, 69, 0)); // Màu cam đặc trưng
-                g2.drawOval(2, 2, 16, 16);
+        java.awt.Color navyBlue = new java.awt.Color(44, 62, 80);
+
+        // Header & Subtitle
+        javax.swing.JLabel lblTitle = new javax.swing.JLabel("QUÊN MẬT KHẨU", javax.swing.SwingConstants.CENTER);
+        lblTitle.setFont(new java.awt.Font("Segoe UI", Font.BOLD, 28));
+        lblTitle.setForeground(navyBlue);
+        lblTitle.setBounds(50, 40, 350, 40);
+        cardPanel.add(lblTitle);
+
+        javax.swing.JLabel lblSubtitle = new javax.swing.JLabel("<html><center>Nhập Email để nhận mã OTP và Username<br>(Mã có hiệu lực trong 5 phút)</center></html>", javax.swing.SwingConstants.CENTER);
+        lblSubtitle.setFont(new java.awt.Font("Segoe UI", Font.PLAIN, 12));
+        lblSubtitle.setBounds(50, 85, 350, 40);
+        cardPanel.add(lblSubtitle);
+
+        // --- Ô NHẬP EMAIL ---
+        txtUserEmail.setBounds(80, 150, 290, 45);
+        txtUserEmail.putClientProperty("JComponent.roundRect", true);
+        txtUserEmail.putClientProperty("JTextField.placeholderText", "Email đã đăng ký...");
+        cardPanel.add(txtUserEmail);
+
+        javax.swing.JButton btnSendOTP = new javax.swing.JButton("GỬI MÃ XÁC MINH") {
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(76, 175, 80)); // Màu xanh lá "Gửi mã"
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+                super.paintComponent(g);
                 g2.dispose();
             }
         };
-        lblLogoCircle.setBounds(30, 20, 20, 20);
-        cardPanel.add(lblLogoCircle);
+        btnSendOTP.setBounds(80, 205, 290, 40);
+        btnSendOTP.setForeground(Color.WHITE);
+        btnSendOTP.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnSendOTP.setContentAreaFilled(false);
+        btnSendOTP.setBorderPainted(false);
+        btnSendOTP.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnSendOTP.addActionListener(e -> handleSendOTP());
+        cardPanel.add(btnSendOTP);
 
-        javax.swing.JLabel lblAppName = new javax.swing.JLabel("Smart Supermarket");
-        lblAppName.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 15));
-        lblAppName.setBounds(55, 17, 180, 26);
-        cardPanel.add(lblAppName);
+        // --- Ô NHẬP OTP ---
+        txtOTP = new javax.swing.JTextField();
+        txtOTP.setBounds(80, 275, 290, 45);
+        txtOTP.putClientProperty("JComponent.roundRect", true);
+        txtOTP.putClientProperty("JTextField.placeholderText", "Nhập mã OTP 6 số...");
+        cardPanel.add(txtOTP);
 
-        // Header "NHẬP EMAIL" - Màu Xanh Navy đậm
-        javax.swing.JLabel lblTitle = new javax.swing.JLabel("Quên mật khẩu");
-        lblTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 30));
-        lblTitle.setForeground(new java.awt.Color(20, 30, 50));
-        lblTitle.setBounds(100, 80, 250, 40);
-        cardPanel.add(lblTitle);
+        // --- Ô NHẬP MẬT KHẨU MỚI ---
+        txtNewPass = new javax.swing.JPasswordField();
+        txtNewPass.setBounds(80, 345, 290, 45);
+        txtNewPass.putClientProperty("JComponent.roundRect", true);
+        txtNewPass.putClientProperty("JPasswordField.showRevealButton", true);
+        txtNewPass.putClientProperty("JTextField.placeholderText", "Mật khẩu mới...");
+        cardPanel.add(txtNewPass);
 
-        // Chú thích nhỏ
-        javax.swing.JLabel lblSubtitle = new javax.swing.JLabel("<html>Vui lòng nhập email để chúng tôi có thể<br>gửi thông tin cho bạn</html>");
-        lblSubtitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 12));
-        lblSubtitle.setForeground(new java.awt.Color(44, 62, 80));
-        lblSubtitle.setBounds(100, 125, 300, 40);
-        cardPanel.add(lblSubtitle);
+        txtConfirmPass = new javax.swing.JPasswordField();
+        txtConfirmPass.setBounds(80, 405, 290, 45);
+        txtConfirmPass.putClientProperty("JComponent.roundRect", true);
+        txtConfirmPass.putClientProperty("JTextField.placeholderText", "Xác nhận mật khẩu...");
+        cardPanel.add(txtConfirmPass);
 
-        // --- THIẾT KẾ Ô NHẬP EMAIL (ĐỒNG BỘ ĐỘ BO VÀ VIỀN MỜ) ---
-        txtUserEmail.setBounds(100, 180, 250, 50); // Chiều cao 50px giống Login
-        txtUserEmail.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 14));
-
-        // Thuộc tính quan trọng tạo nên độ bo và placeholder mờ
-        txtUserEmail.putClientProperty("JComponent.roundRect", true); 
-        txtUserEmail.putClientProperty("JTextField.placeholderText", "Nhập Email của bạn...");
-        txtUserEmail.putClientProperty("JTextField.padding", new java.awt.Insets(0, 15, 0, 15));
-
-        // Đặt viền mỏng nhẹ cho đồng bộ
-        txtUserEmail.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 200, 200), 1));
-        cardPanel.add(txtUserEmail);
-
-        // --- NÚT XÁC NHẬN (BO TRÒN XANH THAN) ---
-        javax.swing.JButton btnConfirm = new javax.swing.JButton("Xác nhận") {
-            @Override
-            protected void paintComponent(java.awt.Graphics g) {
-                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
-                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new java.awt.Color(44, 62, 80)); // Màu xanh than
+        // --- NÚT XÁC NHẬN ĐỔI PASS ---
+        javax.swing.JButton btnConfirm = new javax.swing.JButton("XÁC NHẬN THAY ĐỔI") {
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(navyBlue);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
                 super.paintComponent(g);
                 g2.dispose();
             }
         };
-        btnConfirm.setBounds(100, 250, 250, 50);
-        btnConfirm.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 15));
-        btnConfirm.setForeground(java.awt.Color.WHITE);
+        btnConfirm.setBounds(80, 480, 290, 50);
+        btnConfirm.setForeground(Color.WHITE);
+        btnConfirm.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnConfirm.setContentAreaFilled(false);
         btnConfirm.setBorderPainted(false);
-        btnConfirm.setFocusPainted(false);
-        btnConfirm.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnConfirm.addActionListener(evt -> handleSendEmail());
+        btnConfirm.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnConfirm.addActionListener(e -> handleResetPassword());
         cardPanel.add(btnConfirm);
 
-        // Quay lại đăng nhập
-        javax.swing.JLabel lblBack = new javax.swing.JLabel("Quay lại đăng nhập");
-        lblBack.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 12));
-        lblBack.setForeground(new java.awt.Color(44, 62, 80));
-        lblBack.setBounds(100, 310, 200, 20);
-        lblBack.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        // Quay lại
+        javax.swing.JLabel lblBack = new javax.swing.JLabel("Quay lại đăng nhập", javax.swing.SwingConstants.CENTER);
+        lblBack.setBounds(150, 550, 150, 20);
+        lblBack.setCursor(new Cursor(Cursor.HAND_CURSOR));
         lblBack.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
+            public void mouseClicked(java.awt.event.MouseEvent e) {
                 new LoginView().setVisible(true);
                 dispose();
-            }
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                lblBack.setForeground(new java.awt.Color(255, 69, 0));
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                lblBack.setForeground(new java.awt.Color(44, 62, 80));
             }
         });
         cardPanel.add(lblBack);
 
         this.getContentPane().add(cardPanel, new java.awt.GridBagConstraints());
-        this.setSize(500, 600); 
+        this.setSize(500, 750);
         this.setLocationRelativeTo(null);
-        this.revalidate();
-        this.repaint();
     }
 
     /**
      * Logic xử lý gửi mail
      */
-    private void handleSendEmail() {
-        String systemEmail = "nguyentung28012006@gmail.com"; 
-        String appPassword = "zulx asyc wosl hagf"; // Mã 16 ký tự của Tùng
-        String userEmail = txtUserEmail.getText().trim();
+    /**
+    * Bước 1: Tìm Username và gửi OTP
+    */
+   private void handleSendOTP() {
+       String userEmail = txtUserEmail.getText().trim();
+       if (userEmail.isEmpty()) {
+           JOptionPane.showMessageDialog(this, "Vui lòng nhập Email!");
+           return;
+       }
 
-        if (userEmail.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập Email để nhận mật khẩu!");
-            return;
-        }
+       // 1. Dò tìm Username từ Database dựa trên Email
+       String foundUsername = business.sql.rbac.AccountSql.getInstance().findUsernameByEmail(userEmail);
 
-        try {
-            // TRUY VẤN: Lấy mật khẩu của USERNAME đang chọn và có EMAIL tương ứng
-            // Tùng cần sửa hàm findPasswordByEmail trong AccountSql để nhận thêm tham số username
-            String passwordFromDB = business.sql.rbac.AccountSql.getInstance()
-                    .findPassByUsernameAndEmail(usernameFromLogin, userEmail);
+       if (foundUsername != null) {
+           // 2. Tạo OTP ngẫu nhiên
+           String otp = String.valueOf(new java.util.Random().nextInt(900000) + 100000);
 
-            if (passwordFromDB != null) {
-                EmailUtils.sendEmail(systemEmail, appPassword, userEmail, 
-                        "Khoi phuc mat khau cho tai khoan: " + usernameFromLogin, 
-                        "Chao ban, mat khau cua tai khoan '" + usernameFromLogin + "' la: " + passwordFromDB);
+           // 3. Lưu OTP vào CSDL (Hết hạn sau 5 phút)
+           business.sql.rbac.AccountSql.getInstance().saveOTP(userEmail, otp);
 
-                JOptionPane.showMessageDialog(this, "Mat khau da duoc gui den Email cua ban!");
-            } else {
-                JOptionPane.showMessageDialog(this, "Email khong khop voi tai khoan '" + usernameFromLogin + "'!", 
-                        "Loi xac thuc", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Loi: " + ex.getMessage());
-        }
-    }
+           try {
+               String systemEmail = "nguyentung28012006@gmail.com";
+               String appPass = "zulx asyc wosl hagf";
+               String content = "Chào bạn,\n\n"
+                       + "Tên đăng nhập của bạn là: " + foundUsername + "\n"
+                       + "Mã xác minh (OTP) để đổi mật khẩu là: " + otp + "\n"
+                       + "Mã này có hiệu lực trong 5 phút. Vui lòng không chia sẻ cho bất kỳ ai!";
+
+               EmailUtils.sendEmail(systemEmail, appPass, userEmail, "Khôi phục tài khoản", content);
+               JOptionPane.showMessageDialog(this, "Mã OTP và Tên đăng nhập đã được gửi vào Email của bạn!");
+           } catch (Exception ex) {
+               JOptionPane.showMessageDialog(this, "Lỗi gửi mail: " + ex.getMessage());
+           }
+       } else {
+           JOptionPane.showMessageDialog(this, "Email này không tồn tại trong hệ thống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+       }
+   }
+
+   /**
+    * Bước 2: Kiểm tra OTP và Cập nhật mật khẩu mới
+    */
+   private void handleResetPassword() {
+       String email = txtUserEmail.getText().trim();
+       String otpInput = txtOTP.getText().trim();
+       String newPass = new String(txtNewPass.getPassword());
+       String confirmPass = new String(txtConfirmPass.getPassword());
+
+       if (otpInput.isEmpty() || newPass.isEmpty()) {
+           JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ OTP và mật khẩu mới!");
+           return;
+       }
+       if (!newPass.equals(confirmPass)) {
+           JOptionPane.showMessageDialog(this, "Mật khẩu xác nhận không khớp!");
+           return;
+       }
+
+       // Kiểm tra OTP trong DB (Khớp và chưa hết hạn)
+       boolean isValid = business.sql.rbac.AccountSql.getInstance().validateOTP(email, otpInput);
+
+       if (isValid) {
+           // Cập nhật pass mới
+           business.sql.rbac.AccountSql.getInstance().updatePasswordByEmail(email, newPass);
+           JOptionPane.showMessageDialog(this, "Đổi mật khẩu thành công! Bạn hãy dùng Username trong mail để đăng nhập.");
+           new LoginView().setVisible(true);
+           this.dispose();
+       } else {
+           JOptionPane.showMessageDialog(this, "Mã OTP không đúng hoặc đã hết hạn!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+       }
+   }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -269,7 +316,7 @@ public class ForgotPasswordView extends javax.swing.JFrame {
     }//GEN-LAST:event_txtUserEmailActionPerformed
 
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
-        handleSendEmail();
+        // TODO add your handling code here:
     }//GEN-LAST:event_btnLoginActionPerformed
 
     /**

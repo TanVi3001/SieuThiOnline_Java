@@ -351,4 +351,81 @@ public class AccountSql implements SqlInterface<Account> {
 
         return migrated;
     }
+    
+    /**
+     * Tìm Username dựa trên Email (phục vụ luồng Quên mật khẩu an toàn).
+     */
+    public String findUsernameByEmail(String email) {
+        String sql = "SELECT a.username FROM ACCOUNTS a "
+                   + "JOIN USERS u ON a.user_id = u.user_id "
+                   + "WHERE u.email = ? AND a.is_deleted = 0";
+        try (Connection con = DatabaseConnection.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, email);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) return rs.getString("username");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Lưu mã OTP vào bảng OTP_STORAGE. 
+     * Nếu email đã tồn tại thì cập nhật mã mới và gia hạn thêm 5 phút.
+     */
+    public boolean saveOTP(String email, String otp) {
+        // Oracle: sysdate + 5/1440 tương đương với thời gian hiện tại cộng 5 phút
+        String sql = "MERGE INTO OTP_STORAGE t "
+                   + "USING (SELECT ? as email, ? as otp FROM dual) s "
+                   + "ON (t.email = s.email) "
+                   + "WHEN MATCHED THEN UPDATE SET t.otp_code = s.otp, t.expiry_time = sysdate + 5/1440 "
+                   + "WHEN NOT MATCHED THEN INSERT (email, otp_code, expiry_time) VALUES (s.email, s.otp, sysdate + 5/1440)";
+        try (Connection con = DatabaseConnection.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, email);
+            pst.setString(2, otp);
+            return pst.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Kiểm tra mã OTP có khớp và còn hạn (trong vòng 5 phút) hay không.
+     */
+    public boolean validateOTP(String email, String otp) {
+        String sql = "SELECT 1 FROM OTP_STORAGE WHERE email = ? AND otp_code = ? AND expiry_time > sysdate";
+        try (Connection con = DatabaseConnection.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, email);
+            pst.setString(2, otp);
+            try (ResultSet rs = pst.executeQuery()) {
+                return rs.next(); // Nếu có dòng trả về nghĩa là OTP hợp lệ
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Cập nhật mật khẩu mới thông qua Email (Dùng sau khi đã xác thực OTP thành công).
+     */
+    public boolean updatePasswordByEmail(String email, String rawPassword) {
+        String passwordHash = PasswordUtil.hash(rawPassword);
+        String sql = "UPDATE ACCOUNTS SET password = ?, updated_at = CURRENT_TIMESTAMP "
+                   + "WHERE user_id = (SELECT user_id FROM USERS WHERE email = ?)";
+        try (Connection con = DatabaseConnection.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, passwordHash);
+            pst.setString(2, email);
+            return pst.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
