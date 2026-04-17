@@ -421,12 +421,12 @@ public class LoginView extends javax.swing.JFrame {
             // Xoá mảng char để hạn chế lưu mật khẩu trong RAM lâu
             java.util.Arrays.fill(txtPassword.getPassword(), '\0');
         }
-    }// GEN-LAST:event_btnLoginActionPerformed
+    }
 
     private void txtUsernameActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_txtUsernameActionPerformed
         txtPassword.requestFocus(); // Nhấn Enter ở đây thì nhảy xuống ô dưới
         btnLoginActionPerformed(evt); // Gọi trực tiếp hàm xử lý của nút Đăng nhập
-    }// GEN-LAST:event_txtUsernameActionPerformed
+    }
 
     private void txtPasswordActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_txtPasswordActionPerformed
         // TODO add your handling code here:
@@ -436,6 +436,13 @@ public class LoginView extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        // Dọn token hết hạn ngay khi app start
+        int deletedNow = business.sql.rbac.TokenSql.getInstance().deleteExpiredTokens();
+        System.out.println("STARTUP CLEANUP deleted = " + deletedNow);
+
+        // Bật dọn định kỳ
+        business.service.TokenCleanupService.start();
+
         java.awt.EventQueue.invokeLater(() -> {
             LoginView login = new LoginView();
             login.setLocationRelativeTo(null);
@@ -460,4 +467,3 @@ public class LoginView extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 }
 
-// hi

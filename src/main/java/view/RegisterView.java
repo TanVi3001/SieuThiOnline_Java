@@ -95,8 +95,8 @@ public class RegisterView extends javax.swing.JFrame {
             fields[i].putClientProperty("JTextField.padding", new java.awt.Insets(0, 12, 0, 12));
 
             // Hiện nút xem mật khẩu cho 2 ô pass
-            if (fields[i] instanceof JPasswordField) {
-                ((JPasswordField) fields[i]).putClientProperty("JPasswordField.showRevealButton", true);
+            if (fields[i] instanceof JPasswordField jPasswordField) {
+                jPasswordField.putClientProperty("JPasswordField.showRevealButton", true);
             }
 
             cardPanel.add(fields[i]);
@@ -159,11 +159,14 @@ public class RegisterView extends javax.swing.JFrame {
         lblBack.setBounds(125, 615, 200, 20);
         lblBack.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         lblBack.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 new LoginView().setVisible(true);
                 dispose();
             }
+            @Override
             public void mouseEntered(java.awt.event.MouseEvent e) { lblBack.setText("<html><u>Đã có tài khoản? Đăng nhập</u></html>"); }
+            @Override
             public void mouseExited(java.awt.event.MouseEvent e) { lblBack.setText("Đã có tài khoản? Đăng nhập"); }
         });
         cardPanel.add(lblBack);

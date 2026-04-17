@@ -196,9 +196,9 @@ public class DashboardView extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        pnRight = new javax.swing.JPanel();
         pnTop = new javax.swing.JPanel();
         SystemName = new javax.swing.JLabel();
-        pnRight = new javax.swing.JPanel();
         pnLeft = new javax.swing.JPanel();
         btnProduct = new javax.swing.JButton();
         btnEmployee = new javax.swing.JButton();
@@ -206,6 +206,19 @@ public class DashboardView extends javax.swing.JFrame {
         btnOrder = new javax.swing.JButton();
         btnStatistic = new javax.swing.JButton();
         btnLogout = new javax.swing.JButton();
+
+        pnRight.setBackground(new java.awt.Color(44, 62, 80));
+
+        javax.swing.GroupLayout pnRightLayout = new javax.swing.GroupLayout(pnRight);
+        pnRight.setLayout(pnRightLayout);
+        pnRightLayout.setHorizontalGroup(
+            pnRightLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 254, Short.MAX_VALUE)
+        );
+        pnRightLayout.setVerticalGroup(
+            pnRightLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -230,19 +243,6 @@ public class DashboardView extends javax.swing.JFrame {
                 .addGap(21, 21, 21)
                 .addComponent(SystemName)
                 .addContainerGap(23, Short.MAX_VALUE))
-        );
-
-        pnRight.setBackground(new java.awt.Color(44, 62, 80));
-
-        javax.swing.GroupLayout pnRightLayout = new javax.swing.GroupLayout(pnRight);
-        pnRight.setLayout(pnRightLayout);
-        pnRightLayout.setHorizontalGroup(
-            pnRightLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 254, Short.MAX_VALUE)
-        );
-        pnRightLayout.setVerticalGroup(
-            pnRightLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
         );
 
         btnProduct.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
@@ -318,19 +318,15 @@ public class DashboardView extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(pnLeft, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pnRight, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(260, 260, 260))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(pnTop, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(pnLeft, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .addComponent(pnRight, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addComponent(pnLeft, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();

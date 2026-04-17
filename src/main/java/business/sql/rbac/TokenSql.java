@@ -181,4 +181,17 @@ public class TokenSql implements SqlInterface<Token> {
 
         return t;
     }
+
+    public int deleteExpiredTokens() {
+        String sql = "DELETE FROM TOKENS "
+                + "WHERE EXPIRY_DATE < SYSTIMESTAMP "
+                + "   OR IS_REVOKED = 1 "
+                + "   OR IS_DELETED = 1";
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+            return pst.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 }
