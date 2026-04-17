@@ -4,7 +4,7 @@
  */
 package view;
 
-import com.mycompany.sieuthionline.common.utils.EmailUtils;
+import common.utils.EmailUtils;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
@@ -132,6 +132,7 @@ public class ForgotPasswordView extends javax.swing.JFrame {
         lblBack.setBounds(150, 550, 150, 20);
         lblBack.setCursor(new Cursor(Cursor.HAND_CURSOR));
         lblBack.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 new LoginView().setVisible(true);
                 dispose();

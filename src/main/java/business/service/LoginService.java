@@ -3,7 +3,7 @@ package business.service;
 import business.sql.rbac.AccountSql;
 import business.sql.rbac.LoginHistorySql;
 import business.sql.rbac.TokenSql;
-import common.security.PasswordUtil;
+import common.utils.PasswordUtils;
 import model.account.Account;
 import model.account.Token;
 
@@ -11,19 +11,27 @@ import java.sql.Timestamp;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * LoginService (BCrypt-only)
+ *
+ * - Chỉ chấp nhận password lưu trong DB là BCrypt hợp lệ. - Nếu hash bị sửa /
+ * xóa / sai format -> đăng nhập thất bại (không ném exception). - Không
+ * fallback plain text, không auto-upgrade.
+ *
+ * Sau dán file này, làm Clean -> Rebuild -> Stop app cũ -> Run lại để đảm bảo
+ * app dùng code mới.
+ */
 public class LoginService {
 
-    /**
-     * Xác thực đăng nhập: - Nếu DB lưu BCrypt -> verify BCrypt - Nếu DB còn
-     * plain text -> so khớp plain, nếu đúng thì auto-upgrade sang BCrypt -
-     * Thành công: tạo token + lưu DB TOKENS + lưu session + trả về Account
-     *
-     * @param username tên đăng nhập
-     * @param password mật khẩu
-     * @return Account nếu thành công, null nếu thất bại
-     */
+    private static final String LOGIN_VERSION = "BCRYPT_ONLY_V5_2026-04-17";
+
     public static Account authenticate(String username, String password) {
-        System.out.println("DEBUG: Dang nhap voi User = [" + username + "]");
+        System.out.println("[" + LOGIN_VERSION + "] authenticate called, username=" + username);
+
+        if (username == null || username.isBlank() || password == null) {
+            System.out.println("[" + LOGIN_VERSION + "] FAIL: invalid input");
+            return null;
+        }
 
         AccountSql accountSql = AccountSql.getInstance();
         Account acc = accountSql.selectByUsername(username);
@@ -32,80 +40,86 @@ public class LoginService {
             LoginHistorySql.getInstance().log(
                     null, "LOGIN_FAILED", "FAILURE", "ACCOUNT_NOT_FOUND", localIp(), deviceInfo()
             );
-            System.out.println("❌ Đăng nhập thất bại: Tài khoản không tồn tại.");
+            System.out.println("[" + LOGIN_VERSION + "] FAIL: ACCOUNT_NOT_FOUND");
             return null;
         }
 
-        String stored = acc.getPassword();
-        if (stored == null || stored.isEmpty()) {
-            LoginHistorySql.getInstance().log(
-                    acc.getAccountId(), "LOGIN_FAILED", "FAILURE", "EMPTY_PASSWORD", localIp(), deviceInfo()
-            );
-            System.out.println("❌ Đăng nhập thất bại: Tài khoản chưa có mật khẩu hợp lệ.");
-            return null;
-        }
+        String storedHash = acc.getPassword();
 
-        boolean ok;
-        if (PasswordUtil.isBCryptHash(stored)) {
-            ok = PasswordUtil.verify(password, stored);
+        // Debug: không in toàn bộ hash, chỉ in độ dài và prefix ngắn
+        if (storedHash == null) {
+            System.out.println("[" + LOGIN_VERSION + "] storedHash=null");
         } else {
-            ok = stored.equals(password);
+            String prefix = storedHash.length() > 8 ? storedHash.substring(0, 8) : storedHash;
+            System.out.println("[" + LOGIN_VERSION + "] storedHash.len=" + storedHash.length() + " prefix=" + prefix);
+        }
 
-            // Auto-upgrade sang BCrypt nếu login đúng
-            if (ok) {
-                String newHash = PasswordUtil.hash(password);
-                boolean upgraded = accountSql.updatePasswordByAccountId(acc.getAccountId(), newHash);
-                if (upgraded) {
-                    acc.setPassword(newHash);
-                    System.out.println("INFO: Da auto-upgrade mat khau sang BCrypt cho account: " + acc.getAccountId());
-                } else {
-                    System.out.println("WARN: Khong auto-upgrade duoc mat khau (DB update fail).");
-                }
-            }
+        if (storedHash == null || storedHash.isBlank()) {
+            LoginHistorySql.getInstance().log(
+                    acc.getAccountId(), "LOGIN_FAILED", "FAILURE", "EMPTY_PASSWORD_HASH", localIp(), deviceInfo()
+            );
+            System.out.println("[" + LOGIN_VERSION + "] FAIL: EMPTY_PASSWORD_HASH");
+            return null;
+        }
+
+        // Bắt buộc hash đúng chuẩn BCrypt, nếu không -> fail (đây là requirement)
+        boolean isBcrypt = PasswordUtils.isBCryptHash(storedHash);
+        System.out.println("[" + LOGIN_VERSION + "] isBCrypt=" + isBcrypt);
+        if (!isBcrypt) {
+            LoginHistorySql.getInstance().log(
+                    acc.getAccountId(), "LOGIN_FAILED", "FAILURE", "INVALID_PASSWORD_HASH", localIp(), deviceInfo()
+            );
+            System.out.println("[" + LOGIN_VERSION + "] FAIL: INVALID_PASSWORD_HASH (manual tampering?)");
+            return null;
+        }
+
+        // Verify bằng BCrypt.checkpw (bên trong PasswordUtils đã bọc try/catch)
+        final boolean ok;
+        try {
+            ok = PasswordUtils.checkPassword(password, storedHash);
+        } catch (Exception ex) {
+            // Phòng thủ: nếu verify ném bất kỳ lỗi runtime nào thì fail
+            LoginHistorySql.getInstance().log(
+                    acc.getAccountId(), "LOGIN_FAILED", "FAILURE", "BCRYPT_VERIFY_ERROR", localIp(), deviceInfo()
+            );
+            System.out.println("[" + LOGIN_VERSION + "] FAIL: BCRYPT_VERIFY_ERROR - " + ex.getMessage());
+            return null;
         }
 
         if (!ok) {
             LoginHistorySql.getInstance().log(
                     acc.getAccountId(), "LOGIN_FAILED", "FAILURE", "WRONG_PASSWORD", localIp(), deviceInfo()
             );
-            System.out.println("❌ Đăng nhập thất bại: Sai mật khẩu.");
+            System.out.println("[" + LOGIN_VERSION + "] FAIL: WRONG_PASSWORD");
             return null;
         }
 
-        // 1) Tạo token
+        // Tạo token và lưu DB
         String tokenValue = UUID.randomUUID().toString();
-
-        // 2) Gán token vào Account object (để UI dùng)
         acc.setToken(tokenValue);
 
-        // 3) Lưu token xuống bảng TOKENS
         Token token = new Token();
         token.setTokenId(UUID.randomUUID().toString());
         token.setAccountId(acc.getAccountId());
         token.setTokenValue(tokenValue);
-
-        // Hạn dùng 45 phút
-        long now = System.currentTimeMillis();
-        token.setExpiryDate(new Timestamp(now + TimeUnit.MINUTES.toMillis(45)));
+        token.setExpiryDate(new Timestamp(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(45)));
 
         int inserted = TokenSql.getInstance().insert(token);
         if (inserted <= 0) {
-            System.out.println("WARN: Login OK nhung luu token DB that bai.");
-            // nếu muốn chặt, mở dòng dưới:
-            // return null;
+            System.out.println("[" + LOGIN_VERSION + "] WARN: token insert failed");
+            // Nếu bạn muốn chặt hơn, có thể return null ở đây để coi login là thất bại.
         } else {
-            System.out.println("INFO: Da luu token vao DB thanh cong.");
+            System.out.println("[" + LOGIN_VERSION + "] token saved (rows=" + inserted + ")");
         }
 
-        // 4) Lưu session RAM
+        // Lưu session RAM
         SessionManager.startSession(acc, tokenValue);
 
-        // 5) Log đăng nhập thành công
         LoginHistorySql.getInstance().log(
                 acc.getAccountId(), "LOGIN_SUCCESS", "SUCCESS", null, localIp(), deviceInfo()
         );
+        System.out.println("[" + LOGIN_VERSION + "] SUCCESS for username=" + username);
 
-        System.out.println("✅ Đăng nhập thành công! Chào mừng " + acc.getUsername());
         return acc;
     }
 
@@ -117,16 +131,12 @@ public class LoginService {
         return SessionManager.getToken();
     }
 
-    /**
-     * Đăng xuất: - Revoke token trong DB - Ghi log logout - Clear session RAM
-     */
     public static void logout() {
         Account u = SessionManager.getCurrentUser();
         String currentToken = SessionManager.getToken();
 
         if (currentToken != null && !currentToken.isBlank()) {
-            int revoked = TokenSql.getInstance().revokeToken(currentToken);
-            System.out.println("INFO: revoke token rows = " + revoked);
+            TokenSql.getInstance().revokeToken(currentToken);
         }
 
         LoginHistorySql.getInstance().log(
@@ -139,12 +149,7 @@ public class LoginService {
         );
 
         SessionManager.clear();
-        System.out.println("LOG: Người dùng đã đăng xuất.");
-    }
-
-    public static boolean isAdmin() {
-        Account u = getCurrentUser();
-        return u != null && u.getRole() != null && u.getRole().equalsIgnoreCase("admin");
+        System.out.println("[" + LOGIN_VERSION + "] user logged out");
     }
 
     private static String localIp() {

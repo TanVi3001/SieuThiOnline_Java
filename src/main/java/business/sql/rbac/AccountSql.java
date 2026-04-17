@@ -1,8 +1,9 @@
 package business.sql.rbac;
 
+
+import common.utils.PasswordUtils;
 import business.sql.SqlInterface;
 import common.db.DatabaseConnection;
-import common.security.PasswordUtil;
 import model.account.Account;
 
 import java.sql.Connection;
@@ -252,7 +253,7 @@ public class AccountSql implements SqlInterface<Account> {
                 }
             }
 
-            String passwordHash = PasswordUtil.hash(rawPassword);
+            String passwordHash = PasswordUtils.hash(rawPassword);
 
             try (PreparedStatement pstUser = con.prepareStatement(sqlUser); PreparedStatement pstAcc = con.prepareStatement(sqlAccount)) {
 
@@ -333,8 +334,8 @@ public class AccountSql implements SqlInterface<Account> {
                 String accountId = rs.getString("account_id");
                 String pwd = rs.getString("password");
 
-                if (pwd != null && !PasswordUtil.isBCryptHash(pwd)) {
-                    String hash = PasswordUtil.hash(pwd);
+                if (pwd != null && !PasswordUtils.isBCryptHash(pwd)) {
+                    String hash = PasswordUtils.hash(pwd);
                     pstUpdate.setString(1, hash);
                     pstUpdate.setString(2, accountId);
                     pstUpdate.addBatch();
@@ -415,7 +416,7 @@ public class AccountSql implements SqlInterface<Account> {
      * Cập nhật mật khẩu mới thông qua Email (Dùng sau khi đã xác thực OTP thành công).
      */
     public boolean updatePasswordByEmail(String email, String rawPassword) {
-        String passwordHash = PasswordUtil.hash(rawPassword);
+        String passwordHash = PasswordUtils.hash(rawPassword);
         String sql = "UPDATE ACCOUNTS SET password = ?, updated_at = CURRENT_TIMESTAMP "
                    + "WHERE user_id = (SELECT user_id FROM USERS WHERE email = ?)";
         try (Connection con = DatabaseConnection.getConnection(); 
