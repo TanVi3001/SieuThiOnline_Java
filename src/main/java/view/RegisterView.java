@@ -159,6 +159,17 @@ public class RegisterView extends javax.swing.JFrame {
                 txtPhone.requestFocus();
                 return;
             }
+            
+            // --- CHECK ĐỊNH DẠNG EMAIL ---
+            if (!isValidEmail(email)) {
+                JOptionPane.showMessageDialog(this, 
+                    "Email không hợp lệ!\n" +
+                    "- Định dạng: ten@gmail.com hoặc ten@gm.uit.edu.vn\n" +
+                    "- Không chứa ký tự đặc biệt, không có 2 dấu @.", 
+                    "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
+                txtEmail.requestFocus();
+                return;
+            }
 
             // 4. Nếu không trùng gì thì mới tiến hành lưu
             boolean success = accSql.register(name, email, phone, user, pass);
@@ -197,6 +208,29 @@ public class RegisterView extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         this.revalidate();
         this.repaint();
+    }
+    
+    /**
+    * Kiểm tra định dạng Email theo chuẩn yêu cầu
+    */
+    private boolean isValidEmail(String email) {
+        if (email == null || email.isEmpty()) return false;
+
+        // 1. Tách phần tên và phần đuôi bằng dấu @
+        String[] parts = email.split("@");
+
+        // Phải có đúng 1 dấu @ (tách ra thành 2 phần)
+        if (parts.length != 2) return false;
+
+        String localPart = parts[0];  // Phần trước @
+        String domainPart = parts[1]; // Phần sau @
+
+        // 2. Chặn các ký tự đặc biệt lạ ở phần tên (chỉ cho phép chữ, số, dấu chấm, gạch dưới)
+        // Regex này cũng chặn việc bắt đầu hoặc kết thúc bằng dấu chấm
+        if (!localPart.matches("^[a-zA-Z0-9]([._]?[a-zA-Z0-9])*$")) return false;
+
+        // 3. Chỉ chấp nhận 2 loại tên miền cụ thể
+        return domainPart.equalsIgnoreCase("gmail.com") || domainPart.equalsIgnoreCase("gm.uit.edu.vn");
     }
     
     /**
