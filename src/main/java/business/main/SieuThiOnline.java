@@ -1,5 +1,7 @@
 package business.main;
 
+import business.service.TokenCleanupService;
+import business.sql.rbac.TokenSql;
 import common.db.DatabaseConnection;
 import common.report.ExcelExporter;
 import java.sql.Connection;
@@ -47,6 +49,20 @@ public class SieuThiOnline {
             }
         } catch (Exception e) {
             System.out.println("[CẢNH BÁO] Lỗi kết nối DB: " + e.getMessage());
+        }
+
+        // GĐ0.1: Cleanup token ngay khi app khởi động
+        System.out.println("\n[THÔNG BÁO] GĐ0.1 - Dọn token hết hạn/revoked...");
+        try {
+            int deleted = TokenSql.getInstance().deleteExpiredTokens();
+            System.out.println("[HOÀN TẤT] Startup token cleanup deleted rows = " + deleted);
+
+            // bật cleanup định kỳ (ví dụ mỗi 15 phút)
+            TokenCleanupService.start();
+            System.out.println("[HOÀN TẤT] Đã bật TokenCleanupService định kỳ.");
+        } catch (Exception e) {
+            System.out.println("[CẢNH BÁO] Không dọn token được: " + e.getMessage());
+            e.printStackTrace();
         }
 
         // GIAI ĐOẠN 1: Model + SQL Mapping

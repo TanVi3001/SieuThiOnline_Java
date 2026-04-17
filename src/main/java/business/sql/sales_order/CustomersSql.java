@@ -25,15 +25,53 @@ public class CustomersSql implements SqlInterface<Customer> {
 
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
 
-            pst.setString(1, t.getCustomerId());
-            pst.setString(2, t.getCustomerName());
-            pst.setString(3, t.getRoleId());
-            pst.setInt(4, t.getRewardPoints());
-            pst.setString(5, t.getPhone());
-            pst.setString(6, t.getEmail());
-            pst.setString(7, t.getAddress());
+            con.setAutoCommit(false);
+            try {
+                pst.setString(1, t.getCustomerId());
+                pst.setString(2, t.getCustomerName());
+                pst.setString(3, t.getRoleId());
+                pst.setInt(4, t.getRewardPoints());
+                pst.setString(5, t.getPhone());
+                pst.setString(6, t.getEmail());
+                pst.setString(7, t.getAddress());
 
-            return pst.executeUpdate();
+                int rows = pst.executeUpdate();
+
+                if (rows > 0) {
+                    String newValue = joinPairs(
+                            pair("customer_name", t.getCustomerName()),
+                            pair("role_id", t.getRoleId()),
+                            pair("reward_points", t.getRewardPoints()),
+                            pair("phone", t.getPhone()),
+                            pair("email", t.getEmail()),
+                            pair("address", t.getAddress()),
+                            pair("is_deleted", 0)
+                    );
+
+                    logAuditWithConn(
+                            con,
+                            "CREATE_CUSTOMER",
+                            "CUSTOMER",
+                            t.getCustomerId(),
+                            null,
+                            newValue,
+                            "Tao moi khach hang"
+                    );
+                }
+
+                con.commit();
+                return rows;
+
+            } catch (Exception e) {
+                con.rollback();
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Insert lỗi: " + e.getMessage(),
+                        "SQL Error", JOptionPane.ERROR_MESSAGE);
+                return 0;
+            } finally {
+                con.setAutoCommit(true);
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Insert lỗi: " + e.getMessage(),
@@ -48,17 +86,85 @@ public class CustomersSql implements SqlInterface<Customer> {
                 + "CUSTOMER_NAME = ?, ROLE_ID = ?, REWARD_POINTS = ?, PHONE = ?, EMAIL = ?, ADDRESS = ? "
                 + "WHERE CUSTOMER_ID = ? AND IS_DELETED = 0";
 
+        String sqlOld = "SELECT CUSTOMER_NAME, ROLE_ID, REWARD_POINTS, PHONE, EMAIL, ADDRESS "
+                + "FROM CUSTOMERS WHERE CUSTOMER_ID = ? AND IS_DELETED = 0";
+
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
 
-            pst.setString(1, t.getCustomerName());
-            pst.setString(2, t.getRoleId());
-            pst.setInt(3, t.getRewardPoints());
-            pst.setString(4, t.getPhone());
-            pst.setString(5, t.getEmail());
-            pst.setString(6, t.getAddress());
-            pst.setString(7, t.getCustomerId());
+            con.setAutoCommit(false);
+            try {
+                String oldName = null, oldRole = null, oldPhone = null, oldEmail = null, oldAddress = null;
+                Integer oldPoints = null;
 
-            return pst.executeUpdate();
+                try (PreparedStatement psOld = con.prepareStatement(sqlOld)) {
+                    psOld.setString(1, t.getCustomerId());
+                    try (ResultSet rs = psOld.executeQuery()) {
+                        if (rs.next()) {
+                            oldName = rs.getString("CUSTOMER_NAME");
+                            oldRole = rs.getString("ROLE_ID");
+                            oldPoints = rs.getInt("REWARD_POINTS");
+                            oldPhone = rs.getString("PHONE");
+                            oldEmail = rs.getString("EMAIL");
+                            oldAddress = rs.getString("ADDRESS");
+                        }
+                    }
+                }
+
+                pst.setString(1, t.getCustomerName());
+                pst.setString(2, t.getRoleId());
+                pst.setInt(3, t.getRewardPoints());
+                pst.setString(4, t.getPhone());
+                pst.setString(5, t.getEmail());
+                pst.setString(6, t.getAddress());
+                pst.setString(7, t.getCustomerId());
+
+                int rows = pst.executeUpdate();
+
+                if (rows > 0) {
+                    String oldValue = joinPairs(
+                            diff(oldName, t.getCustomerName()) ? pair("customer_name", oldName) : null,
+                            diff(oldRole, t.getRoleId()) ? pair("role_id", oldRole) : null,
+                            diff(oldPoints, t.getRewardPoints()) ? pair("reward_points", oldPoints) : null,
+                            diff(oldPhone, t.getPhone()) ? pair("phone", oldPhone) : null,
+                            diff(oldEmail, t.getEmail()) ? pair("email", oldEmail) : null,
+                            diff(oldAddress, t.getAddress()) ? pair("address", oldAddress) : null
+                    );
+
+                    String newValue = joinPairs(
+                            diff(oldName, t.getCustomerName()) ? pair("customer_name", t.getCustomerName()) : null,
+                            diff(oldRole, t.getRoleId()) ? pair("role_id", t.getRoleId()) : null,
+                            diff(oldPoints, t.getRewardPoints()) ? pair("reward_points", t.getRewardPoints()) : null,
+                            diff(oldPhone, t.getPhone()) ? pair("phone", t.getPhone()) : null,
+                            diff(oldEmail, t.getEmail()) ? pair("email", t.getEmail()) : null,
+                            diff(oldAddress, t.getAddress()) ? pair("address", t.getAddress()) : null
+                    );
+
+                    if (newValue != null && !newValue.isBlank()) {
+                        logAuditWithConn(
+                                con,
+                                "UPDATE_CUSTOMER",
+                                "CUSTOMER",
+                                t.getCustomerId(),
+                                oldValue,
+                                newValue,
+                                "Cap nhat thong tin khach hang"
+                        );
+                    }
+                }
+
+                con.commit();
+                return rows;
+
+            } catch (Exception e) {
+                con.rollback();
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Update lỗi: " + e.getMessage(),
+                        "SQL Error", JOptionPane.ERROR_MESSAGE);
+                return 0;
+            } finally {
+                con.setAutoCommit(true);
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Update lỗi: " + e.getMessage(),
@@ -69,11 +175,40 @@ public class CustomersSql implements SqlInterface<Customer> {
 
     @Override
     public int delete(String id) {
-        String sql = "UPDATE CUSTOMERS SET IS_DELETED = 1 WHERE CUSTOMER_ID = ?";
+        String sql = "UPDATE CUSTOMERS SET IS_DELETED = 1 WHERE CUSTOMER_ID = ? AND IS_DELETED = 0";
+
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
 
-            pst.setString(1, id);
-            return pst.executeUpdate();
+            con.setAutoCommit(false);
+            try {
+                pst.setString(1, id);
+                int rows = pst.executeUpdate();
+
+                if (rows > 0) {
+                    logAuditWithConn(
+                            con,
+                            "DELETE_CUSTOMER",
+                            "CUSTOMER",
+                            id,
+                            pair("is_deleted", 0),
+                            pair("is_deleted", 1),
+                            "Xoa mem khach hang"
+                    );
+                }
+
+                con.commit();
+                return rows;
+
+            } catch (Exception e) {
+                con.rollback();
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Delete lỗi: " + e.getMessage(),
+                        "SQL Error", JOptionPane.ERROR_MESSAGE);
+                return 0;
+            } finally {
+                con.setAutoCommit(true);
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Delete lỗi: " + e.getMessage(),
@@ -167,11 +302,49 @@ public class CustomersSql implements SqlInterface<Customer> {
 
     public int updateRewardPoints(String customerId, int points) {
         String sql = "UPDATE CUSTOMERS SET REWARD_POINTS = ? WHERE CUSTOMER_ID = ? AND IS_DELETED = 0";
+        String sqlOld = "SELECT REWARD_POINTS FROM CUSTOMERS WHERE CUSTOMER_ID = ? AND IS_DELETED = 0";
+
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
 
-            pst.setInt(1, points);
-            pst.setString(2, customerId);
-            return pst.executeUpdate();
+            con.setAutoCommit(false);
+            try {
+                Integer oldPoints = null;
+                try (PreparedStatement psOld = con.prepareStatement(sqlOld)) {
+                    psOld.setString(1, customerId);
+                    try (ResultSet rs = psOld.executeQuery()) {
+                        if (rs.next()) {
+                            oldPoints = rs.getInt("REWARD_POINTS");
+                        }
+                    }
+                }
+
+                pst.setInt(1, points);
+                pst.setString(2, customerId);
+                int rows = pst.executeUpdate();
+
+                if (rows > 0 && diff(oldPoints, points)) {
+                    logAuditWithConn(
+                            con,
+                            "UPDATE_CUSTOMER_POINTS",
+                            "CUSTOMER",
+                            customerId,
+                            pair("reward_points", oldPoints),
+                            pair("reward_points", points),
+                            "Cap nhat diem tich luy khach hang"
+                    );
+                }
+
+                con.commit();
+                return rows;
+
+            } catch (Exception e) {
+                con.rollback();
+                e.printStackTrace();
+                return 0;
+            } finally {
+                con.setAutoCommit(true);
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
             return 0;
@@ -185,12 +358,56 @@ public class CustomersSql implements SqlInterface<Customer> {
         c.setRoleId(rs.getString("ROLE_ID"));
         c.setRewardPoints(rs.getInt("REWARD_POINTS"));
         c.setIsDeleted(rs.getInt("IS_DELETED"));
-
-        // map thêm 3 cột mới
         c.setPhone(rs.getString("PHONE"));
         c.setEmail(rs.getString("EMAIL"));
         c.setAddress(rs.getString("ADDRESS"));
-
         return c;
+    }
+
+    // ===== audit helpers =====
+    private boolean diff(Object oldV, Object newV) {
+        String o = oldV == null ? null : String.valueOf(oldV).trim();
+        String n = newV == null ? null : String.valueOf(newV).trim();
+        return (o == null && n != null) || (o != null && !o.equals(n));
+    }
+
+    private String pair(String col, Object val) {
+        return col + "=" + (val == null ? "null" : String.valueOf(val).trim());
+    }
+
+    private String joinPairs(String... parts) {
+        StringBuilder sb = new StringBuilder();
+        if (parts != null) {
+            for (String p : parts) {
+                if (p != null && !p.isBlank()) {
+                    if (sb.length() > 0) {
+                        sb.append(", ");
+                    }
+                    sb.append(p);
+                }
+            }
+        }
+        return sb.length() == 0 ? null : sb.toString();
+    }
+
+    private void logAuditWithConn(Connection con, String actionType, String entityType, String entityId,
+            String oldValue, String newValue, String reason) throws SQLException {
+        model.account.AuditLog log = new model.account.AuditLog();
+        log.setAccountId(
+                business.service.SessionManager.getCurrentUser() != null
+                ? business.service.SessionManager.getCurrentUser().getAccountId()
+                : null
+        );
+        log.setActionType(actionType);
+        log.setEntityType(entityType);
+        log.setEntityId(entityId);
+        log.setOldValue(oldValue);
+        log.setNewValue(newValue);
+        log.setReason(reason);
+        log.setIpAddress("local");
+        log.setDeviceInfo(System.getProperty("os.name") + " | Java " + System.getProperty("java.version"));
+
+        int ar = business.sql.rbac.AuditLogSql.getInstance().insertWithConn(con, log);
+        System.out.println("AUDIT CUSTOMER rows=" + ar + ", action=" + actionType + ", entityId=" + entityId);
     }
 }

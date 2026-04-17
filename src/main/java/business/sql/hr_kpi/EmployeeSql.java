@@ -20,16 +20,55 @@ public class EmployeeSql implements SqlInterface<Employee> {
     public int insert(Employee t) {
         String sql = "INSERT INTO EMPLOYEES (employee_id, employee_name, phone, email, role_id, gender, is_deleted) "
                 + "VALUES (?, ?, ?, ?, ?, ?, 0)";
+
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
 
-            pst.setString(1, t.getEmployeeId());
-            pst.setString(2, t.getEmployeeName());
-            pst.setString(3, t.getPhone());
-            pst.setString(4, t.getEmail());
-            pst.setString(5, t.getRoleId() != null ? t.getRoleId() : t.getRole());
-            pst.setString(6, t.getGender());
+            con.setAutoCommit(false);
+            try {
+                String roleId = t.getRoleId() != null ? t.getRoleId() : t.getRole();
 
-            return pst.executeUpdate();
+                pst.setString(1, t.getEmployeeId());
+                pst.setString(2, t.getEmployeeName());
+                pst.setString(3, t.getPhone());
+                pst.setString(4, t.getEmail());
+                pst.setString(5, roleId);
+                pst.setString(6, t.getGender());
+
+                int rows = pst.executeUpdate();
+
+                if (rows > 0) {
+                    String newValue = joinPairs(
+                            pair("employee_name", t.getEmployeeName()),
+                            pair("phone", t.getPhone()),
+                            pair("email", t.getEmail()),
+                            pair("role_id", roleId),
+                            pair("gender", t.getGender()),
+                            pair("is_deleted", 0)
+                    );
+
+                    logAuditWithConn(
+                            con,
+                            "CREATE_EMPLOYEE",
+                            "EMPLOYEE",
+                            t.getEmployeeId(),
+                            null,
+                            newValue,
+                            "Tao moi nhan vien"
+                    );
+                }
+
+                con.commit();
+                return rows;
+
+            } catch (Exception e) {
+                con.rollback();
+                System.err.println("Insert failed: " + e.getMessage());
+                e.printStackTrace();
+                return 0;
+            } finally {
+                con.setAutoCommit(true);
+            }
+
         } catch (SQLException e) {
             System.err.println("Insert failed: " + e.getMessage());
             System.err.println("Code: " + e.getErrorCode());
@@ -43,16 +82,84 @@ public class EmployeeSql implements SqlInterface<Employee> {
         String sql = "UPDATE EMPLOYEES "
                 + "SET employee_name = ?, phone = ?, email = ?, role_id = ?, gender = ? "
                 + "WHERE employee_id = ? AND is_deleted = 0";
+
+        String sqlOld = "SELECT employee_name, phone, email, role_id, gender "
+                + "FROM EMPLOYEES WHERE employee_id = ? AND is_deleted = 0";
+
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
 
-            pst.setString(1, t.getEmployeeName());
-            pst.setString(2, t.getPhone());
-            pst.setString(3, t.getEmail());
-            pst.setString(4, t.getRoleId() != null ? t.getRoleId() : t.getRole());
-            pst.setString(5, t.getGender());
-            pst.setString(6, t.getEmployeeId());
+            con.setAutoCommit(false);
+            try {
+                // Đọc giá trị cũ
+                String oldName = null, oldPhone = null, oldEmail = null, oldRole = null, oldGender = null;
+                try (PreparedStatement psOld = con.prepareStatement(sqlOld)) {
+                    psOld.setString(1, t.getEmployeeId());
+                    try (ResultSet rs = psOld.executeQuery()) {
+                        if (rs.next()) {
+                            oldName = rs.getString("employee_name");
+                            oldPhone = rs.getString("phone");
+                            oldEmail = rs.getString("email");
+                            oldRole = rs.getString("role_id");
+                            oldGender = rs.getString("gender");
+                        }
+                    }
+                }
 
-            return pst.executeUpdate();
+                String newRole = t.getRoleId() != null ? t.getRoleId() : t.getRole();
+
+                pst.setString(1, t.getEmployeeName());
+                pst.setString(2, t.getPhone());
+                pst.setString(3, t.getEmail());
+                pst.setString(4, newRole);
+                pst.setString(5, t.getGender());
+                pst.setString(6, t.getEmployeeId());
+
+                int rows = pst.executeUpdate();
+
+                if (rows > 0) {
+                    // Chỉ ghi field thay đổi
+                    String oldValue = joinPairs(
+                            diff(oldName, t.getEmployeeName()) ? pair("employee_name", oldName) : null,
+                            diff(oldPhone, t.getPhone()) ? pair("phone", oldPhone) : null,
+                            diff(oldEmail, t.getEmail()) ? pair("email", oldEmail) : null,
+                            diff(oldRole, newRole) ? pair("role_id", oldRole) : null,
+                            diff(oldGender, t.getGender()) ? pair("gender", oldGender) : null
+                    );
+
+                    String newValue = joinPairs(
+                            diff(oldName, t.getEmployeeName()) ? pair("employee_name", t.getEmployeeName()) : null,
+                            diff(oldPhone, t.getPhone()) ? pair("phone", t.getPhone()) : null,
+                            diff(oldEmail, t.getEmail()) ? pair("email", t.getEmail()) : null,
+                            diff(oldRole, newRole) ? pair("role_id", newRole) : null,
+                            diff(oldGender, t.getGender()) ? pair("gender", t.getGender()) : null
+                    );
+
+                    // Chỉ log khi thật sự có thay đổi dữ liệu
+                    if (newValue != null && !newValue.isBlank()) {
+                        logAuditWithConn(
+                                con,
+                                "UPDATE_EMPLOYEE",
+                                "EMPLOYEE",
+                                t.getEmployeeId(),
+                                oldValue,
+                                newValue,
+                                "Cap nhat nhan vien"
+                        );
+                    }
+                }
+
+                con.commit();
+                return rows;
+
+            } catch (Exception e) {
+                con.rollback();
+                System.err.println("Lỗi EmployeeSql.update: " + e.getMessage());
+                e.printStackTrace();
+                return 0;
+            } finally {
+                con.setAutoCommit(true);
+            }
+
         } catch (SQLException e) {
             System.err.println("Lỗi EmployeeSql.update: " + e.getMessage());
             e.printStackTrace();
@@ -62,10 +169,39 @@ public class EmployeeSql implements SqlInterface<Employee> {
 
     @Override
     public int delete(String id) {
-        String sql = "UPDATE EMPLOYEES SET is_deleted = 1 WHERE employee_id = ?";
+        String sql = "UPDATE EMPLOYEES SET is_deleted = 1 WHERE employee_id = ? AND is_deleted = 0";
+
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setString(1, id);
-            return pst.executeUpdate();
+
+            con.setAutoCommit(false);
+            try {
+                pst.setString(1, id);
+                int rows = pst.executeUpdate();
+
+                if (rows > 0) {
+                    logAuditWithConn(
+                            con,
+                            "DELETE_EMPLOYEE",
+                            "EMPLOYEE",
+                            id,
+                            pair("is_deleted", 0),
+                            pair("is_deleted", 1),
+                            "Xoa mem nhan vien"
+                    );
+                }
+
+                con.commit();
+                return rows;
+
+            } catch (Exception e) {
+                con.rollback();
+                System.err.println("Lỗi EmployeeSql.delete: " + e.getMessage());
+                e.printStackTrace();
+                return 0;
+            } finally {
+                con.setAutoCommit(true);
+            }
+
         } catch (SQLException e) {
             System.err.println("Lỗi EmployeeSql.delete: " + e.getMessage());
             e.printStackTrace();
@@ -93,10 +229,50 @@ public class EmployeeSql implements SqlInterface<Employee> {
 
     public int updateCompletedOrders(String employeeId, int count) {
         String sql = "UPDATE EMPLOYEES SET total_completed_orders = ? WHERE employee_id = ? AND is_deleted = 0";
+        String sqlOld = "SELECT total_completed_orders FROM EMPLOYEES WHERE employee_id = ? AND is_deleted = 0";
+
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setInt(1, count);
-            pst.setString(2, employeeId);
-            return pst.executeUpdate();
+
+            con.setAutoCommit(false);
+            try {
+                Integer oldCount = null;
+                try (PreparedStatement psOld = con.prepareStatement(sqlOld)) {
+                    psOld.setString(1, employeeId);
+                    try (ResultSet rs = psOld.executeQuery()) {
+                        if (rs.next()) {
+                            oldCount = rs.getInt("total_completed_orders");
+                        }
+                    }
+                }
+
+                pst.setInt(1, count);
+                pst.setString(2, employeeId);
+                int rows = pst.executeUpdate();
+
+                if (rows > 0 && diff(oldCount, count)) {
+                    logAuditWithConn(
+                            con,
+                            "UPDATE_EMPLOYEE_ORDERS",
+                            "EMPLOYEE",
+                            employeeId,
+                            pair("total_completed_orders", oldCount),
+                            pair("total_completed_orders", count),
+                            "Cap nhat tong don hoan thanh"
+                    );
+                }
+
+                con.commit();
+                return rows;
+
+            } catch (Exception e) {
+                con.rollback();
+                System.err.println("Lỗi EmployeeSql.updateCompletedOrders: " + e.getMessage());
+                e.printStackTrace();
+                return 0;
+            } finally {
+                con.setAutoCommit(true);
+            }
+
         } catch (SQLException e) {
             System.err.println("Lỗi EmployeeSql.updateCompletedOrders: " + e.getMessage());
             e.printStackTrace();
@@ -223,12 +399,63 @@ public class EmployeeSql implements SqlInterface<Employee> {
             e.setEmail(rs.getString("email"));
         } catch (SQLException ignored) {
         }
-        e.setRole(e.getRoleId()); // hiển thị cột "Chức vụ" bằng role_id
+        e.setRole(e.getRoleId());
         try {
             e.setGender(rs.getString("gender"));
         } catch (SQLException ignored) {
         }
 
         return e;
+    }
+
+    // ===== audit helpers =====
+    private String safe(String s) {
+        return s == null ? null : s.trim();
+    }
+
+    private boolean diff(Object oldV, Object newV) {
+        String o = oldV == null ? null : String.valueOf(oldV).trim();
+        String n = newV == null ? null : String.valueOf(newV).trim();
+        return (o == null && n != null) || (o != null && !o.equals(n));
+    }
+
+    private String pair(String col, Object val) {
+        return col + "=" + (val == null ? "null" : String.valueOf(val).trim());
+    }
+
+    private String joinPairs(String... parts) {
+        StringBuilder sb = new StringBuilder();
+        if (parts != null) {
+            for (String p : parts) {
+                if (p != null && !p.isBlank()) {
+                    if (sb.length() > 0) {
+                        sb.append(", ");
+                    }
+                    sb.append(p);
+                }
+            }
+        }
+        return sb.length() == 0 ? null : sb.toString();
+    }
+
+    private void logAuditWithConn(Connection con, String actionType, String entityType, String entityId,
+            String oldValue, String newValue, String reason) throws SQLException {
+        model.account.AuditLog log = new model.account.AuditLog();
+        log.setAccountId(
+                business.service.SessionManager.getCurrentUser() != null
+                ? business.service.SessionManager.getCurrentUser().getAccountId()
+                : null
+        );
+        log.setActionType(actionType);
+        log.setEntityType(entityType);
+        log.setEntityId(entityId);
+        log.setOldValue(oldValue);
+        log.setNewValue(newValue);
+        log.setReason(reason);
+        log.setIpAddress("local");
+        log.setDeviceInfo(System.getProperty("os.name") + " | Java " + System.getProperty("java.version"));
+
+        int ar = business.sql.rbac.AuditLogSql.getInstance().insertWithConn(con, log);
+        System.out.println("AUDIT EMPLOYEE rows=" + ar + ", action=" + actionType + ", entityId=" + entityId);
     }
 }

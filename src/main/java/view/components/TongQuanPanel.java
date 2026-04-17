@@ -2,10 +2,23 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package view;
+package view.components;
 
-import java.awt.*;
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
@@ -73,8 +86,9 @@ public class TongQuanPanel extends JPanel {
      */
     private JPanel createStatCard(String title, String value, String emoji) {
         JPanel card = new JPanel(new GridBagLayout());
+
         card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(UIManager.getColor("Component.borderColor"), 1),
+                BorderFactory.createLineBorder(resolveBorderColor(), 1),
                 new EmptyBorder(15, 15, 15, 15)
         ));
 
@@ -87,7 +101,7 @@ public class TongQuanPanel extends JPanel {
         // Emoji icon
         gbc.gridy = 0;
         JLabel lblEmoji = new JLabel(emoji);
-        lblEmoji.setFont(new Font("Segoe UI", Font.PLAIN, 28));
+        lblEmoji.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 28));
         card.add(lblEmoji, gbc);
 
         // Tiêu đề
@@ -95,7 +109,7 @@ public class TongQuanPanel extends JPanel {
         gbc.insets = new Insets(8, 0, 2, 0);
         JLabel lblTitle = new JLabel(title);
         lblTitle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lblTitle.setForeground(UIManager.getColor("Label.disabledForeground"));
+        lblTitle.setForeground(resolveSubTextColor());
         card.add(lblTitle, gbc);
 
         // Giá trị
@@ -131,7 +145,7 @@ public class TongQuanPanel extends JPanel {
             {"DH002", "Trần Thị B", "180,000 ₫", "Đang xử lý"},
             {"DH003", "Lê Văn C", "520,000 ₫", "Hoàn thành"},
             {"DH004", "Phạm Thị D", "95,000 ₫", "Chờ thanh toán"},
-            {"DH005", "Hoàng Văn E", "310,000 ₫", "Hoàn thành"},
+            {"DH005", "Hoàng Văn E", "310,000 ₫", "Hoàn thành"}
         };
 
         JTable table = new JTable(data, columns);
@@ -192,5 +206,16 @@ public class TongQuanPanel extends JPanel {
         panel.add(Box.createGlue(), gbc);
 
         return panel;
+    }
+
+    // ===== Helpers để không bị null màu khi đổi theme =====
+    private java.awt.Color resolveBorderColor() {
+        java.awt.Color c = UIManager.getColor("Component.borderColor");
+        return c != null ? c : UIManager.getColor("Separator.foreground");
+    }
+
+    private java.awt.Color resolveSubTextColor() {
+        java.awt.Color c = UIManager.getColor("Label.disabledForeground");
+        return c != null ? c : UIManager.getColor("Label.foreground");
     }
 }
