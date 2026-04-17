@@ -7,16 +7,19 @@ public class Account {
     private String userId;
     private String username;
     private String password;
-    private String role; // THÊM MỚI: Để phân quyền
+    private String role;      // phân quyền
     private String status;
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private int isDeleted;
 
+    // THÊM MỚI: token phiên đăng nhập
+    private String token;
+
     public Account() {
     }
 
-    // Constructor đầy đủ (Cho việc quản lý chi tiết)
+    // Constructor đầy đủ
     public Account(String accountId, String userId, String username, String password, String role,
                    String status, Timestamp createdAt, Timestamp updatedAt, int isDeleted) {
         this.accountId = accountId;
@@ -30,8 +33,7 @@ public class Account {
         this.isDeleted = isDeleted;
     }
 
-    // Constructor rút gọn (Dùng cho LoginService và AccountSql)
-    // FIX: Bỏ throw exception, gán giá trị thật vào
+    // Constructor rút gọn
     public Account(String accountId, String username, String password, String role, int isDeleted) {
         this.accountId = accountId;
         this.username = username;
@@ -39,8 +41,6 @@ public class Account {
         this.role = role;
         this.isDeleted = isDeleted;
     }
-
-    // --- GETTER & SETTER (FIX: Bỏ các UnsupportedOperationException) ---
 
     public String getAccountId() { return accountId; }
     public void setAccountId(String accountId) { this.accountId = accountId; }
@@ -54,7 +54,7 @@ public class Account {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public String getRole() { return role; } // FIX: Trả về giá trị thật
+    public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
     public String getStatus() { return status; }
@@ -68,4 +68,8 @@ public class Account {
 
     public int getIsDeleted() { return isDeleted; }
     public void setIsDeleted(int isDeleted) { this.isDeleted = isDeleted; }
+
+    // TOKEN
+    public String getToken() { return token; }
+    public void setToken(String token) { this.token = token; }
 }

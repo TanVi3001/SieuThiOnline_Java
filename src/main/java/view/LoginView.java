@@ -37,16 +37,15 @@ public class LoginView extends javax.swing.JFrame {
         this.getContentPane().removeAll(); // Xóa sạch để build lại layout mới
         this.getContentPane().setLayout(new java.awt.BorderLayout()); // Dùng BorderLayout cho dễ chia đôi
         this.getContentPane().add(HomePanel, java.awt.BorderLayout.WEST); // Đưa HomePanel về bên trái
-    
+
         // Tạo một vùng chứa mới cho phần Login bên phải
         javax.swing.JPanel rightContainer = new javax.swing.JPanel(new java.awt.GridBagLayout());
         rightContainer.setBackground(new java.awt.Color(44, 62, 80)); // Màu nền xanh than 
-    
+
         // 1. Dọn dẹp content pane
         /*this.getContentPane().removeAll();
         this.getContentPane().setLayout(new java.awt.GridBagLayout()); // Căn giữa Card
         this.getContentPane().setBackground(java.awt.Color.WHITE); // Đổi bề mặt thành Trắng tinh*/
-
         // 2. Tạo Card chứa form
         javax.swing.JPanel cardPanel = new javax.swing.JPanel(null);
         cardPanel.setBackground(java.awt.Color.WHITE);
@@ -97,9 +96,9 @@ public class LoginView extends javax.swing.JFrame {
             // Khởi tạo trang đăng ký
             RegisterView regView = new RegisterView();
             regView.setVisible(true);
-            
+
             // Đóng trang đăng nhập hiện tại
-            this.dispose(); 
+            this.dispose();
         });
         cardPanel.add(btnSignUp);
 
@@ -371,12 +370,8 @@ public class LoginView extends javax.swing.JFrame {
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnLoginActionPerformed
         // 1. Lấy dữ liệu
         String user = txtUsername.getText().trim();
-
-        // SỬA DÒNG NÀY: JPasswordField dùng getPassword() trả về mảng char,
-        // mình phải bọc nó trong new String(...) để lấy chuỗi mật khẩu.
         String pass = new String(txtPassword.getPassword());
 
-        System.out.println("User nhap: [" + user + "]");
         // 2. Kiểm tra nhanh (Validation)
         if (user.isEmpty() || pass.isEmpty()) {
             javax.swing.JOptionPane.showMessageDialog(this,
@@ -387,12 +382,13 @@ public class LoginView extends javax.swing.JFrame {
         }
 
         try {
-            // 3. Gọi Service để kiểm tra với Database Oracle
-            if (business.service.LoginService.authenticate(user, pass)) {
+            // 3. Authenticate: giờ trả về Account (null nếu fail)
+            model.account.Account acc = business.service.LoginService.authenticate(user, pass);
 
+            if (acc != null) {
                 // --- ĐĂNG NHẬP THÀNH CÔNG ---
                 javax.swing.JOptionPane.showMessageDialog(this,
-                        "Chào mừng " + user + "! Bạn đã đăng nhập thành công.",
+                        "Chào mừng " + acc.getUsername() + "! Bạn đã đăng nhập thành công.",
                         "Thông báo",
                         javax.swing.JOptionPane.INFORMATION_MESSAGE);
 
@@ -403,9 +399,8 @@ public class LoginView extends javax.swing.JFrame {
                     mainScreen.setLocationRelativeTo(null);
                 });
 
-                // 5. Đóng màn hình Login (Giải phóng RAM cho LOQ)
+                // 5. Đóng màn hình Login
                 this.dispose();
-
             } else {
                 // --- ĐĂNG NHẬP THẤT BẠI ---
                 javax.swing.JOptionPane.showMessageDialog(this,
@@ -414,7 +409,7 @@ public class LoginView extends javax.swing.JFrame {
                         javax.swing.JOptionPane.ERROR_MESSAGE);
 
                 txtPassword.setText("");
-                txtPassword.requestFocus();
+                txtPassword.requestFocusInWindow();
             }
         } catch (Exception e) {
             javax.swing.JOptionPane.showMessageDialog(this,
@@ -422,6 +417,9 @@ public class LoginView extends javax.swing.JFrame {
                     "LỖI NGHIÊM TRỌNG",
                     javax.swing.JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+        } finally {
+            // Xoá mảng char để hạn chế lưu mật khẩu trong RAM lâu
+            java.util.Arrays.fill(txtPassword.getPassword(), '\0');
         }
     }// GEN-LAST:event_btnLoginActionPerformed
 

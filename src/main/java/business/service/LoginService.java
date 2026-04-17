@@ -1,23 +1,25 @@
 package business.service;
 
 import business.sql.rbac.AccountSql;
+import business.sql.rbac.TokenSql;
 import common.security.PasswordUtil;
 import model.account.Account;
+import model.account.Token;
+
+import java.sql.Timestamp;
+import java.util.UUID;
 
 public class LoginService {
 
-    private static Account currentUser;
-
     /**
-     * Xác thực đăng nhập:
-     * - Nếu DB lưu BCrypt -> verify BCrypt
-     * - Nếu DB còn plain text -> so khớp plain, nếu đúng thì auto-upgrade sang BCrypt
-     *
-     * @param username tên đăng nhập
-     * @param password mật khẩu người dùng nhập
-     * @return true nếu đăng nhập thành công, ngược lại false
+     * Xác thực đăng nhập: - Nếu DB lưu BCrypt -> verify BCrypt - Nếu DB còn
+     * plain text -> so khớp plain, nếu đúng thì auto-upgrade sang BCrypt -
+     * Thành công: tạo token + lưu DB TOKENS + lưu session + trả về Account
+     * @param username
+     * @param password
+     * @return 
      */
-    public static boolean authenticate(String username, String password) {
+    public static Account authenticate(String username, String password) {
         System.out.println("DEBUG: Dang nhap voi User = [" + username + "]");
 
         AccountSql accountSql = AccountSql.getInstance();
@@ -25,69 +27,96 @@ public class LoginService {
 
         if (acc == null) {
             System.out.println("❌ Đăng nhập thất bại: Tài khoản không tồn tại.");
-            return false;
+            return null;
         }
 
         String stored = acc.getPassword();
         if (stored == null || stored.isEmpty()) {
             System.out.println("❌ Đăng nhập thất bại: Tài khoản chưa có mật khẩu hợp lệ.");
-            return false;
+            return null;
         }
 
         boolean ok;
         if (PasswordUtil.isBCryptHash(stored)) {
-            // DB đã là hash
             ok = PasswordUtil.verify(password, stored);
         } else {
-            // DB còn plain text (legacy)
             ok = stored.equals(password);
 
-            // Auto-upgrade sang hash nếu login đúng
+            // Auto-upgrade sang BCrypt nếu login đúng
             if (ok) {
                 String newHash = PasswordUtil.hash(password);
                 boolean upgraded = accountSql.updatePasswordByAccountId(acc.getAccountId(), newHash);
                 if (upgraded) {
-                    acc.setPassword(newHash); // cập nhật object hiện tại
-                    System.out.println("INFO: Đã auto-upgrade mật khẩu sang BCrypt cho account: " + acc.getAccountId());
+                    acc.setPassword(newHash);
+                    System.out.println("INFO: Da auto-upgrade mat khau sang BCrypt cho account: " + acc.getAccountId());
                 } else {
-                    System.out.println("WARN: Không auto-upgrade được mật khẩu (DB update fail).");
+                    System.out.println("WARN: Khong auto-upgrade duoc mat khau (DB update fail).");
                 }
             }
         }
 
-        if (ok) {
-            currentUser = acc;
-            System.out.println("✅ Đăng nhập thành công! Chào mừng " + acc.getUsername());
-            return true;
-        } else {
+        if (!ok) {
             System.out.println("❌ Đăng nhập thất bại: Sai mật khẩu.");
-            return false;
+            return null;
         }
+
+        // 1) Tạo token
+        String tokenValue = UUID.randomUUID().toString();
+
+        // 2) Gán vào Account object (để UI dùng)
+        acc.setToken(tokenValue);
+
+        // 3) Lưu token xuống bảng TOKENS
+        Token token = new Token();
+        token.setTokenId(UUID.randomUUID().toString()); 
+        token.setAccountId(acc.getAccountId());
+        token.setTokenValue(tokenValue);
+
+        // Hạn dùng 45 phút
+        long now = System.currentTimeMillis();
+        token.setExpiryDate(new java.sql.Timestamp(now + 45L * 60 * 1000));
+
+        int inserted = TokenSql.getInstance().insert(token);
+        if (inserted <= 0) {
+            System.out.println("WARN: Login OK nhung luu token DB that bai.");
+            // vẫn cho login vào nếu bạn muốn "mềm"
+            // nếu muốn chặt, return null ở đây
+        } else {
+            System.out.println("INFO: Da luu token vao DB thanh cong.");
+        }
+
+        // 4) Lưu session RAM
+        SessionManager.startSession(acc, tokenValue);
+
+        System.out.println("✅ Đăng nhập thành công! Chào mừng " + acc.getUsername());
+        return acc;
     }
 
-    /**
-     * Lấy user đang đăng nhập.
-     *
-     * @return account hiện tại hoặc null
-     */
     public static Account getCurrentUser() {
-        return currentUser;
+        return SessionManager.getCurrentUser();
+    }
+
+    public static String getToken() {
+        return SessionManager.getToken();
     }
 
     /**
-     * Đăng xuất.
+     * Đăng xuất: - Revoke token trong DB - Clear session RAM
      */
     public static void logout() {
-        currentUser = null;
+        String currentToken = SessionManager.getToken();
+
+        if (currentToken != null && !currentToken.isBlank()) {
+            int revoked = TokenSql.getInstance().revokeToken(currentToken);
+            System.out.println("INFO: revoke token rows = " + revoked);
+        }
+
+        SessionManager.clear();
         System.out.println("LOG: Người dùng đã đăng xuất.");
     }
 
-    /**
-     * Tạm thời trả false vì schema hiện tại không có role trực tiếp trong ACCOUNTS.
-     *
-     * @return false
-     */
     public static boolean isAdmin() {
-        return false;
+        Account u = getCurrentUser();
+        return u != null && u.getRole() != null && u.getRole().equalsIgnoreCase("admin");
     }
 }

@@ -20,6 +20,14 @@ public class DashboardView extends javax.swing.JFrame {
      */
     public DashboardView() {
         initComponents();
+        model.account.Account u = business.service.LoginService.getCurrentUser();
+        String tk = business.service.LoginService.getToken();
+
+        if (u != null) {
+            System.out.println("SESSION USER = " + u.getUsername());
+            System.out.println("SESSION TOKEN = " + tk);
+
+        }
 
         this.setTitle("Hệ Thống Quản Lý Siêu Thị");
         this.setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
@@ -332,7 +340,7 @@ public class DashboardView extends javax.swing.JFrame {
         // TODO add your handling code here:
         showPanel(new view.StatisticView());// Gọi cái JPanel
     }// GEN-LAST:event_btnStatisticActionPerformed
-    
+
     private void btnProductActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnProductActionPerformed
         // TODO add your handling code here:
         showPanel(new ProductView()); // Gọi cái JPanel
