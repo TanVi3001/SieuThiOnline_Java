@@ -4,6 +4,9 @@
  */
 package view;
 
+import javax.swing.JPanel;
+import view.components.TongQuanPanel;
+
 /**
  *
  * @author Admin
@@ -452,4 +455,10 @@ public class DashboardView extends javax.swing.JFrame {
     private javax.swing.JPanel pnRight;
     private javax.swing.JPanel pnTop;
     // End of variables declaration//GEN-END:variables
+
+    private static class SettingsView extends JPanel {
+
+        public SettingsView() {
+        }
+    }
 }
