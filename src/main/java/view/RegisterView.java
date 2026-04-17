@@ -140,14 +140,35 @@ public class RegisterView extends javax.swing.JFrame {
             }
 
             // Gọi hàm lưu vào CSDL
-            boolean success = business.sql.rbac.AccountSql.getInstance().register(name, email, phone, user, pass);
+            business.sql.rbac.AccountSql accSql = business.sql.rbac.AccountSql.getInstance();
+    
+            if (accSql.checkDuplicateUsername(user)) {
+                JOptionPane.showMessageDialog(this, "Tên đăng nhập '" + user + "' đã tồn tại. Vui lòng chọn tên khác!", "Lỗi đăng ký", JOptionPane.WARNING_MESSAGE);
+                txtUsername.requestFocus();
+                return;
+            }
+
+            if (accSql.checkDuplicateEmail(email)) {
+                JOptionPane.showMessageDialog(this, "Email '" + email + "' đã được sử dụng. Vui lòng dùng Email khác!", "Lỗi đăng ký", JOptionPane.WARNING_MESSAGE);
+                txtEmail.requestFocus();
+                return;
+            }
+
+            if (accSql.checkDuplicatePhone(phone)) {
+                JOptionPane.showMessageDialog(this, "Số điện thoại '" + phone + "' đã được đăng ký. Vui lòng kiểm tra lại!", "Lỗi đăng ký", JOptionPane.WARNING_MESSAGE);
+                txtPhone.requestFocus();
+                return;
+            }
+
+            // 4. Nếu không trùng gì thì mới tiến hành lưu
+            boolean success = accSql.register(name, email, phone, user, pass);
 
             if (success) {
-                JOptionPane.showMessageDialog(this, "Đăng ký thành công! Bạn có thể đăng nhập ngay.");
+                JOptionPane.showMessageDialog(this, "Đăng ký thành công! Chào mừng " + name);
                 new LoginView().setVisible(true);
                 this.dispose();
             } else {
-                JOptionPane.showMessageDialog(this, "Lỗi đăng ký! Tên tài khoản hoặc Email có thể đã tồn tại.");
+                JOptionPane.showMessageDialog(this, "Đã xảy ra lỗi hệ thống khi lưu dữ liệu. Vui lòng thử lại sau!");
             }
         });
         cardPanel.add(btnReg);

@@ -428,4 +428,46 @@ public class AccountSql implements SqlInterface<Account> {
             return false;
         }
     }
+    
+    public boolean checkDuplicateUsername(String username) {
+        String sql = "SELECT 1 FROM ACCOUNTS WHERE username = ? AND is_deleted = 0";
+        try (Connection con = DatabaseConnection.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, username);
+            try (ResultSet rs = pst.executeQuery()) {
+                return rs.next(); // Trả về true nếu tìm thấy bản ghi (tức là đã trùng)
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean checkDuplicateEmail(String email) {
+        String sql = "SELECT 1 FROM USERS WHERE email = ? AND is_deleted = 0";
+        try (Connection con = DatabaseConnection.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, email);
+            try (ResultSet rs = pst.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean checkDuplicatePhone(String phone) {
+        String sql = "SELECT 1 FROM USERS WHERE phone_number = ? AND is_deleted = 0";
+        try (Connection con = DatabaseConnection.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, phone);
+            try (ResultSet rs = pst.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
