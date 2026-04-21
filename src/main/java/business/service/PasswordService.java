@@ -25,6 +25,8 @@ public final class PasswordService {
 
     /**
      * Kiểm tra xem chuỗi có phải BCrypt hash hợp lệ hay không.
+     * @param hash
+     * @return 
      */
     public static boolean isBCryptHash(String hash) {
         return hash != null && BCRYPT_PATTERN.matcher(hash).matches();
@@ -35,6 +37,9 @@ public final class PasswordService {
      * false (Đăng nhập thất bại). - Nếu BCrypt.checkpw ném
      * IllegalArgumentException (hash bị sửa) -> catch và trả false. - Nếu
      * checkpw trả true -> true.
+     * @param plainPassword
+     * @param hashFromDb
+     * @return 
      */
     public static boolean checkPassword(String plainPassword, String hashFromDb) {
         if (plainPassword == null || plainPassword.isBlank()) {
@@ -66,6 +71,8 @@ public final class PasswordService {
 
     /**
      * Tạo BCrypt hash từ mật khẩu thô.
+     * @param plainPassword
+     * @return 
      */
     public static String hashPassword(String plainPassword) {
         if (plainPassword == null || plainPassword.isBlank()) {
@@ -81,6 +88,9 @@ public final class PasswordService {
      * Lưu ý: phương thức này dùng
      * AccountSql.updatePasswordByAccountId(accountId, passwordHash) mà code của
      * bạn đã cung cấp.
+     * @param accountId
+     * @param newPlainPassword
+     * @return 
      */
     public static boolean updatePasswordByAccountId(String accountId, String newPlainPassword) {
         if (accountId == null || accountId.isBlank()) {
@@ -99,6 +109,9 @@ public final class PasswordService {
      * Biến thể: update theo email (nếu muốn). Sử dụng
      * AccountSql.updatePasswordByEmail nếu có sẵn. Trả về true nếu cập nhật
      * thành công.
+     * @param email
+     * @param newPlainPassword
+     * @return 
      */
     public static boolean updatePasswordByEmail(String email, String newPlainPassword) {
         if (email == null || email.isBlank()) {

@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class LoginService {
 
-    private static final String LOGIN_VERSION = "BCRYPT_ONLY_V5_2026-04-17";
+    private static final String LOGIN_VERSION = "BCRYPT_ONLY_V5_2026-04-18";
 
     public static Account authenticate(String username, String password) {
         System.out.println("[" + LOGIN_VERSION + "] authenticate called, username=" + username);
@@ -102,12 +102,12 @@ public class LoginService {
         token.setTokenId(UUID.randomUUID().toString());
         token.setAccountId(acc.getAccountId());
         token.setTokenValue(tokenValue);
-        token.setExpiryDate(new Timestamp(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(45)));
+        token.setExpiryDate(new Timestamp(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(45))); // sau 45 phút thì hết hạn token
 
         int inserted = TokenSql.getInstance().insert(token);
         if (inserted <= 0) {
             System.out.println("[" + LOGIN_VERSION + "] WARN: token insert failed");
-            // Nếu bạn muốn chặt hơn, có thể return null ở đây để coi login là thất bại.
+            return null;
         } else {
             System.out.println("[" + LOGIN_VERSION + "] token saved (rows=" + inserted + ")");
         }

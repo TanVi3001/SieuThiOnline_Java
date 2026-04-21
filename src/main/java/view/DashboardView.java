@@ -11,11 +11,13 @@ import view.components.TongQuanPanel;
  *
  * @author Admin
  */
-public class DashboardView extends javax.swing.JFrame {
+public final class DashboardView extends javax.swing.JFrame {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger
             .getLogger(DashboardView.class.getName());
 
+    private javax.swing.Timer sessionTimer;
+    private boolean isLoggingOut = false; // <--- Cầu chì nằm đây
     private javax.swing.JPanel mainContentPanel;
 
     /**
@@ -131,6 +133,8 @@ public class DashboardView extends javax.swing.JFrame {
 
         this.revalidate();
         this.repaint();
+
+        startSessionCheck();
     }
 
     /*
@@ -354,23 +358,31 @@ public class DashboardView extends javax.swing.JFrame {
         // TODO add your handling code here:
         // 1. Hiện bảng xác nhận cho "chắc cú"
         int confirm = javax.swing.JOptionPane.showConfirmDialog(this,
-                "Bạn có thực sự muốn đăng xuất không?",
-                "Xác nhận",
+                "Bạn có thực sự muốn đăng xuất không?", "Xác nhận",
                 javax.swing.JOptionPane.YES_NO_OPTION);
 
-        // 2. Nếu Nhóm trưởng chọn YES
         if (confirm == javax.swing.JOptionPane.YES_OPTION) {
-            // Gọi hàm xóa session đã viết ở Bước 1
+            // 1. CỰC KỲ QUAN TRỌNG: Dừng cái Timer tuần tra lại ngay lập tức
+            // BẬT CẦU CHÌ NGAY TẠI ĐÂY
+            this.isLoggingOut = true;
+            if (sessionTimer != null && sessionTimer.isRunning()) {
+                sessionTimer.stop();
+            }
+
+            // 2. Bây giờ mới đi hủy Token trong DB
+            String tk = business.service.LoginService.getToken();
+            business.sql.rbac.TokenSql.getInstance().revokeToken(tk);
+
+            // 3. Xóa session local
             business.service.LoginService.logout();
 
-            // 3. Mở lại màn hình Login
+            // 4. Chuyển về màn hình Login (Lúc này sẽ không bị hiện cái thông báo lỗi kia nữa)
             java.awt.EventQueue.invokeLater(() -> {
                 view.LoginView login = new view.LoginView();
                 login.setVisible(true);
-                login.setLocationRelativeTo(null); // Vẫn phải ở giữa màn hình cho đẹp
+                login.setLocationRelativeTo(null);
             });
 
-            // 4. Đóng cái Dashboard hiện tại lại
             this.dispose();
         }
 
@@ -460,5 +472,40 @@ public class DashboardView extends javax.swing.JFrame {
 
         public SettingsView() {
         }
+    }
+
+    private void startSessionCheck() {
+        sessionTimer = new javax.swing.Timer(1000, e -> {
+            // LỚP CHẶN 1: Nếu đang trong quá trình đăng xuất chủ động, không làm gì cả
+            if (isLoggingOut) {
+                ((javax.swing.Timer) e.getSource()).stop();
+                return;
+            }
+
+            String currentToken = business.service.LoginService.getToken();
+            boolean isValid = business.sql.rbac.TokenSql.getInstance().isTokenValid(currentToken);
+
+            if (!isValid) {
+                // LỚP CHẶN 2: Kiểm tra lại lần nữa trước khi hiện thông báo
+                if (!isLoggingOut) {
+                    ((javax.swing.Timer) e.getSource()).stop();
+
+                    javax.swing.JOptionPane.showMessageDialog(this,
+                            "Phiên đăng nhập của bạn đã hết hạn!",
+                            "Thông báo bảo mật",
+                            javax.swing.JOptionPane.ERROR_MESSAGE);
+
+                    java.awt.EventQueue.invokeLater(() -> {
+                        view.LoginView login = new view.LoginView();
+                        login.setVisible(true);
+                        login.setLocationRelativeTo(null);
+                    });
+
+                    this.dispose();
+                }
+            }
+        });
+
+        sessionTimer.start();
     }
 }
