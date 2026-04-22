@@ -115,7 +115,7 @@ public class LoginView extends javax.swing.JFrame {
                 paintShelf(g2, ox + (int)(100*s),  oy + (int)(25*s), (int)(78*s), (int)(143*s), s);
                 paintShelf(g2, ox + (int)(232*s),  oy + (int)(15*s), (int)(78*s), (int)(155*s), s);
 
-                // Xe đẩy thông minh
+                // Xe đẩy thông minh 
                 paintCart(g2, ox + (int)(148*s), oy + (int)(143*s), s);
 
                 // Điện thoại QR
