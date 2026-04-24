@@ -406,3 +406,28 @@ CREATE TABLE AUDIT_LOG (
 CREATE INDEX IDX_AUDIT_CREATED ON AUDIT_LOG(CREATED_AT DESC);
 CREATE INDEX IDX_AUDIT_ACCOUNT ON AUDIT_LOG(ACCOUNT_ID);
 CREATE INDEX IDX_AUDIT_ACTION  ON AUDIT_LOG(ACTION_TYPE);
+
+ALTER TABLE ROLES ADD (role_name NVARCHAR2(100));
+
+INSERT INTO FUNCTIONS (function_id, function_name) VALUES ('F_SYS', N'Quản lý hệ thống');
+INSERT INTO FUNCTIONS (function_id, function_name) VALUES ('F_STORE', N'Quản lý cửa hàng');
+INSERT INTO FUNCTIONS (function_id, function_name) VALUES ('F_EMP', N'Quản lý nhân viên');
+INSERT INTO FUNCTIONS (function_id, function_name) VALUES ('F_MEM', N'Quản lý thành viên');
+INSERT INTO FUNCTIONS (function_id, function_name) VALUES ('F_PROD', N'Quản lý sản phẩm & Kho');
+INSERT INTO FUNCTIONS (function_id, function_name) VALUES ('F_ORDER', N'Quản lý hóa đơn & Bán hàng');
+INSERT INTO FUNCTIONS (function_id, function_name) VALUES ('F_RECO', N'Báo cáo & Thống kê');
+
+INSERT INTO ROLES (role_id, role_name, function_id, can_view, can_add, can_edit, can_delete, can_export)
+VALUES ('R_ADMIN_ALL', N'Toàn quyền hệ thống', 'F_SYS', 1, 1, 1, 1, 1);
+
+-- Store Manager: Quản lý nhân viên và sản phẩm (nhưng không sửa được hệ thống F_SYS)
+INSERT INTO ROLES (role_id, role_name, function_id, can_view, can_add, can_edit, can_delete, can_export)
+VALUES ('R_STORE_MNG', N'Quản lý chi nhánh', 'F_STORE', 1, 1, 1, 1, 1);
+
+-- Employee: Chỉ được bán hàng (Hóa đơn) và Xem sản phẩm
+INSERT INTO ROLES (role_id, role_name, function_id, can_view, can_add, can_edit, can_delete, can_export)
+VALUES ('R_STAFF_SALE', N'Nhân viên bán hàng', 'F_ORDER', 1, 1, 0, 0, 1);
+INSERT INTO ROLES (role_id, role_name, function_id, can_view, can_add, can_edit, can_delete, can_export)
+VALUES ('R_STAFF_VIEW_PROD', N'Xem sản phẩm', 'F_PROD', 1, 0, 0, 0, 0);
+
+COMMIT;
