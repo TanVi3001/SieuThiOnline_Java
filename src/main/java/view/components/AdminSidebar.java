@@ -6,10 +6,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author nguye
- */
 public class AdminSidebar extends JPanel {
     
     private final List<MenuItem> menuItems;
@@ -19,11 +15,10 @@ public class AdminSidebar extends JPanel {
     public AdminSidebar() {
         this.menuItems = new ArrayList<>();
 
-        // Cấu hình Layout cho Sidebar (Style giống Store Manager)
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(250, Integer.MAX_VALUE));
-        setBackground(Color.WHITE); // Nền trắng tinh tế
-        setBorder(new MatteBorder(0, 0, 0, 1, new Color(230, 230, 230))); // Viền phải màu xám nhạt
+        setBackground(Color.WHITE); 
+        setBorder(new MatteBorder(0, 0, 0, 1, new Color(230, 230, 230))); 
 
         // 1. Phần tiêu đề (Branding)
         JPanel brandingPanel = new JPanel();
@@ -31,13 +26,13 @@ public class AdminSidebar extends JPanel {
         brandingPanel.setBackground(Color.WHITE);
         brandingPanel.setBorder(BorderFactory.createEmptyBorder(25, 20, 25, 20));
 
-        JLabel appName = new JLabel("Admin Portal");
+        JLabel appName = new JLabel("Cổng Quản Trị");
         appName.setFont(new Font("Segoe UI", Font.BOLD, 18));
         appName.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel subtitle = new JLabel("Central Control System");
+        JLabel subtitle = new JLabel("Hệ thống điều khiển trung tâm");
         subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        subtitle.setForeground(new Color(120, 120, 120)); // Chữ xám mờ
+        subtitle.setForeground(new Color(120, 120, 120)); 
         subtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         brandingPanel.add(appName);
@@ -50,39 +45,35 @@ public class AdminSidebar extends JPanel {
         menuPanel.setBackground(Color.WHITE);
         menuPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // THÊM CÁC MỤC MENU (Tên tiếng Anh giữ nguyên)
-        addMenuItem("Dashboard");
-        addMenuItem("Account Management"); 
-        addMenuItem("Roles & Permissions");
-        addMenuItem("Audit Logs");
-        addMenuItem("Settings");
+        // THÊM CÁC MỤC MENU TIẾNG VIỆT
+        addMenuItem("Tổng quan hệ thống");
+        addMenuItem("Quản lý tài khoản"); 
+        addMenuItem("Quản lý phân quyền");
+        addMenuItem("Nhật ký hệ thống");
+        addMenuItem("Cài đặt");
 
-        // Cuộn mượt mà
         JScrollPane scrollPane = new JScrollPane(menuPanel);
         scrollPane.setBorder(null);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
-        // 3. Phần Logout (Phía dưới cùng)
+        // 3. Phần Logout
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.setBackground(Color.WHITE);
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 20, 10));
 
-        // Lưu ý: Mình vẫn giữ "Đăng xuất" thay vì "Logout" để không làm hỏng logic switch-case trong AdminDashboardView
         MenuItem logoutItem = new MenuItem("Đăng xuất", () -> {
             if (listener != null) {
                 listener.onMenuClick("Đăng xuất");
             }
         });
-        logoutItem.setFramed(true); // Hiệu ứng khung viền giống file Sidebar
+        logoutItem.setFramed(true); 
         bottomPanel.add(logoutItem, BorderLayout.CENTER);
 
-        // Ráp các thành phần lại
         add(brandingPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
 
-        // Tự động Active mục đầu tiên (Dashboard) khi mở lên
         if (!menuItems.isEmpty()) {
             menuItems.get(0).setActive(true);
         }
@@ -91,7 +82,6 @@ public class AdminSidebar extends JPanel {
     private void addMenuItem(final String title) {
         final MenuItem[] itemHolder = new MenuItem[1];
         MenuItem item = new MenuItem(title, () -> {
-            // Khi click, tắt active các mục khác và bật active mục được chọn
             for (MenuItem m : menuItems) {
                 m.setActive(false);
             }
@@ -103,7 +93,7 @@ public class AdminSidebar extends JPanel {
         itemHolder[0] = item;
         menuItems.add(item);
         menuPanel.add(item);
-        menuPanel.add(Box.createRigidArea(new Dimension(0, 8))); // Khoảng cách giữa các nút
+        menuPanel.add(Box.createRigidArea(new Dimension(0, 8))); 
     }
 
     public void setMenuClickListener(MenuClickListener listener) {

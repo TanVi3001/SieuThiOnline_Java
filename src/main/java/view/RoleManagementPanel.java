@@ -60,10 +60,10 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         
         JPanel titlePanel = new JPanel(new GridLayout(2, 1, 0, 5));
         titlePanel.setBackground(bgLight);
-        JLabel title = new JLabel("Roles & Permissions");
+        JLabel title = new JLabel("Phân Quyền & Vai Trò");
         title.setFont(new Font("Segoe UI", Font.BOLD, 26));
         title.setForeground(textDark);
-        JLabel subtitle = new JLabel("Create new roles and manage system module permissions");
+        JLabel subtitle = new JLabel("Tạo mã vai trò mới và quản lý phân quyền các phân hệ trong hệ thống");
         subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         subtitle.setForeground(textGray);
         titlePanel.add(title);
@@ -75,10 +75,7 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         JPanel content = new JPanel(new BorderLayout(0, 25));
         content.setBackground(bgLight);
         
-        // Top: Form thêm Role mới
         content.add(createFormCard(), BorderLayout.NORTH);
-        
-        // Bottom: Bảng danh sách các Role hiện có
         content.add(createRoleListCard(), BorderLayout.CENTER);
 
         this.add(content, BorderLayout.CENTER);
@@ -92,8 +89,7 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         card.setLayout(new BorderLayout(0, 20));
         card.setBorder(new EmptyBorder(25, 25, 25, 25));
 
-        // Tiêu đề Card
-        JLabel lblCardTitle = new JLabel("Create New Role");
+        JLabel lblCardTitle = new JLabel("Tạo Vai Trò Mới");
         lblCardTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblCardTitle.setForeground(textDark);
         card.add(lblCardTitle, BorderLayout.NORTH);
@@ -101,10 +97,10 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         JPanel formBody = new JPanel(new BorderLayout(0, 15));
         formBody.setBackground(cardWhite);
 
-        // 1. Dòng Function (Combobox)
+        // 1. Dòng Function
         JPanel funcPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         funcPanel.setBackground(cardWhite);
-        JLabel lblFunc = new JLabel("Target Function:  ");
+        JLabel lblFunc = new JLabel("Phân hệ đích:  ");
         lblFunc.setFont(new Font("Segoe UI", Font.BOLD, 13));
         lblFunc.setForeground(textDark);
         
@@ -122,7 +118,7 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         funcPanel.add(cbFunction);
         formBody.add(funcPanel, BorderLayout.NORTH);
 
-        // 2. Bảng nhập liệu: Role Name + Các Checkbox Quyền
+        // 2. Bảng nhập liệu
         JPanel tablePanel = new JPanel(new GridBagLayout());
         tablePanel.setBackground(new Color(248, 249, 252));
         tablePanel.setBorder(BorderFactory.createCompoundBorder(
@@ -134,9 +130,8 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(0, 10, 10, 10);
 
-        // Dòng 1: Tiêu đề các cột
-        String[] headers = {"Role Name", "View", "Add", "Edit", "Delete", "Export"};
-        double[] weights = {0.5, 0.1, 0.1, 0.1, 0.1, 0.1}; // Role name chiếm 50% chiều rộng
+        String[] headers = {"Mã Vai Trò", "Xem", "Thêm", "Sửa", "Xóa", "Xuất file"};
+        double[] weights = {0.5, 0.1, 0.1, 0.1, 0.1, 0.1}; 
         
         gbc.gridy = 0;
         for (int i = 0; i < headers.length; i++) {
@@ -145,15 +140,13 @@ public class RoleManagementPanel extends javax.swing.JPanel {
             JLabel lbl = new JLabel(headers[i]);
             lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
             lbl.setForeground(textGray);
-            if (i > 0) lbl.setHorizontalAlignment(SwingConstants.CENTER); // Căn giữa cho chữ của Checkbox
+            if (i > 0) lbl.setHorizontalAlignment(SwingConstants.CENTER); 
             tablePanel.add(lbl, gbc);
         }
 
-        // Dòng 2: Ô nhập liệu (TextField & Checkbox)
         gbc.gridy = 1;
         gbc.insets = new Insets(0, 10, 0, 10);
         
-        // Ô nhập Role Name
         gbc.gridx = 0;
         JTextField txtRoleName = new JTextField();
         txtRoleName.setPreferredSize(new Dimension(200, 38));
@@ -165,7 +158,6 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         txtRoleName.putClientProperty("JTextField.placeholderText", "Ví dụ: R_MANAGER_SALE");
         tablePanel.add(txtRoleName, gbc);
         
-        // Các ô Checkbox
         for (int i = 1; i <= 5; i++) {
             gbc.gridx = i;
             JCheckBox cb = new JCheckBox();
@@ -177,7 +169,7 @@ public class RoleManagementPanel extends javax.swing.JPanel {
 
         formBody.add(tablePanel, BorderLayout.CENTER);
 
-        // 3. Nút Thêm (Add Button)
+        // 3. Nút Thêm
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         btnPanel.setBackground(cardWhite);
         JButton btnAdd = createCustomButton("+ Thêm mới", primaryBlue, Color.WHITE);
@@ -196,21 +188,19 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         card.setLayout(new BorderLayout(0, 15));
         card.setBorder(new EmptyBorder(25, 25, 25, 25));
 
-        JLabel lblList = new JLabel("Existing Roles");
+        JLabel lblList = new JLabel("Vai Trò Hiện Có");
         lblList.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblList.setForeground(textDark);
         card.add(lblList, BorderLayout.NORTH);
 
-        // Khung chứa danh sách
         JPanel listItems = new JPanel();
         listItems.setLayout(new BoxLayout(listItems, BoxLayout.Y_AXIS));
         listItems.setBackground(cardWhite);
         
-        // Header của danh sách
         JPanel headerRow = new JPanel(new GridLayout(1, 4, 10, 0));
         headerRow.setBackground(cardWhite);
         headerRow.setBorder(new EmptyBorder(0, 10, 10, 10));
-        String[] cols = {"Role Code", "Function", "Permissions", "Status"};
+        String[] cols = {"Mã vai trò", "Phân hệ", "Quyền hạn", "Trạng thái"};
         for (String c : cols) {
             JLabel l = new JLabel(c);
             l.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -222,11 +212,10 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         listWrapper.setBackground(cardWhite);
         listWrapper.add(headerRow, BorderLayout.NORTH);
         
-        // Thêm dữ liệu mẫu
-        listItems.add(createRoleRow("R_ADMIN_ALL", "F_SYS", "View, Add, Edit, Delete, Export"));
-        listItems.add(createRoleRow("R_STORE_MNG", "F_STORE", "View, Add, Edit, Delete, Export"));
-        listItems.add(createRoleRow("R_STAFF_SALE", "F_ORDER", "View, Add, Export"));
-        listItems.add(createRoleRow("R_STAFF_VIEW_PROD", "F_PROD", "View"));
+        listItems.add(createRoleRow("R_ADMIN_ALL", "F_SYS", "Xem, Thêm, Sửa, Xóa, Xuất file"));
+        listItems.add(createRoleRow("R_STORE_MNG", "F_STORE", "Xem, Thêm, Sửa, Xóa, Xuất file"));
+        listItems.add(createRoleRow("R_STAFF_SALE", "F_ORDER", "Xem, Thêm, Xuất file"));
+        listItems.add(createRoleRow("R_STAFF_VIEW_PROD", "F_PROD", "Xem"));
 
         JScrollPane scroll = new JScrollPane(listItems);
         scroll.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderGray));
@@ -259,7 +248,7 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         JLabel lblPerms = new JLabel("<html><span style='color:#4361EE; font-size:11px;'>" + perms + "</span></html>");
         row.add(lblPerms);
 
-        JLabel lblStatus = new JLabel("<html><span style='color:#10B981; font-size:14px;'>●</span> <span style='color:#2B3674;'>Active</span></html>");
+        JLabel lblStatus = new JLabel("<html><span style='color:#10B981; font-size:14px;'>●</span> <span style='color:#2B3674;'>Hoạt động</span></html>");
         lblStatus.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         row.add(lblStatus);
 
