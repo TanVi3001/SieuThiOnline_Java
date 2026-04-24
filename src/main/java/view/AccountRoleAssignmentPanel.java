@@ -111,7 +111,7 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
     }
     
     // =========================================================
-    // CỘT TRÁI: DANH SÁCH TÀI KHOẢN
+    // CỘT TRÁI: DANH SÁCH TÀI KHOẢN (ĐÃ LÀM TRỐNG)
     // =========================================================
     private JPanel createAccountListColumn() {
         RoundedPanel container = new RoundedPanel(20, cardWhite);
@@ -135,7 +135,7 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         cbDept.setPreferredSize(new Dimension(130, 35));
         cbDept.setBackground(Color.WHITE);
         
-        JComboBox<String> cbRole = new JComboBox<>(new String[]{"Tất cả vai trò", "Quản trị", "Quản lý", "Người dùng"});
+        JComboBox<String> cbRole = new JComboBox<>(new String[]{"Tất cả vai trò", "Quản trị", "Quản lý", "Nhân viên"});
         cbRole.setPreferredSize(new Dimension(100, 35));
         cbRole.setBackground(Color.WHITE);
         
@@ -165,15 +165,12 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         topSection.add(tableHeader, BorderLayout.SOUTH);
         container.add(topSection, BorderLayout.NORTH);
 
-        // Danh sách tài khoản
+        // Danh sách tài khoản ĐỂ TRỐNG (chờ load từ DB)
         JPanel listItems = new JPanel();
         listItems.setLayout(new BoxLayout(listItems, BoxLayout.Y_AXIS));
         listItems.setBackground(cardWhite);
         
-        listItems.add(createAccountRow("Tùng Đinh", "tung@smartmarket.com", "CNTT", "Admin", true));
-        listItems.add(createAccountRow("Như Quỳnh", "quynh@smartmarket.com", "Vận hành", "Manager", true));
-        listItems.add(createAccountRow("Nguyên", "nguyen@smartmarket.com", "Tài chính", "User", true));
-        listItems.add(createAccountRow("Vĩ", "vi@smartmarket.com", "Nhân sự", "User", false));
+        // --- Xóa dữ liệu mẫu ở đây ---
 
         JScrollPane scroll = new JScrollPane(listItems);
         scroll.setBorder(null);
@@ -246,35 +243,35 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBackground(cardWhite);
 
-        // 1. Info User Đang chọn
+        // 1. Info User Đang chọn (Có thể để trống hoặc để "Chưa chọn user")
         JPanel infoGrid = new JPanel(new GridLayout(4, 2, 10, 15));
         infoGrid.setBackground(cardWhite);
         infoGrid.setBorder(new EmptyBorder(0, 0, 20, 0));
         
         infoGrid.add(createLabel("Người dùng đã chọn", textGray));
-        infoGrid.add(createLabel("Như Quỳnh", textDark, true));
+        infoGrid.add(createLabel("-", textDark, true));
         
         infoGrid.add(createLabel("Email", textGray));
-        infoGrid.add(createLabel("quynh@smartmarket.com", textDark, false));
+        infoGrid.add(createLabel("-", textDark, false));
         
         infoGrid.add(createLabel("Phòng ban", textGray));
-        infoGrid.add(createLabel("Vận hành", textDark, false));
+        infoGrid.add(createLabel("-", textDark, false));
         
         infoGrid.add(createLabel("Vai trò hiện tại", textGray));
         JPanel pnlCurrRole = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         pnlCurrRole.setBackground(cardWhite);
-        pnlCurrRole.add(createBadge("Manager"));
+        // pnlCurrRole.add(createBadge("...")); // Chờ code logic thêm vào
         infoGrid.add(pnlCurrRole);
         
         centerPanel.add(infoGrid);
 
-        // 2. Radio Options (Các Thẻ Card chọn quyền)
+        // 2. Radio Options (Các Thẻ Card chọn quyền) - ĐÃ ĐỔI "USER" THÀNH "STAFF"
         ButtonGroup roleGroup = new ButtonGroup();
         centerPanel.add(createRoleCard("Admin (Quản trị viên)", "Toàn quyền quản lý hệ thống, nhân sự, thiết lập vai trò và nhật ký.", roleGroup, false));
         centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         centerPanel.add(createRoleCard("Manager (Quản lý cửa hàng)", "Quản lý hoạt động cửa hàng, xem báo cáo và phê duyệt xuất nhập kho.", roleGroup, true));
         centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        centerPanel.add(createRoleCard("User (Nhân viên)", "Truy cập tiêu chuẩn cho các hoạt động bán hàng hàng ngày.", roleGroup, false));
+        centerPanel.add(createRoleCard("Staff (Nhân viên)", "Truy cập tiêu chuẩn cho các hoạt động bán hàng hàng ngày.", roleGroup, false));
 
         // 3. Change Summary Box
         JPanel summaryBox = new RoundedPanel(10, bgLight);
@@ -284,7 +281,7 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
                 new EmptyBorder(15, 15, 15, 15)
         ));
         summaryBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
-        JLabel lblSum = new JLabel("<html><b>Tóm tắt thay đổi:</b><br><span style='font-size:10px; color:#666;'>Tài khoản được chọn sẽ giữ nguyên vai trò <b>Quản lý</b> trừ khi bạn chọn vai trò khác trước khi lưu.</span></html>");
+        JLabel lblSum = new JLabel("<html><b>Tóm tắt thay đổi:</b><br><span style='font-size:10px; color:#666;'>Tài khoản được chọn sẽ giữ nguyên vai trò hiện tại trừ khi bạn chọn vai trò khác trước khi lưu.</span></html>");
         lblSum.setForeground(textDark);
         summaryBox.add(lblSum, BorderLayout.CENTER);
         
@@ -343,7 +340,7 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         return badge;
     }
 
-    // Tạo thẻ Card chọn Role
+    // Tạo thẻ Card chọn Role (ĐÃ THÊM HIỆU ỨNG VIỀN XANH)
     private JPanel createRoleCard(String title, String desc, ButtonGroup group, boolean isSelected) {
         JPanel card = new RoundedPanel(10, cardWhite);
         card.setLayout(new BorderLayout(10, 0));
@@ -363,12 +360,29 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         card.add(rb, BorderLayout.WEST);
         card.add(lblText, BorderLayout.CENTER);
         
-        // Hiệu ứng click vào card thì chọn radio
+        // Khi click vào thẻ thì chọn Radio
         card.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 rb.setSelected(true);
             }
+        });
+        
+        // Khi Radio được chọn, vẽ lại viền xanh
+        rb.addItemListener(e -> {
+            if (rb.isSelected()) {
+                card.setBorder(BorderFactory.createCompoundBorder(
+                        new RoundBorder(primaryBlue, 10),
+                        new EmptyBorder(12, 15, 12, 15)
+                ));
+            } else {
+                card.setBorder(BorderFactory.createCompoundBorder(
+                        new RoundBorder(borderGray, 10),
+                        new EmptyBorder(12, 15, 12, 15)
+                ));
+            }
+            card.revalidate();
+            card.repaint();
         });
         
         return card;
