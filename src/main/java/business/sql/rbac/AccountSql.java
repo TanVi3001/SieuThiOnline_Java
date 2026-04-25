@@ -59,14 +59,22 @@ public class AccountSql implements SqlInterface<Account> {
     @Override
     public List<Account> selectAll() {
         List<Account> list = new ArrayList<>();
-        String sql = "SELECT account_id, username, password, is_deleted FROM ACCOUNTS WHERE is_deleted = 0";
-        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql); ResultSet rs = pst.executeQuery()) {
+        // ĐÃ SỬA: JOIN bảng ACCOUNTS với ACCOUNT_ASSIGN_ROLE để biết ai là Admin/Manager/Staff
+        String sql = "SELECT a.account_id, a.username, a.password, a.is_deleted, aar.role_id "
+                   + "FROM ACCOUNTS a "
+                   + "LEFT JOIN ACCOUNT_ASSIGN_ROLE aar ON a.account_id = aar.account_id "
+                   + "WHERE a.is_deleted = 0";
+                   
+        try (Connection con = DatabaseConnection.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql); 
+             ResultSet rs = pst.executeQuery()) {
+             
             while (rs.next()) {
                 list.add(new Account(
                         rs.getString("account_id"),
                         rs.getString("username"),
                         rs.getString("password"),
-                        null,
+                        rs.getString("role_id"), // Gắn mã quyền vào object Account
                         rs.getInt("is_deleted")
                 ));
             }
@@ -297,5 +305,38 @@ public class AccountSql implements SqlInterface<Account> {
             pst.setString(1, phone);
             try (ResultSet rs = pst.executeQuery()) { return rs.next(); }
         } catch (SQLException e) { e.printStackTrace(); return false; }
+    }
+    
+    /**
+     * HÀM MỚI: Lấy thông tin Tài khoản + Chi tiết người dùng (Tên thật, Email)
+     * Phục vụ cho giao diện Phân Quyền.
+     */
+    public List<String[]> getAccountWithUserDetails() {
+        List<String[]> list = new ArrayList<>();
+        // Lấy account_id, username, role_id, is_deleted VÀ full_name, email từ bảng USERS
+        String sql = "SELECT a.account_id, a.username, u.full_name, u.email, aar.role_id, a.is_deleted "
+                   + "FROM ACCOUNTS a "
+                   + "JOIN USERS u ON a.user_id = u.user_id "
+                   + "LEFT JOIN ACCOUNT_ASSIGN_ROLE aar ON a.account_id = aar.account_id "
+                   + "WHERE a.is_deleted = 0";
+                   
+        try (Connection con = DatabaseConnection.getConnection(); 
+             PreparedStatement pst = con.prepareStatement(sql); 
+             ResultSet rs = pst.executeQuery()) {
+             
+            while (rs.next()) {
+                list.add(new String[]{
+                        rs.getString("account_id"),
+                        rs.getString("username"),
+                        rs.getString("full_name"),
+                        rs.getString("email"),
+                        rs.getString("role_id"),
+                        String.valueOf(rs.getInt("is_deleted"))
+                });
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }
