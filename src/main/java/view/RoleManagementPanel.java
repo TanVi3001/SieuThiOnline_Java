@@ -93,17 +93,18 @@ public class RoleManagementPanel extends javax.swing.JPanel {
 
         // Dữ liệu
         String[] roles = {"Quản trị viên", "Quản lý cửa hàng", "Nhân viên bán hàng", "Nhân viên kho"};
-        String[] actions = {"Xem", "Thêm", "Sửa", "Xóa", "Xuất file"};
+        // ĐÃ THÊM MỤC MỚI VÀO CUỐI MẢNG
+        String[] actions = {"Xem", "Thêm", "Sửa", "Xóa", "Xuất file", "+ Thêm quyền hạn"};
 
         JPanel tablePanel = new JPanel(new GridBagLayout());
         tablePanel.setBackground(cardWhite);
         GridBagConstraints gbc = new GridBagConstraints();
         
-        // --- CHÌA KHÓA Ở ĐÂY: Ép các ô giãn đều cả 2 chiều để chiều cao bằng nhau rắp ---
         gbc.fill = GridBagConstraints.BOTH;
 
         // --- DÒNG HEADER ---
         gbc.gridy = 0;
+        gbc.weighty = 0.0; // Header thì giữ nguyên kích thước gốc
         gbc.insets = new Insets(0, 0, 20, 0);
         
         gbc.gridx = 0;
@@ -111,7 +112,7 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         JLabel lblHeaderAction = new JLabel("Quyền hạn");
         lblHeaderAction.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblHeaderAction.setForeground(textGray);
-        lblHeaderAction.setBorder(new EmptyBorder(0, 10, 0, 0)); // Thụt vô 10px cho đẹp
+        lblHeaderAction.setBorder(new EmptyBorder(0, 10, 0, 0));
         tablePanel.add(lblHeaderAction, gbc);
 
         double roleWeight = 0.8 / roles.length;
@@ -127,9 +128,13 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         // --- CÁC DÒNG DỮ LIỆU ---
         for (int i = 0; i < actions.length; i++) {
             gbc.gridy = i + 1;
+            // --- CHÌA KHÓA Ở ĐÂY: Ép các hàng giãn đều ra lấp đầy khoảng trắng bên dưới ---
+            gbc.weighty = 1.0; 
             gbc.insets = new Insets(0, 0, 0, 0); 
             
-            // Cột 1: Tên quyền (Xem, Thêm...)
+            boolean isAddAction = actions[i].equals("+ Thêm quyền hạn");
+
+            // Cột 1: Tên quyền (Xem, Thêm... hoặc + Thêm quyền hạn)
             gbc.gridx = 0;
             JPanel cellAction = new JPanel(new BorderLayout());
             cellAction.setBackground(cardWhite);
@@ -137,8 +142,16 @@ public class RoleManagementPanel extends javax.swing.JPanel {
             
             JLabel lblAction = new JLabel(actions[i]);
             lblAction.setFont(new Font("Segoe UI", Font.BOLD, 14));
-            lblAction.setForeground(textDark);
-            lblAction.setBorder(new EmptyBorder(20, 10, 20, 0)); // Độn trên dưới 20px, trái 10px
+            
+            // Xử lý riêng giao diện cho dòng "Thêm quyền hạn"
+            if (isAddAction) {
+                lblAction.setForeground(primaryBlue); // Đổi màu xanh cho nổi bật
+                lblAction.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Đổi con trỏ chuột thành hình bàn tay
+            } else {
+                lblAction.setForeground(textDark);
+            }
+            
+            lblAction.setBorder(new EmptyBorder(20, 10, 20, 0)); 
             cellAction.add(lblAction, BorderLayout.CENTER);
             tablePanel.add(cellAction, gbc);
 
@@ -146,24 +159,27 @@ public class RoleManagementPanel extends javax.swing.JPanel {
             for (int j = 0; j < roles.length; j++) {
                 gbc.gridx = j + 1;
                 
-                // --- ĐỔI THÀNH GridBagLayout ĐỂ CHECKBOX LUÔN NẰM CHÍNH GIỮA Ô TỰ ĐỘNG ---
                 JPanel cellCb = new JPanel(new GridBagLayout());
                 cellCb.setBackground(cardWhite);
                 cellCb.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, borderGray));
                 
-                JCheckBox cb = new JCheckBox();
-                cb.setBackground(cardWhite);
-                cb.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                
-                if (j == 0) {
-                    cb.setSelected(true);
-                } else if (j == 1 && i <= 2) {
-                    cb.setSelected(true);
-                } else if ((j == 2 || j == 3) && i == 0) {
-                    cb.setSelected(true);
+                // NẾU KHÔNG PHẢI LÀ DÒNG "THÊM QUYỀN HẠN" THÌ MỚI VẼ CHECKBOX
+                if (!isAddAction) {
+                    JCheckBox cb = new JCheckBox();
+                    cb.setBackground(cardWhite);
+                    cb.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                    
+                    // Logic tick ảo
+                    if (j == 0) {
+                        cb.setSelected(true);
+                    } else if (j == 1 && i <= 2) {
+                        cb.setSelected(true);
+                    } else if ((j == 2 || j == 3) && i == 0) {
+                        cb.setSelected(true);
+                    }
+                    cellCb.add(cb);
                 }
-
-                cellCb.add(cb);
+                
                 tablePanel.add(cellCb, gbc);
             }
         }
