@@ -61,4 +61,52 @@ public class PaymentService {
             }
         }
     }
+
+    public static boolean cancelOrder(String orderId, String reason) {
+        Connection con = null;
+        try {
+            con = DatabaseConnection.getConnection();
+            con.setAutoCommit(false);
+
+            Order order = OrdersSql.getInstance().selectById(orderId);
+            if (order == null) throw new SQLException("Không tìm thấy đơn hàng!");
+            String oldStatus = order.getStatus();
+
+            // 1. Hoàn lại kho
+            List<OrderDetail> dsChiTiet = OrderDetailsSql.getInstance().selectByOrderId(orderId);
+            for (OrderDetail ct : dsChiTiet) {
+                int resAddStock = ProductsSql.getInstance().addStockWithConn(con, ct.getProductId(), ct.getQuantity());
+                if (resAddStock <= 0) throw new SQLException("Lỗi hoàn kho cho SP: " + ct.getProductId());
+            }
+
+            // 2. Cập nhật trạng thái
+            int resUpdate = OrdersSql.getInstance().updateStatusWithConn(con, orderId, "CANCELLED");
+            if (resUpdate <= 0) throw new SQLException("Lỗi cập nhật trạng thái đơn hàng!");
+
+            con.commit();
+            System.out.println("✅ Hủy đơn hàng thành công! Đã hoàn kho.");
+            
+            // 3. Ghi log (ngoài transaction chính để tránh ảnh hưởng nếu lỗi log)
+            OrderService.logCancelOrder(orderId, oldStatus, "CANCELLED", reason);
+            
+            return true;
+        } catch (Exception e) {
+            try {
+                if (con != null) con.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            System.out.println("❌ Hủy đơn hàng thất bại: " + e.getMessage());
+            return false;
+        } finally {
+            try {
+                if (con != null) {
+                    con.setAutoCommit(true);
+                    con.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

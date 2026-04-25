@@ -51,20 +51,26 @@ public class TongQuanPanel extends JPanel {
         gbc.insets = new Insets(8, 8, 8, 8);
         gbc.weighty = 0;
 
+        business.sql.sales_order.StatisticSql statSql = business.sql.sales_order.StatisticSql.getInstance();
+        int totalProducts = statSql.getTotalProducts();
+        int todayOrders = statSql.getTodayOrders();
+        int totalCustomers = statSql.getTotalCustomers();
+        double monthlyRevenue = statSql.getMonthlyRevenue();
+
         // --- Hàng 1: 4 Card thống kê ---
         gbc.gridy = 0;
         gbc.weightx = 0.25;
         gbc.gridx = 0;
-        contentPanel.add(createStatCard("Sản phẩm", "1,250", "\uD83D\uDCE6"), gbc);
+        contentPanel.add(createStatCard("Sản phẩm", String.format("%,d", totalProducts), "\uD83D\uDCE6"), gbc);
 
         gbc.gridx = 1;
-        contentPanel.add(createStatCard("Đơn hàng hôm nay", "48", "\uD83D\uDCC4"), gbc);
+        contentPanel.add(createStatCard("Đơn hàng hôm nay", String.format("%,d", todayOrders), "\uD83D\uDCC4"), gbc);
 
         gbc.gridx = 2;
-        contentPanel.add(createStatCard("Khách hàng", "3,820", "\uD83D\uDC65"), gbc);
+        contentPanel.add(createStatCard("Khách hàng", String.format("%,d", totalCustomers), "\uD83D\uDC65"), gbc);
 
         gbc.gridx = 3;
-        contentPanel.add(createStatCard("Doanh thu tháng", "125,000,000 ₫", "\uD83D\uDCB0"), gbc);
+        contentPanel.add(createStatCard("Doanh thu tháng", String.format("%,.0f ₫", monthlyRevenue), "\uD83D\uDCB0"), gbc);
 
         // --- Hàng 2: 2 panel phụ ---
         gbc.gridy = 1;
@@ -138,15 +144,26 @@ public class TongQuanPanel extends JPanel {
                 new EmptyBorder(10, 10, 10, 10)
         ));
 
-        // Bảng placeholder
+        // Lấy 5 đơn hàng gần đây từ CSDL
         String[] columns = {"Mã ĐH", "Khách hàng", "Tổng tiền", "Trạng thái"};
-        Object[][] data = {
-            {"DH001", "Nguyễn Văn A", "250,000 ₫", "Hoàn thành"},
-            {"DH002", "Trần Thị B", "180,000 ₫", "Đang xử lý"},
-            {"DH003", "Lê Văn C", "520,000 ₫", "Hoàn thành"},
-            {"DH004", "Phạm Thị D", "95,000 ₫", "Chờ thanh toán"},
-            {"DH005", "Hoàng Văn E", "310,000 ₫", "Hoàn thành"}
-        };
+        java.util.List<java.util.Map<String, Object>> recentOrders = business.sql.sales_order.StatisticSql.getInstance().getRecentOrders(5);
+        Object[][] data = new Object[recentOrders.size()][4];
+        for (int i = 0; i < recentOrders.size(); i++) {
+            java.util.Map<String, Object> order = recentOrders.get(i);
+            data[i][0] = order.get("order_id");
+            data[i][1] = order.get("customer_name");
+            
+            Double amount = (Double) order.get("total_amount");
+            data[i][2] = String.format("%,.0f ₫", amount != null ? amount : 0.0);
+            
+            String status = (String) order.get("status");
+            String displayStatus = status;
+            if ("COMPLETED".equalsIgnoreCase(status)) displayStatus = "Hoàn thành";
+            else if ("PROCESSING".equalsIgnoreCase(status)) displayStatus = "Đang xử lý";
+            else if ("CANCELLED".equalsIgnoreCase(status)) displayStatus = "Đã hủy";
+            
+            data[i][3] = displayStatus;
+        }
 
         JTable table = new JTable(data, columns);
         table.setEnabled(false);

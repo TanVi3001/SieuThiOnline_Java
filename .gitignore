@@ -25,4 +25,11 @@ build/
 *.log
 *.xlsx
 *.pdf
+*.docx
+
+# --- LOCAL DOCUMENTATION / DIAGRAMS ---
+AGENTS.md
+DanhSachActor_UseCase_DacTa_SSMS.md
+SoDoUseCaseTongQuat_SSMS.png
+SoDoUseCaseTongQuat_SSMS.puml
 # (Dòng trên giúp chặn các file Excel/PDF ông test không bị đẩy lên repo làm rác nhóm)
