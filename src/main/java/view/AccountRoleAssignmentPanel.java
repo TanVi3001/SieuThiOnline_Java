@@ -145,7 +145,8 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         cbDept.setBackground(Color.WHITE);
         
         JComboBox<String> cbRole = new JComboBox<>(new String[]{"Tất cả vai trò", "Quản trị", "Quản lý", "Nhân viên"});
-        cbRole.setPreferredSize(new Dimension(100, 35));
+        // SỬA LỖI 1: Tăng chiều rộng từ 100 lên 140 để chữ không bị lẹm
+        cbRole.setPreferredSize(new Dimension(140, 35));
         cbRole.setBackground(Color.WHITE);
         
         filterPanel.add(txtSearch); filterPanel.add(cbDept); filterPanel.add(cbRole);
@@ -176,24 +177,45 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         
         java.util.List<String[]> listAcc = business.sql.rbac.AccountSql.getInstance().getAccountWithUserDetails();
         
-        for (String[] acc : listAcc) {
-            String accountId = acc[0];
-            String username = acc[1];
-            String fullName = acc[2];
-            String email = acc[3];
-            String roleId = acc[4];
-            boolean isActive = "0".equals(acc[5]);
+        // --- SỬA LỖI 2: VIẾT LOGIC LỌC DỮ LIỆU ---
+        // Gói logic load dữ liệu vào một Runnable để gọi đi gọi lại được
+        Runnable loadData = () -> {
+            listItems.removeAll(); // Xóa sạch danh sách cũ trên màn hình
+            String selectedFilter = (String) cbRole.getSelectedItem(); // Lấy chữ đang hiển thị trong ô Combobox
             
-            // --- ĐỔI TÊN TIẾNG VIỆT Ở ĐÂY ---
-            String displayRole = "Nhân viên"; 
-            if ("R_ADMIN_ALL".equals(roleId)) displayRole = "Quản trị";
-            else if ("R_STORE_MNG".equals(roleId)) displayRole = "Quản lý";
+            for (String[] acc : listAcc) {
+                String accountId = acc[0];
+                String username = acc[1];
+                String fullName = acc[2];
+                String email = acc[3];
+                String roleId = acc[4];
+                boolean isActive = "0".equals(acc[5]);
+                
+                String displayRole = "Nhân viên"; 
+                if ("R_ADMIN_ALL".equals(roleId)) displayRole = "Quản trị";
+                else if ("R_STORE_MNG".equals(roleId)) displayRole = "Quản lý";
+                
+                String displayName = (fullName == null || fullName.isEmpty()) ? username : fullName;
+                String displayEmail = (email == null || email.isEmpty()) ? "Chưa có email" : email;
+                
+                // KIỂM TRA ĐIỀU KIỆN LỌC: 
+                // Nếu chọn "Tất cả vai trò" HOẶC vai trò của người đó trùng với vai trò đang chọn thì mới Add vô bảng
+                if ("Tất cả vai trò".equals(selectedFilter) || displayRole.equals(selectedFilter)) {
+                    listItems.add(createAccountRow(accountId, displayName, displayEmail, "Chưa phân bổ", displayRole, isActive));
+                }
+            }
             
-            String displayName = (fullName == null || fullName.isEmpty()) ? username : fullName;
-            String displayEmail = (email == null || email.isEmpty()) ? "Chưa có email" : email;
-            
-            listItems.add(createAccountRow(accountId, displayName, displayEmail, "Chưa phân bổ", displayRole, isActive));
-        }
+            // Cập nhật lại giao diện sau khi Lọc
+            listItems.revalidate();
+            listItems.repaint();
+        };
+
+        // Kích hoạt: Bắt sự kiện khi click đổi Option trong Combobox
+        cbRole.addActionListener(e -> loadData.run());
+
+        // Chạy lần đầu tiên khi vừa mở màn hình lên
+        loadData.run();
+        // ------------------------------------------
 
         JScrollPane scroll = new JScrollPane(listItems);
         scroll.setBorder(null);
@@ -255,9 +277,14 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
                 pnlCurrRole.revalidate();
                 pnlCurrRole.repaint();
                 
-                if ("Admin".equals(role)) rbAdmin.setSelected(true);
-                else if ("Manager".equals(role)) rbManager.setSelected(true);
-                else rbStaff.setSelected(true);
+                // --- ĐÃ ĐỔI SANG SO SÁNH TIẾNG VIỆT ---
+                if ("Quản trị".equals(role)) {
+                    rbAdmin.setSelected(true);
+                } else if ("Quản lý".equals(role)) {
+                    rbManager.setSelected(true);
+                } else {
+                    rbStaff.setSelected(true);
+                }
             }
         });
 
