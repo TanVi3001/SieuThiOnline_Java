@@ -7,29 +7,19 @@ package view;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
+
 /**
  *
  * @author nguye
  */
 public class RoleManagementPanel extends javax.swing.JPanel {
 
-    // Bảng màu đồng bộ
     private final Color bgLight = new Color(248, 249, 252); 
     private final Color cardWhite = Color.WHITE;
     private final Color textDark = new Color(43, 54, 116);
     private final Color textGray = new Color(163, 174, 208);
     private final Color primaryBlue = new Color(67, 97, 238);
     private final Color borderGray = new Color(230, 235, 241);
-
-    // Các biến UI
-    private JPanel matrixPanel;
-    private JLabel lblMatrixTitle;
-    private List<RoleCard> roleCards;
-    private JPanel cardsContainer;
 
     public RoleManagementPanel() {
         initComponents();
@@ -69,10 +59,10 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         
         JPanel titlePanel = new JPanel(new GridLayout(2, 1, 0, 5));
         titlePanel.setBackground(bgLight);
-        JLabel title = new JLabel("Phân Quyền & Vai Trò");
+        JLabel title = new JLabel("Ma Trận Phân Quyền");
         title.setFont(new Font("Segoe UI", Font.BOLD, 26));
         title.setForeground(textDark);
-        JLabel subtitle = new JLabel("Quản lý ma trận quyền hạn cho các nhóm người dùng trong hệ thống");
+        JLabel subtitle = new JLabel("Quản lý tập trung quyền hạn của tất cả các vai trò trong hệ thống");
         subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         subtitle.setForeground(textGray);
         titlePanel.add(title);
@@ -84,144 +74,80 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         header.add(btnAddNew, BorderLayout.EAST);
         this.add(header, BorderLayout.NORTH);
 
-        // === 2. MAIN CONTENT ===
-        JPanel content = new JPanel(new BorderLayout(0, 20));
+        // === 2. MAIN CONTENT (MA TRẬN TỔNG THỂ) ===
+        JPanel content = new JPanel(new BorderLayout());
         content.setBackground(bgLight);
         
-        // Top: Danh sách các thẻ Vai trò
-        content.add(createRoleCardsSection(), BorderLayout.NORTH);
-        
-        // Center: Bảng ma trận quyền hạn
-        matrixPanel = new JPanel(new BorderLayout());
-        matrixPanel.setBackground(bgLight);
-        updateMatrixForRole("Quản trị viên", "R_ADMIN_ALL"); // Load mặc định thẻ đầu tiên
-        content.add(matrixPanel, BorderLayout.CENTER);
+        content.add(createMatrixPanel(), BorderLayout.CENTER);
 
         this.add(content, BorderLayout.CENTER);
     }
 
     // =========================================================
-    // PHẦN 1: TẠO HÀNG THẺ VAI TRÒ (GỐNG INNSTYLE)
+    // PHẦN BẢNG MA TRẬN (LÀM THEO BẢN VẼ CỦA TÙNG)
     // =========================================================
-    private JPanel createRoleCardsSection() {
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBackground(bgLight);
-
-        cardsContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
-        cardsContainer.setBackground(bgLight);
-        roleCards = new ArrayList<>();
-
-        // Tạo các thẻ (Dummy Data)
-        roleCards.add(new RoleCard("Quản trị viên", "R_ADMIN_ALL", "2 Tài khoản", "Cao", true));
-        roleCards.add(new RoleCard("Quản lý cửa hàng", "R_STORE_MNG", "5 Tài khoản", "Trung bình", false));
-        roleCards.add(new RoleCard("Nhân viên bán hàng", "R_STAFF_SALE", "12 Tài khoản", "Cơ bản", false));
-        roleCards.add(new RoleCard("Nhân viên kho", "R_STAFF_STOCK", "8 Tài khoản", "Cơ bản", false));
-
-        for (RoleCard card : roleCards) {
-            cardsContainer.add(card);
-            
-            // Sự kiện Click đổi thẻ
-            card.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    for (RoleCard c : roleCards) c.setSelected(false);
-                    card.setSelected(true);
-                    updateMatrixForRole(card.roleName, card.roleCode);
-                }
-            });
-        }
-
-        JScrollPane scroll = new JScrollPane(cardsContainer);
-        scroll.setBorder(null);
-        scroll.getViewport().setBackground(bgLight);
-        scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        // Tăng tốc độ cuộn ngang
-        scroll.getHorizontalScrollBar().setUnitIncrement(20); 
-
-        wrapper.add(scroll, BorderLayout.CENTER);
-        return wrapper;
-    }
-
-    // =========================================================
-    // PHẦN 2: BẢNG MA TRẬN QUYỀN HẠN
-    // =========================================================
-    private void updateMatrixForRole(String roleName, String roleCode) {
-        matrixPanel.removeAll();
-
+    private JPanel createMatrixPanel() {
         RoundedPanel container = new RoundedPanel(20, cardWhite);
-        container.setLayout(new BorderLayout(0, 15));
-        container.setBorder(new EmptyBorder(25, 25, 25, 25));
+        container.setLayout(new BorderLayout(0, 20));
+        container.setBorder(new EmptyBorder(30, 30, 30, 30));
 
-        // Tiêu đề bảng
-        JPanel topInfo = new JPanel(new BorderLayout());
-        topInfo.setBackground(cardWhite);
-        lblMatrixTitle = new JLabel("Chi tiết phân quyền: " + roleName + " (" + roleCode + ")");
-        lblMatrixTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        lblMatrixTitle.setForeground(textDark);
-        topInfo.add(lblMatrixTitle, BorderLayout.WEST);
-        
-        JButton btnSave = createCustomButton("Lưu quyền", primaryBlue, Color.WHITE);
-        btnSave.setPreferredSize(new Dimension(120, 35));
-        topInfo.add(btnSave, BorderLayout.EAST);
-        
-        container.add(topInfo, BorderLayout.NORTH);
+        // Dữ liệu
+        String[] roles = {"Quản trị viên", "Quản lý cửa hàng", "Nhân viên bán hàng", "Nhân viên kho"};
+        String[] actions = {"Xem", "Thêm", "Sửa", "Xóa", "Xuất file"};
 
-        // Bảng ma trận
         JPanel tablePanel = new JPanel(new GridBagLayout());
         tablePanel.setBackground(cardWhite);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        // Header Row
-        String[] headers = {"Phân hệ / Tính năng", "Xem", "Thêm", "Sửa", "Xóa", "Xuất file"};
-        double[] weights = {0.4, 0.12, 0.12, 0.12, 0.12, 0.12};
         
+        // --- CHÌA KHÓA Ở ĐÂY: Ép các ô giãn đều cả 2 chiều để chiều cao bằng nhau rắp ---
+        gbc.fill = GridBagConstraints.BOTH;
+
+        // --- DÒNG HEADER ---
         gbc.gridy = 0;
-        gbc.insets = new Insets(0, 0, 15, 0);
-        for (int i = 0; i < headers.length; i++) {
-            gbc.gridx = i;
-            gbc.weightx = weights[i];
-            JLabel lbl = new JLabel(headers[i]);
-            lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
-            lbl.setForeground(textGray);
-            if (i > 0) lbl.setHorizontalAlignment(SwingConstants.CENTER);
-            tablePanel.add(lbl, gbc);
+        gbc.insets = new Insets(0, 0, 20, 0);
+        
+        gbc.gridx = 0;
+        gbc.weightx = 0.2;
+        JLabel lblHeaderAction = new JLabel("Quyền hạn");
+        lblHeaderAction.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblHeaderAction.setForeground(textGray);
+        lblHeaderAction.setBorder(new EmptyBorder(0, 10, 0, 0)); // Thụt vô 10px cho đẹp
+        tablePanel.add(lblHeaderAction, gbc);
+
+        double roleWeight = 0.8 / roles.length;
+        for (int i = 0; i < roles.length; i++) {
+            gbc.gridx = i + 1;
+            gbc.weightx = roleWeight;
+            JLabel lblRole = new JLabel(roles[i], SwingConstants.CENTER);
+            lblRole.setFont(new Font("Segoe UI", Font.BOLD, 15));
+            lblRole.setForeground(textDark);
+            tablePanel.add(lblRole, gbc);
         }
 
-        // Tạo các dòng dữ liệu (Dummy Data)
-        String[] functions = {
-            "Quản lý Hệ thống (F_SYS)", 
-            "Quản lý Cửa hàng (F_STORE)", 
-            "Quản lý Nhân viên (F_EMP)", 
-            "Quản lý Sản phẩm (F_PROD)", 
-            "Quản lý Đơn hàng (F_ORDER)"
-        };
-
-        // Giả lập logic load quyền: Nếu là Admin thì full tick, Manager tick vừa, Staff tick ít
-        boolean isFull = roleCode.equals("R_ADMIN_ALL");
-        boolean isManager = roleCode.equals("R_STORE_MNG");
-
-        for (int i = 0; i < functions.length; i++) {
+        // --- CÁC DÒNG DỮ LIỆU ---
+        for (int i = 0; i < actions.length; i++) {
             gbc.gridy = i + 1;
-            gbc.insets = new Insets(10, 0, 10, 0); // Khoảng cách giữa các dòng
+            gbc.insets = new Insets(0, 0, 0, 0); 
             
-            // Cột 1: Tên phân hệ (Có viền mờ phía dưới)
+            // Cột 1: Tên quyền (Xem, Thêm...)
             gbc.gridx = 0;
-            JPanel cellFunc = new JPanel(new BorderLayout());
-            cellFunc.setBackground(cardWhite);
-            cellFunc.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, borderGray));
-            JLabel lblFunc = new JLabel(functions[i]);
-            lblFunc.setFont(new Font("Segoe UI", Font.BOLD, 13));
-            lblFunc.setForeground(textDark);
-            lblFunc.setBorder(new EmptyBorder(10, 0, 10, 0));
-            cellFunc.add(lblFunc, BorderLayout.CENTER);
-            tablePanel.add(cellFunc, gbc);
+            JPanel cellAction = new JPanel(new BorderLayout());
+            cellAction.setBackground(cardWhite);
+            cellAction.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, borderGray));
+            
+            JLabel lblAction = new JLabel(actions[i]);
+            lblAction.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            lblAction.setForeground(textDark);
+            lblAction.setBorder(new EmptyBorder(20, 10, 20, 0)); // Độn trên dưới 20px, trái 10px
+            cellAction.add(lblAction, BorderLayout.CENTER);
+            tablePanel.add(cellAction, gbc);
 
             // Các cột Checkbox
-            for (int j = 1; j <= 5; j++) {
-                gbc.gridx = j;
-                JPanel cellCb = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 10));
+            for (int j = 0; j < roles.length; j++) {
+                gbc.gridx = j + 1;
+                
+                // --- ĐỔI THÀNH GridBagLayout ĐỂ CHECKBOX LUÔN NẰM CHÍNH GIỮA Ô TỰ ĐỘNG ---
+                JPanel cellCb = new JPanel(new GridBagLayout());
                 cellCb.setBackground(cardWhite);
                 cellCb.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, borderGray));
                 
@@ -229,93 +155,33 @@ public class RoleManagementPanel extends javax.swing.JPanel {
                 cb.setBackground(cardWhite);
                 cb.setCursor(new Cursor(Cursor.HAND_CURSOR));
                 
-                // Giả lập tick: 
-                if (isFull) cb.setSelected(true);
-                else if (isManager && j <= 4) cb.setSelected(true); // Mng không có Xóa/Xuất file
-                else if (j == 1 || j == 2) cb.setSelected(true); // Staff chỉ Xem, Thêm
+                if (j == 0) {
+                    cb.setSelected(true);
+                } else if (j == 1 && i <= 2) {
+                    cb.setSelected(true);
+                } else if ((j == 2 || j == 3) && i == 0) {
+                    cb.setSelected(true);
+                }
 
                 cellCb.add(cb);
                 tablePanel.add(cellCb, gbc);
             }
         }
 
-        container.add(tablePanel, BorderLayout.CENTER);
-        
-        matrixPanel.add(container, BorderLayout.CENTER);
-        matrixPanel.revalidate();
-        matrixPanel.repaint();
+        JScrollPane scroll = new JScrollPane(tablePanel);
+        scroll.setBorder(null);
+        scroll.getViewport().setBackground(cardWhite);
+        container.add(scroll, BorderLayout.CENTER);
+
+        JPanel bottomBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        bottomBtns.setBackground(cardWhite);
+        bottomBtns.setBorder(new EmptyBorder(20, 0, 0, 0));
+        JButton btnSave = createCustomButton("Lưu thay đổi", primaryBlue, Color.WHITE);
+        bottomBtns.add(btnSave);
+        container.add(bottomBtns, BorderLayout.SOUTH);
+
+        return container;
     }
-
-    // =========================================================
-    // CLASS: THẺ VAI TRÒ (ROLE CARD)
-    // =========================================================
-    class RoleCard extends RoundedPanel {
-        String roleName, roleCode;
-        boolean isSelected;
-        JLabel lblName, lblUserCount, lblLevel;
-
-        public RoleCard(String roleName, String roleCode, String userCount, String level, boolean isSelected) {
-            super(15, cardWhite);
-            this.roleName = roleName;
-            this.roleCode = roleCode;
-            this.isSelected = isSelected;
-
-            setLayout(new BorderLayout());
-            setPreferredSize(new Dimension(220, 110));
-            setCursor(new Cursor(Cursor.HAND_CURSOR));
-            updateBorder();
-
-            JPanel top = new JPanel(new BorderLayout());
-            top.setBackground(cardWhite);
-            lblUserCount = new JLabel(userCount);
-            lblUserCount.setFont(new Font("Segoe UI", Font.BOLD, 10));
-            lblUserCount.setForeground(textGray);
-            top.add(lblUserCount, BorderLayout.WEST);
-            
-            // Icon sửa nhỏ góc phải
-            JLabel iconEdit = new JLabel("✎"); 
-            iconEdit.setForeground(textGray);
-            top.add(iconEdit, BorderLayout.EAST);
-
-            lblName = new JLabel("<html><div style='margin-top:5px; margin-bottom:5px; font-size:14px; color:#2B3674; font-weight:bold;'>" + roleName + "</div></html>");
-            
-            JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-            bottom.setBackground(cardWhite);
-            JLabel lblLvlTitle = new JLabel("Mức độ: ");
-            lblLvlTitle.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-            lblLvlTitle.setForeground(textGray);
-            lblLevel = new JLabel(level);
-            lblLevel.setFont(new Font("Segoe UI", Font.BOLD, 11));
-            lblLevel.setForeground(level.equals("Cao") ? new Color(16, 185, 129) : (level.equals("Trung bình") ? new Color(245, 158, 11) : textDark));
-            
-            bottom.add(lblLvlTitle);
-            bottom.add(lblLevel);
-
-            JPanel contentWrap = new JPanel(new BorderLayout());
-            contentWrap.setBackground(cardWhite);
-            contentWrap.setBorder(new EmptyBorder(15, 15, 15, 15));
-            contentWrap.add(top, BorderLayout.NORTH);
-            contentWrap.add(lblName, BorderLayout.CENTER);
-            contentWrap.add(bottom, BorderLayout.SOUTH);
-
-            add(contentWrap, BorderLayout.CENTER);
-        }
-
-        public void setSelected(boolean selected) {
-            this.isSelected = selected;
-            updateBorder();
-        }
-
-        private void updateBorder() {
-            setBorder(BorderFactory.createCompoundBorder(
-                    new RoundBorder(isSelected ? primaryBlue : borderGray, 15), 
-                    new EmptyBorder(2, 2, 2, 2)
-            ));
-            revalidate();
-            repaint();
-        }
-    }
-
     // =========================================================
     // UI COMPONENTS TIỆN ÍCH
     // =========================================================
@@ -360,29 +226,6 @@ public class RoleManagementPanel extends javax.swing.JPanel {
             g2.dispose();
             super.paintComponent(g);
         }
-    }
-
-    class RoundBorder implements javax.swing.border.Border {
-        private Color color;
-        private int radius;
-
-        public RoundBorder(Color color, int radius) {
-            this.color = color;
-            this.radius = radius;
-        }
-
-        @Override
-        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(color);
-            g2.setStroke(new BasicStroke(1.2f));
-            g2.drawRoundRect(x, y, width - 1, height - 1, radius, radius);
-            g2.dispose();
-        }
-
-        @Override public Insets getBorderInsets(Component c) { return new Insets(1, 1, 1, 1); }
-        @Override public boolean isBorderOpaque() { return false; }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
