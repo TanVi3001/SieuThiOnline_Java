@@ -4,19 +4,71 @@
  */
 package view;
 
+import business.sql.sales_order.StatisticSql;
+import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Map;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
  * @author Admin
  */
 public class StatisticView extends javax.swing.JPanel {
+    private final DecimalFormat moneyFormat = new DecimalFormat("#,##0.##");
 
     /**
      * Creates new form StatisticView
      */
     public StatisticView() {
         initComponents();
+        initStatisticTable();
+        loadStatistics();
+    }
+
+    private void initStatisticTable() {
+        DefaultTableModel model = new DefaultTableModel(
+                new Object[]{"Ma san pham", "Ten san pham", "So luong ban", "Doanh thu"}, 0
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        jTable1.setModel(model);
+        jTable1.setAutoCreateRowSorter(true);
+    }
+
+    private void loadStatistics() {
+        try {
+            StatisticSql statisticSql = StatisticSql.getInstance();
+            double revenue = statisticSql.getMonthlyRevenue();
+            int totalCustomers = statisticSql.getTotalCustomers();
+            int totalOrders = statisticSql.getTotalOrders();
+
+            TotalRevenue.setText("Doanh thu thang: " + moneyFormat.format(revenue));
+            TotalCustomer.setText("Tong khach hang: " + totalCustomers);
+            TotalOrder.setText("Tong don hang: " + totalOrders);
+
+            fillBestSellingProducts(statisticSql.getBestSellingProducts(20));
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Loi tai thong ke: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void fillBestSellingProducts(List<Map<String, Object>> rows) {
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        model.setRowCount(0);
+        for (Map<String, Object> row : rows) {
+            model.addRow(new Object[]{
+                row.get("product_id"),
+                row.get("product_name"),
+                row.get("total_sold"),
+                moneyFormat.format(row.get("total_revenue"))
+            });
+        }
     }
 
     /**
