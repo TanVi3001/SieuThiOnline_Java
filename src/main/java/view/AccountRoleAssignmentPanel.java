@@ -374,7 +374,39 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         bottomBtns.setBackground(cardWhite);
         JButton btnCancel = createCustomButton("Hủy bỏ", new Color(235, 238, 244), textDark);
         JButton btnSave = createCustomButton("Lưu thay đổi", primaryBlue, Color.WHITE);
-        bottomBtns.add(btnCancel); bottomBtns.add(btnSave);
+        bottomBtns.add(btnCancel); 
+        // --- THÊM SỰ KIỆN CLICK CHO NÚT LƯU THAY ĐỔI ---
+        btnSave.addActionListener(e -> {
+            // 1. Kiểm tra xem người dùng đã chọn tài khoản nào bên trái chưa
+            if (selectedAccountId == null || selectedAccountId.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn một tài khoản từ danh sách bên trái!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // 2. Lấy Role ID tương ứng với RadioButton đang được tick
+            String newRoleId = "R_STAFF_SALE"; // Mặc định là nhân viên
+            if (rbAdmin.isSelected()) {
+                newRoleId = "R_ADMIN_ALL";
+            } else if (rbManager.isSelected()) {
+                newRoleId = "R_STORE_MNG";
+            }
+
+            // 3. Gọi DB để cập nhật
+            boolean success = business.sql.rbac.AccountSql.getInstance().updateAccountRole(selectedAccountId, newRoleId);
+            
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Cập nhật phân quyền thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                // 4. Làm mới lại toàn bộ giao diện để cột bên trái tự động tải lại dữ liệu mới
+                selectedAccountId = ""; // Reset lại ID đã chọn
+                setupModernLayout();
+                this.revalidate();
+                this.repaint();
+            } else {
+                JOptionPane.showMessageDialog(this, "Cập nhật thất bại. Vui lòng kiểm tra lại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        // ----------------------------------------------
+        bottomBtns.add(btnSave);
         container.add(bottomBtns, BorderLayout.SOUTH);
 
         return container;

@@ -339,4 +339,43 @@ public class AccountSql implements SqlInterface<Account> {
         }
         return list;
     }
+    
+    /**
+     * HÀM MỚI: Cập nhật quyền (Role) cho tài khoản
+     */
+    public boolean updateAccountRole(String accountId, String newRoleId) {
+        // Kiểm tra xem tài khoản này đã có dòng cấu hình quyền trong bảng ACCOUNT_ASSIGN_ROLE chưa
+        String sqlCheck = "SELECT 1 FROM ACCOUNT_ASSIGN_ROLE WHERE account_id = ?";
+        String sqlUpdate = "UPDATE ACCOUNT_ASSIGN_ROLE SET role_id = ? WHERE account_id = ?";
+        String sqlInsert = "INSERT INTO ACCOUNT_ASSIGN_ROLE (account_id, role_id) VALUES (?, ?)";
+
+        try (Connection con = DatabaseConnection.getConnection()) {
+            boolean exists = false;
+            try (PreparedStatement pstCheck = con.prepareStatement(sqlCheck)) {
+                pstCheck.setString(1, accountId);
+                try (ResultSet rs = pstCheck.executeQuery()) {
+                    if (rs.next()) exists = true;
+                }
+            }
+
+            if (exists) {
+                // Nếu đã có -> Dùng lệnh UPDATE
+                try (PreparedStatement pstUpdate = con.prepareStatement(sqlUpdate)) {
+                    pstUpdate.setString(1, newRoleId);
+                    pstUpdate.setString(2, accountId);
+                    return pstUpdate.executeUpdate() > 0;
+                }
+            } else {
+                // Nếu chưa có -> Dùng lệnh INSERT
+                try (PreparedStatement pstInsert = con.prepareStatement(sqlInsert)) {
+                    pstInsert.setString(1, accountId);
+                    pstInsert.setString(2, newRoleId);
+                    return pstInsert.executeUpdate() > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
