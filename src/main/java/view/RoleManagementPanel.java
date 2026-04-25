@@ -321,7 +321,6 @@ public class RoleManagementPanel extends javax.swing.JPanel {
             String pass = showPasswordConfirmDialog();
             if (pass != null) {
                 // TODO: Gọi AccountSql check pass thật tại đây. 
-                // Tạm thời mình hardcode pass là "admin" để bạn test UI nhé.
                 if ("admin".equals(pass)) {
                     roleList.remove(index);
                     refreshMatrix();
@@ -331,7 +330,18 @@ public class RoleManagementPanel extends javax.swing.JPanel {
                 }
             }
         } else if ("RENAME".equals(action)) {
-            JOptionPane.showMessageDialog(this, "Chức năng đổi tên sẽ làm tiếp theo nhé!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            // Tận dụng lại Box nhập liệu kính mờ xịn xò
+            String newName = showCustomInputDialog("Đổi Tên Vai Trò", "Nhập tên mới để thay thế cho '" + roleName + "':", roleName);
+            
+            // Kiểm tra xem người dùng có nhập chữ không và chữ mới có khác chữ cũ không
+            if (newName != null && !newName.trim().isEmpty()) {
+                if (!newName.trim().equals(roleName)) {
+                    // Set tên mới vào đúng vị trí của vai trò cũ trong danh sách
+                    roleList.set(index, newName.trim());
+                    refreshMatrix(); // Vẽ lại ma trận
+                    JOptionPane.showMessageDialog(this, "Đổi tên vai trò thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
         }
     }
 
