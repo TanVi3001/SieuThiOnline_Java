@@ -18,21 +18,20 @@ import java.util.Map;
  */
 public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
 
-    private final Color bgLight = new Color(248, 249, 252);
+
+    private final Color bgLight = new Color(244, 246, 250);
     private final Color cardWhite = Color.WHITE;
     private final Color textDark = new Color(43, 54, 116);
     private final Color textGray = new Color(163, 174, 208);
     private final Color primaryBlue = new Color(67, 97, 238);
     private final Color borderGray = new Color(230, 235, 241);
     
-    // --- CÁC BIẾN ĐIỀU KHIỂN GIAO DIỆN ---
     private JLabel lblSelectedUser;
     private JLabel lblSelectedEmail;
     private JLabel lblSelectedDept;
     private JPanel pnlCurrRole;
     private String selectedAccountId = "";
     
-    // Quản lý các nút Radio động
     private Map<String, JRadioButton> radioMap = new HashMap<>();
     private ButtonGroup roleGroup;
 
@@ -136,7 +135,6 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         cbDept.setBackground(Color.WHITE);
         cbDept.setBorder(new RoundBorder(borderGray, 10));
         
-        // Đồng bộ danh sách vai trò
         JComboBox<String> cbRole = new JComboBox<>(new String[]{"Tất cả vai trò", "Quản trị viên", "Quản lý cửa hàng", "Nhân viên bán hàng", "Nhân viên kho"});
         cbRole.setPreferredSize(new Dimension(150, 35));
         cbRole.setBackground(Color.WHITE);
@@ -170,9 +168,13 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         
         java.util.List<String[]> listAcc = business.sql.rbac.AccountSql.getInstance().getAccountWithUserDetails();
         
+        // --- LOGIC LỌC DỮ LIỆU ĐÃ ĐƯỢC NÂNG CẤP ---
         Runnable loadData = () -> {
             listItems.removeAll(); 
-            String selectedFilter = (String) cbRole.getSelectedItem(); 
+            String selectedRole = (String) cbRole.getSelectedItem(); 
+            String selectedDept = (String) cbDept.getSelectedItem(); 
+            // Lấy chữ người dùng nhập, chuyển về in thường và xóa khoảng trắng 2 đầu
+            String searchText = txtSearch.getText().toLowerCase().trim(); 
             
             for (String[] acc : listAcc) {
                 String accountId = acc[0];
@@ -182,7 +184,6 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
                 String roleId = acc[4];
                 boolean isActive = "0".equals(acc[5]);
                 
-                // Trùng khớp chính tả với bảng
                 String displayRole = "Nhân viên bán hàng"; 
                 if ("R_ADMIN_ALL".equals(roleId)) displayRole = "Quản trị viên";
                 else if ("R_STORE_MNG".equals(roleId)) displayRole = "Quản lý cửa hàng";
@@ -191,15 +192,41 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
                 String displayName = (fullName == null || fullName.isEmpty()) ? username : fullName;
                 String displayEmail = (email == null || email.isEmpty()) ? "Chưa có email" : email;
                 
-                if ("Tất cả vai trò".equals(selectedFilter) || displayRole.equals(selectedFilter)) {
-                    listItems.add(createAccountRow(accountId, displayName, displayEmail, "Chưa phân bổ", displayRole, isActive));
+                // 1. Kiểm tra Lọc theo Role
+                boolean matchRole = "Tất cả vai trò".equals(selectedRole) || displayRole.equals(selectedRole);
+                
+                // 2. Kiểm tra Lọc theo Phòng ban (Tạm thời fix cứng là 'Chưa phân bổ')
+                String dept = "Chưa phân bổ"; 
+                boolean matchDept = "Tất cả phòng ban".equals(selectedDept) || dept.equals(selectedDept);
+                
+                // 3. Kiểm tra Tìm kiếm (Autocomplete): Tên hoặc Email có chứa chữ đang gõ không?
+                boolean matchSearch = searchText.isEmpty() || 
+                                      displayName.toLowerCase().contains(searchText) || 
+                                      displayEmail.toLowerCase().contains(searchText);
+                
+                // Nếu thỏa mãn TẤT CẢ các điều kiện thì mới hiển thị
+                if (matchRole && matchDept && matchSearch) {
+                    listItems.add(createAccountRow(accountId, displayName, displayEmail, dept, displayRole, isActive));
                 }
             }
             listItems.revalidate();
             listItems.repaint();
         };
 
+        // --- GẮN SỰ KIỆN LẮNG NGHE ---
+        // 1. Khi chọn Option Role
         cbRole.addActionListener(e -> loadData.run());
+        // 2. Khi chọn Option Phòng ban
+        cbDept.addActionListener(e -> loadData.run());
+        
+        // 3. BẮT SỰ KIỆN GÕ PHÍM REAL-TIME CHO Ô TÌM KIẾM
+        txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { loadData.run(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { loadData.run(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { loadData.run(); }
+        });
+
+        // Chạy lần đầu để load toàn bộ
         loadData.run();
 
         JScrollPane scroll = new JScrollPane(listItems);
@@ -261,7 +288,6 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
                 pnlCurrRole.revalidate();
                 pnlCurrRole.repaint();
                 
-                // Tự động tìm key trong Map để đánh dấu RadioButton
                 if (radioMap.containsKey(role)) {
                     radioMap.get(role).setSelected(true);
                 }
@@ -326,7 +352,6 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         
         centerPanel.add(infoGrid);
 
-        // HIỂN THỊ DANH SÁCH ROLE BẰNG VÒNG LẶP ĐỘNG
         roleGroup = new ButtonGroup();
         radioMap.clear();
 
@@ -359,7 +384,8 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
 
         centerPanel.add(roleCardsContainer);
 
-        JPanel summaryBox = new RoundedPanel(10, bgLight);
+        // Đổi màu nền của Change Summary Box cho đậm hơn
+        JPanel summaryBox = new RoundedPanel(10, new Color(248, 249, 252)); 
         summaryBox.setLayout(new BorderLayout());
         summaryBox.setBorder(BorderFactory.createCompoundBorder(
                 new DashedBorder(textGray, 1, 5), new EmptyBorder(15, 15, 15, 15)
@@ -382,7 +408,6 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         JButton btnSave = createCustomButton("Lưu thay đổi", primaryBlue, Color.WHITE);
         bottomBtns.add(btnCancel); 
         
-        // Cập nhật lại logic nút lưu để gọi hàm getActionCommand
         btnSave.addActionListener(e -> {
             if (selectedAccountId == null || selectedAccountId.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn một tài khoản từ danh sách bên trái!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);

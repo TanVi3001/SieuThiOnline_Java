@@ -19,17 +19,18 @@ import java.util.List;
  */
 public class RoleManagementPanel extends javax.swing.JPanel {
 
-    // Bảng màu đồng bộ
-    private final Color bgLight = new Color(248, 249, 252); 
+    // Màu cũ: new Color(248, 249, 252)
+    private final Color bgLight = new Color(244, 246, 250);
     private final Color cardWhite = Color.WHITE;
     private final Color textDark = new Color(43, 54, 116);
     private final Color textGray = new Color(163, 174, 208);
     private final Color primaryBlue = new Color(67, 97, 238);
     private final Color borderGray = new Color(230, 235, 241);
 
-    // --- BIẾN ĐỘNG (DYNAMIC DATA) ---
     private List<String> roleList;
     private List<String> actionList;
+    
+    private String searchRoleQuery = "";
     
     // Panel chứa ma trận để tiện việc xóa đi vẽ lại
     private JPanel matrixContainer;
@@ -64,13 +65,12 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     
-    private void setupModernLayout() {
+   private void setupModernLayout() {
         this.removeAll();
         this.setLayout(new BorderLayout(0, 20));
         this.setBackground(bgLight);
         this.setBorder(new EmptyBorder(30, 30, 30, 30));
 
-        // === 1. HEADER & NÚT THÊM MỚI ===
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(bgLight);
         
@@ -85,14 +85,40 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         titlePanel.add(title);
         titlePanel.add(subtitle);
         
+        // --- MỚI THÊM: Cụm Ô tìm kiếm + Nút Thêm nằm ở góc phải ---
+        JPanel rightHeader = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
+        rightHeader.setBackground(bgLight);
+        
+        JTextField txtSearchRole = new JTextField(15);
+        txtSearchRole.putClientProperty("JTextField.placeholderText", "Tìm vai trò...");
+        txtSearchRole.setPreferredSize(new Dimension(200, 40));
+        txtSearchRole.setBorder(BorderFactory.createCompoundBorder(
+                new RoundBorder(borderGray, 10), new EmptyBorder(5, 15, 5, 15)
+        ));
+        
+        // Bắt sự kiện gõ phím Autocomplete
+        txtSearchRole.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { updateSearch(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { updateSearch(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { updateSearch(); }
+            
+            private void updateSearch() {
+                searchRoleQuery = txtSearchRole.getText().toLowerCase().trim();
+                refreshMatrix(); // Gõ tới đâu, vẽ lại bảng tới đó
+            }
+        });
+        
         JButton btnAddNew = createCustomButton("+ Thêm vai trò mới", primaryBlue, Color.WHITE);
         btnAddNew.addActionListener(e -> showAddRoleDialog());
         
+        rightHeader.add(txtSearchRole);
+        rightHeader.add(btnAddNew);
+        // -----------------------------------------------------------
+        
         header.add(titlePanel, BorderLayout.WEST);
-        header.add(btnAddNew, BorderLayout.EAST);
+        header.add(rightHeader, BorderLayout.EAST);
         this.add(header, BorderLayout.NORTH);
 
-        // === 2. MAIN CONTENT (MA TRẬN TỔNG THỂ) ===
         matrixContainer = new JPanel(new BorderLayout());
         matrixContainer.setBackground(bgLight);
         
@@ -108,9 +134,6 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         matrixContainer.repaint();
     }
 
-    // =========================================================
-    // ENGINE LÀM MỜ NỀN KÍNH
-    // =========================================================
     private java.awt.image.BufferedImage blurImage(java.awt.image.BufferedImage img) {
         int radius = 10; 
         float[] matrix = new float[radius * radius];
@@ -146,11 +169,6 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         return blurBgPanel;
     }
 
-    // =========================================================
-    // CÁC POPUP TÙY CHỈNH (DIALOGS)
-    // =========================================================
-    
-    // 1. Popup nhập Text (Dùng cho Thêm Vai trò / Thêm Quyền)
     private String showCustomInputDialog(String title, String subtitle, String placeholder) {
         Window parentWindow = SwingUtilities.getWindowAncestor(this);
         java.awt.image.BufferedImage capture = new java.awt.image.BufferedImage(parentWindow.getWidth(), parentWindow.getHeight(), java.awt.image.BufferedImage.TYPE_INT_ARGB);
@@ -179,6 +197,12 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         txtInput.setFont(new Font("Segoe UI", Font.PLAIN, 15)); txtInput.setPreferredSize(new Dimension(320, 45));
         txtInput.setBorder(BorderFactory.createCompoundBorder(new RoundBorder(borderGray, 10), new EmptyBorder(5, 15, 5, 15)));
         txtInput.putClientProperty("JTextField.placeholderText", placeholder);
+        
+        // --- MỚI THÊM: Nếu form là Đổi Tên thì set text sẵn luôn ---
+        if (!placeholder.startsWith("Ví dụ:")) {
+            txtInput.setText(placeholder);
+        }
+        
         contentPanel.add(txtInput, BorderLayout.CENTER);
 
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
@@ -198,7 +222,6 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         return result[0];
     }
 
-    // 2. MỚI: Popup Tùy chọn (Đổi Tên / Xóa)
     private String showRoleActionDialog(String roleName) {
         Window parentWindow = SwingUtilities.getWindowAncestor(this);
         java.awt.image.BufferedImage capture = new java.awt.image.BufferedImage(parentWindow.getWidth(), parentWindow.getHeight(), java.awt.image.BufferedImage.TYPE_INT_ARGB);
@@ -228,7 +251,6 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         JButton btnRename = createCustomButton("Đổi tên", primaryBlue, Color.WHITE);
         btnRename.addActionListener(e -> { result[0] = "RENAME"; dialog.dispose(); });
         
-        // Nút Xóa màu đỏ chót cho nguy hiểm
         JButton btnDelete = createCustomButton("Xóa vai trò", new Color(220, 53, 69), Color.WHITE);
         btnDelete.addActionListener(e -> { result[0] = "DELETE"; dialog.dispose(); });
         
@@ -248,7 +270,6 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         return result[0];
     }
 
-    // 3. MỚI: Popup Xác thực Mật Khẩu (Dùng JPasswordField che dấu ***)
     private String showPasswordConfirmDialog() {
         Window parentWindow = SwingUtilities.getWindowAncestor(this);
         java.awt.image.BufferedImage capture = new java.awt.image.BufferedImage(parentWindow.getWidth(), parentWindow.getHeight(), java.awt.image.BufferedImage.TYPE_INT_ARGB);
@@ -266,12 +287,11 @@ public class RoleManagementPanel extends javax.swing.JPanel {
 
         JPanel header = new JPanel(new GridLayout(2, 1, 0, 5));
         header.setOpaque(false);
-        JLabel lblTitle = new JLabel("Xác Thực Bảo Mật"); lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22)); lblTitle.setForeground(new Color(220, 53, 69)); // Chữ đỏ cảnh báo
+        JLabel lblTitle = new JLabel("Xác Thực Bảo Mật"); lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22)); lblTitle.setForeground(new Color(220, 53, 69)); 
         JLabel lblSub = new JLabel("Vui lòng nhập mật khẩu Quản trị viên để tiến hành xóa:"); lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 13)); lblSub.setForeground(textGray);
         header.add(lblTitle); header.add(lblSub);
         contentPanel.add(header, BorderLayout.NORTH);
 
-        // Ô Password che dấu ***
         JPasswordField txtPass = new JPasswordField();
         txtPass.setFont(new Font("Segoe UI", Font.PLAIN, 15)); txtPass.setPreferredSize(new Dimension(320, 45));
         txtPass.setBorder(BorderFactory.createCompoundBorder(new RoundBorder(borderGray, 10), new EmptyBorder(5, 15, 5, 15)));
@@ -293,10 +313,6 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         return result[0];
     }
 
-    // =========================================================
-    // LOGIC THỰC THI (THÊM, SỬA, XÓA)
-    // =========================================================
-    
     private void showAddRoleDialog() {
         String newRole = showCustomInputDialog("Thêm Vai Trò Mới", "Nhập tên chức danh/vai trò muốn tạo:", "Ví dụ: Thực tập sinh...");
         if (newRole != null && !newRole.trim().isEmpty()) {
@@ -313,16 +329,18 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         }
     }
 
-    // --- LOGIC: KHI NHẤN VÀO TÊN VAI TRÒ TRÊN BẢNG ---
-    private void handleRoleClick(String roleName, int index) {
+    // --- MỚI THÊM: Sửa tham số truyền vào, tìm index thật để tránh lỗi xóa nhầm khi đang Lọc ---
+    private void handleRoleClick(String roleName) {
+        int realIndex = roleList.indexOf(roleName); 
+        if (realIndex == -1) return; // Bảo mật lỡ không tìm thấy
+        
         String action = showRoleActionDialog(roleName);
         
         if ("DELETE".equals(action)) {
             String pass = showPasswordConfirmDialog();
             if (pass != null) {
-                // TODO: Gọi AccountSql check pass thật tại đây. 
                 if ("admin".equals(pass)) {
-                    roleList.remove(index);
+                    roleList.remove(realIndex);
                     refreshMatrix();
                     JOptionPane.showMessageDialog(this, "Vai trò được xóa thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                 } else {
@@ -330,24 +348,18 @@ public class RoleManagementPanel extends javax.swing.JPanel {
                 }
             }
         } else if ("RENAME".equals(action)) {
-            // Tận dụng lại Box nhập liệu kính mờ xịn xò
             String newName = showCustomInputDialog("Đổi Tên Vai Trò", "Nhập tên mới để thay thế cho '" + roleName + "':", roleName);
             
-            // Kiểm tra xem người dùng có nhập chữ không và chữ mới có khác chữ cũ không
             if (newName != null && !newName.trim().isEmpty()) {
                 if (!newName.trim().equals(roleName)) {
-                    // Set tên mới vào đúng vị trí của vai trò cũ trong danh sách
-                    roleList.set(index, newName.trim());
-                    refreshMatrix(); // Vẽ lại ma trận
+                    roleList.set(realIndex, newName.trim());
+                    refreshMatrix(); 
                     JOptionPane.showMessageDialog(this, "Đổi tên vai trò thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         }
     }
 
-    // =========================================================
-    // PHẦN BẢNG MA TRẬN
-    // =========================================================
     private JPanel createMatrixPanel() {
         RoundedPanel container = new RoundedPanel(20, cardWhite);
         container.setLayout(new BorderLayout(0, 20));
@@ -359,35 +371,44 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         
         gbc.fill = GridBagConstraints.BOTH;
 
-        // --- DÒNG HEADER ---
         gbc.gridy = 0; gbc.weighty = 0.0; gbc.insets = new Insets(0, 0, 20, 0);
         gbc.gridx = 0; gbc.weightx = 0.2;
         JLabel lblHeaderAction = new JLabel("Quyền hạn"); lblHeaderAction.setFont(new Font("Segoe UI", Font.BOLD, 14)); lblHeaderAction.setForeground(textGray); lblHeaderAction.setBorder(new EmptyBorder(0, 10, 0, 0));
         tablePanel.add(lblHeaderAction, gbc);
 
-        double roleWeight = 0.8 / roleList.size(); 
-        for (int i = 0; i < roleList.size(); i++) {
+        // --- MỚI THÊM: Tạo danh sách Role được lọc ---
+        List<String> displayRoles = new ArrayList<>();
+        for (String r : roleList) {
+            if (r.toLowerCase().contains(searchRoleQuery)) {
+                displayRoles.add(r);
+            }
+        }
+
+        // Tính toán độ rộng dựa trên số cột thực tế đang hiển thị
+        double roleWeight = displayRoles.isEmpty() ? 0.8 : (0.8 / displayRoles.size()); 
+        
+        // Loop qua danh sách đã LỌC
+        for (int i = 0; i < displayRoles.size(); i++) {
             gbc.gridx = i + 1;
             gbc.weightx = roleWeight;
             
-            // ĐÃ THÊM SỰ KIỆN CLICK CHO TIÊU ĐỀ VAI TRÒ Ở ĐÂY
-            JLabel lblRole = new JLabel(roleList.get(i), SwingConstants.CENTER);
+            final String roleName = displayRoles.get(i);
+            
+            JLabel lblRole = new JLabel(roleName, SwingConstants.CENTER);
             lblRole.setFont(new Font("Segoe UI", Font.BOLD, 15));
             lblRole.setForeground(textDark);
             lblRole.setCursor(new Cursor(Cursor.HAND_CURSOR));
             
-            final int index = i;
-            final String roleName = roleList.get(i);
             lblRole.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    handleRoleClick(roleName, index);
+                    handleRoleClick(roleName); // Chỉ truyền tên, không truyền index ảo
                 }
             });
             tablePanel.add(lblRole, gbc);
         }
 
-        // --- CÁC DÒNG DỮ LIỆU ---
+        // Dòng dữ liệu (Quyền hạn)
         for (int i = 0; i < actionList.size(); i++) {
             gbc.gridy = i + 1; gbc.weighty = 1.0; gbc.insets = new Insets(0, 0, 0, 0); 
             
@@ -409,15 +430,24 @@ public class RoleManagementPanel extends javax.swing.JPanel {
             cellAction.add(lblAction, BorderLayout.CENTER);
             tablePanel.add(cellAction, gbc);
 
-            for (int j = 0; j < roleList.size(); j++) {
+            // Cột Checkbox lặp qua danh sách ĐÃ LỌC
+            for (int j = 0; j < displayRoles.size(); j++) {
                 gbc.gridx = j + 1;
                 JPanel cellCb = new JPanel(new GridBagLayout()); cellCb.setBackground(cardWhite); cellCb.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, borderGray));
                 
                 if (!isAddAction) {
                     JCheckBox cb = new JCheckBox(); cb.setBackground(cardWhite); cb.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    if (j == 0) cb.setSelected(true);
-                    else if (j == 1 && i <= 2) cb.setSelected(true);
-                    else if ((j == 2 || j == 3) && i == 0) cb.setSelected(true);
+                    
+                    // --- MỚI THÊM: Logic check theo tên thay vì vị trí cố định ---
+                    String currentRole = displayRoles.get(j);
+                    if (currentRole.equals("Quản trị viên")) {
+                        cb.setSelected(true);
+                    } else if (currentRole.equals("Quản lý cửa hàng") && i <= 2) {
+                        cb.setSelected(true);
+                    } else if ((currentRole.equals("Nhân viên bán hàng") || currentRole.equals("Nhân viên kho")) && i == 0) {
+                        cb.setSelected(true);
+                    }
+                    
                     cellCb.add(cb);
                 }
                 tablePanel.add(cellCb, gbc);
@@ -435,10 +465,6 @@ public class RoleManagementPanel extends javax.swing.JPanel {
         return container;
     }
 
-    // =========================================================
-    // UI COMPONENTS TIỆN ÍCH
-    // =========================================================
-    
     private JButton createCustomButton(String text, Color bg, Color fg) {
         JButton btn = new JButton(text) {
             @Override
