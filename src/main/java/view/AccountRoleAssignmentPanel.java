@@ -9,7 +9,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.RoundRectangle2D;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -17,22 +18,23 @@ import java.awt.geom.RoundRectangle2D;
  */
 public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
 
-    private final Color bgLight = new Color(248, 249, 252); // Nền xám xanh cực nhạt
+    private final Color bgLight = new Color(248, 249, 252);
     private final Color cardWhite = Color.WHITE;
     private final Color textDark = new Color(43, 54, 116);
     private final Color textGray = new Color(163, 174, 208);
     private final Color primaryBlue = new Color(67, 97, 238);
     private final Color borderGray = new Color(230, 235, 241);
     
-    // --- THÊM CÁC BIẾN NÀY ĐỂ ĐIỀU KHIỂN GIAO DIỆN BÊN PHẢI ---
+    // --- CÁC BIẾN ĐIỀU KHIỂN GIAO DIỆN ---
     private JLabel lblSelectedUser;
     private JLabel lblSelectedEmail;
     private JLabel lblSelectedDept;
     private JPanel pnlCurrRole;
-    private JRadioButton rbAdmin;
-    private JRadioButton rbManager;
-    private JRadioButton rbStaff;
     private String selectedAccountId = "";
+    
+    // Quản lý các nút Radio động
+    private Map<String, JRadioButton> radioMap = new HashMap<>();
+    private ButtonGroup roleGroup;
 
     public AccountRoleAssignmentPanel() {
         initComponents();
@@ -67,7 +69,6 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         this.setBackground(bgLight);
         this.setBorder(new EmptyBorder(30, 30, 30, 30));
 
-        // === 1. HEADER ===
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(bgLight);
         
@@ -82,7 +83,6 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         titlePanel.add(title);
         titlePanel.add(subtitle);
         
-        // Signed in Badge
         JLabel signedInBadge = new JLabel("<html><span style='color:#A3AED0'>Đăng nhập:</span> <b>Quản trị viên</b></html>");
         signedInBadge.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         signedInBadge.setHorizontalAlignment(SwingConstants.CENTER);
@@ -98,32 +98,20 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         header.add(rightHeader, BorderLayout.EAST);
         this.add(header, BorderLayout.NORTH);
 
-        // === 2. MAIN CONTENT (ĐÃ SỬA LẠI ĐỂ KHÔNG BAO GIỜ BỊ FLEX) ===
-        // Đổi từ GridBagLayout sang BorderLayout để chốt vị trí tuyệt đối
         JPanel content = new JPanel(new BorderLayout(20, 0)); 
         content.setBackground(bgLight);
 
-        // Lưu ý: Gọi createAssignmentColumn() trước để khởi tạo các Label bên phải
         JPanel rightCol = createAssignmentColumn();
         JPanel leftCol = createAccountListColumn();
 
-        // --- ÁP DỤNG Ý TƯỞNG CỦA TÙNG: FIX CỨNG KÍCH THƯỚC ---
-        // Ép cột bên phải luôn luôn rộng chính xác 430px. 
-        // Bất kể chữ "Nguyễn Đinh Tùng" có dài cỡ nào, cái khung vẫn đứng im phăng phắc!
         rightCol.setPreferredSize(new Dimension(430, rightCol.getPreferredSize().height));
 
-        // Thêm vào layout: 
-        // BorderLayout.CENTER sẽ tự động co giãn phần diện tích còn lại (Cột trái)
-        // BorderLayout.EAST sẽ ôm chặt cột phải ở mức 430px
         content.add(leftCol, BorderLayout.CENTER);
         content.add(rightCol, BorderLayout.EAST);
 
         this.add(content, BorderLayout.CENTER);
     }
 
-    // =========================================================
-    // CỘT TRÁI: DANH SÁCH TÀI KHOẢN (NỐI DATABASE)
-    // =========================================================
     private JPanel createAccountListColumn() {
         RoundedPanel container = new RoundedPanel(20, cardWhite);
         container.setLayout(new BorderLayout(0, 15));
@@ -139,15 +127,20 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         JTextField txtSearch = new JTextField(15);
         txtSearch.putClientProperty("JTextField.placeholderText", "Tìm theo tên hoặc email...");
         txtSearch.setPreferredSize(new Dimension(200, 35));
+        txtSearch.setBorder(BorderFactory.createCompoundBorder(
+                new RoundBorder(borderGray, 10), new EmptyBorder(5, 15, 5, 15)
+        ));
         
         JComboBox<String> cbDept = new JComboBox<>(new String[]{"Tất cả phòng ban", "CNTT", "Vận hành", "Tài chính", "Nhân sự"});
         cbDept.setPreferredSize(new Dimension(130, 35));
         cbDept.setBackground(Color.WHITE);
+        cbDept.setBorder(new RoundBorder(borderGray, 10));
         
-        JComboBox<String> cbRole = new JComboBox<>(new String[]{"Tất cả vai trò", "Quản trị", "Quản lý", "Nhân viên"});
-        // SỬA LỖI 1: Tăng chiều rộng từ 100 lên 140 để chữ không bị lẹm
-        cbRole.setPreferredSize(new Dimension(140, 35));
+        // Đồng bộ danh sách vai trò
+        JComboBox<String> cbRole = new JComboBox<>(new String[]{"Tất cả vai trò", "Quản trị viên", "Quản lý cửa hàng", "Nhân viên bán hàng", "Nhân viên kho"});
+        cbRole.setPreferredSize(new Dimension(150, 35));
         cbRole.setBackground(Color.WHITE);
+        cbRole.setBorder(new RoundBorder(borderGray, 10));
         
         filterPanel.add(txtSearch); filterPanel.add(cbDept); filterPanel.add(cbRole);
 
@@ -177,11 +170,9 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         
         java.util.List<String[]> listAcc = business.sql.rbac.AccountSql.getInstance().getAccountWithUserDetails();
         
-        // --- SỬA LỖI 2: VIẾT LOGIC LỌC DỮ LIỆU ---
-        // Gói logic load dữ liệu vào một Runnable để gọi đi gọi lại được
         Runnable loadData = () -> {
-            listItems.removeAll(); // Xóa sạch danh sách cũ trên màn hình
-            String selectedFilter = (String) cbRole.getSelectedItem(); // Lấy chữ đang hiển thị trong ô Combobox
+            listItems.removeAll(); 
+            String selectedFilter = (String) cbRole.getSelectedItem(); 
             
             for (String[] acc : listAcc) {
                 String accountId = acc[0];
@@ -191,31 +182,25 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
                 String roleId = acc[4];
                 boolean isActive = "0".equals(acc[5]);
                 
-                String displayRole = "Nhân viên"; 
-                if ("R_ADMIN_ALL".equals(roleId)) displayRole = "Quản trị";
-                else if ("R_STORE_MNG".equals(roleId)) displayRole = "Quản lý";
+                // Trùng khớp chính tả với bảng
+                String displayRole = "Nhân viên bán hàng"; 
+                if ("R_ADMIN_ALL".equals(roleId)) displayRole = "Quản trị viên";
+                else if ("R_STORE_MNG".equals(roleId)) displayRole = "Quản lý cửa hàng";
+                else if ("R_STAFF_STOCK".equals(roleId)) displayRole = "Nhân viên kho";
                 
                 String displayName = (fullName == null || fullName.isEmpty()) ? username : fullName;
                 String displayEmail = (email == null || email.isEmpty()) ? "Chưa có email" : email;
                 
-                // KIỂM TRA ĐIỀU KIỆN LỌC: 
-                // Nếu chọn "Tất cả vai trò" HOẶC vai trò của người đó trùng với vai trò đang chọn thì mới Add vô bảng
                 if ("Tất cả vai trò".equals(selectedFilter) || displayRole.equals(selectedFilter)) {
                     listItems.add(createAccountRow(accountId, displayName, displayEmail, "Chưa phân bổ", displayRole, isActive));
                 }
             }
-            
-            // Cập nhật lại giao diện sau khi Lọc
             listItems.revalidate();
             listItems.repaint();
         };
 
-        // Kích hoạt: Bắt sự kiện khi click đổi Option trong Combobox
         cbRole.addActionListener(e -> loadData.run());
-
-        // Chạy lần đầu tiên khi vừa mở màn hình lên
         loadData.run();
-        // ------------------------------------------
 
         JScrollPane scroll = new JScrollPane(listItems);
         scroll.setBorder(null);
@@ -262,7 +247,6 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         lblStatus.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         row.add(lblStatus);
 
-        // HIỆU ỨNG CLICK CHUỘT
         row.setCursor(new Cursor(Cursor.HAND_CURSOR));
         row.addMouseListener(new MouseAdapter() {
             @Override
@@ -277,13 +261,9 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
                 pnlCurrRole.revalidate();
                 pnlCurrRole.repaint();
                 
-                // --- ĐÃ ĐỔI SANG SO SÁNH TIẾNG VIỆT ---
-                if ("Quản trị".equals(role)) {
-                    rbAdmin.setSelected(true);
-                } else if ("Quản lý".equals(role)) {
-                    rbManager.setSelected(true);
-                } else {
-                    rbStaff.setSelected(true);
+                // Tự động tìm key trong Map để đánh dấu RadioButton
+                if (radioMap.containsKey(role)) {
+                    radioMap.get(role).setSelected(true);
                 }
             }
         });
@@ -291,12 +271,6 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         return row;
     }
 
-    // =========================================================
-    // CỘT PHẢI: CHI TIẾT & GÁN QUYỀN
-    // =========================================================
-    // =========================================================
-    // CỘT PHẢI: CHI TIẾT & GÁN QUYỀN (ĐÃ FIX CỨNG KÍCH THƯỚC TRÁNH FLEX)
-    // =========================================================
     private JPanel createAssignmentColumn() {
         RoundedPanel container = new RoundedPanel(20, cardWhite);
         container.setLayout(new BorderLayout(0, 20));
@@ -311,14 +285,12 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBackground(cardWhite);
 
-        // Khởi tạo các label 
         lblSelectedUser = createLabel("-", textDark, true);
         lblSelectedEmail = createLabel("-", textDark, false);
         lblSelectedDept = createLabel("-", textDark, false);
         pnlCurrRole = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         pnlCurrRole.setBackground(cardWhite);
 
-        // 1. Info User Đang chọn (Đã fix cứng bằng GridBagLayout chống flex)
         JPanel infoGrid = new JPanel(new GridBagLayout());
         infoGrid.setBackground(cardWhite);
         infoGrid.setBorder(new EmptyBorder(0, 0, 20, 0));
@@ -328,28 +300,24 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         gbcInfo.fill = GridBagConstraints.HORIZONTAL;
         gbcInfo.anchor = GridBagConstraints.WEST;
         
-        // Dòng 1: Người dùng đã chọn
         gbcInfo.gridy = 0;
-        gbcInfo.insets = new Insets(0, 0, 15, 20); // Tạo khoảng cách 20px ở giữa 2 cột
+        gbcInfo.insets = new Insets(0, 0, 15, 20);
         gbcInfo.gridx = 0; gbcInfo.weightx = 0.0; infoGrid.add(createLabel("Người dùng đã chọn", textGray), gbcInfo);
         gbcInfo.insets = new Insets(0, 0, 15, 0);
         gbcInfo.gridx = 1; gbcInfo.weightx = 1.0; infoGrid.add(lblSelectedUser, gbcInfo);
         
-        // Dòng 2: Email
         gbcInfo.gridy = 1;
         gbcInfo.insets = new Insets(0, 0, 15, 20);
         gbcInfo.gridx = 0; gbcInfo.weightx = 0.0; infoGrid.add(createLabel("Email", textGray), gbcInfo);
         gbcInfo.insets = new Insets(0, 0, 15, 0);
         gbcInfo.gridx = 1; gbcInfo.weightx = 1.0; infoGrid.add(lblSelectedEmail, gbcInfo);
         
-        // Dòng 3: Phòng ban
         gbcInfo.gridy = 2;
         gbcInfo.insets = new Insets(0, 0, 15, 20);
         gbcInfo.gridx = 0; gbcInfo.weightx = 0.0; infoGrid.add(createLabel("Phòng ban", textGray), gbcInfo);
         gbcInfo.insets = new Insets(0, 0, 15, 0);
         gbcInfo.gridx = 1; gbcInfo.weightx = 1.0; infoGrid.add(lblSelectedDept, gbcInfo);
         
-        // Dòng 4: Vai trò hiện tại
         gbcInfo.gridy = 3;
         gbcInfo.insets = new Insets(0, 0, 0, 20);
         gbcInfo.gridx = 0; gbcInfo.weightx = 0.0; infoGrid.add(createLabel("Vai trò hiện tại", textGray), gbcInfo);
@@ -357,35 +325,47 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         gbcInfo.gridx = 1; gbcInfo.weightx = 1.0; infoGrid.add(pnlCurrRole, gbcInfo);
         
         centerPanel.add(infoGrid);
-        // 2. Radio Options (Khởi tạo biến Radio trước)
-        ButtonGroup roleGroup = new ButtonGroup();
-        rbAdmin = new JRadioButton();
-        rbManager = new JRadioButton();
-        rbStaff = new JRadioButton();
-        
-        // Tạo card và ép sát lề trái đồng bộ
-        JPanel cardAdmin = createRoleCard("Admin (Quản trị viên)", "Toàn quyền quản lý hệ thống, nhân sự, thiết lập vai trò và nhật ký.", roleGroup, rbAdmin);
-        JPanel cardManager = createRoleCard("Manager (Quản lý cửa hàng)", "Quản lý hoạt động cửa hàng, xem báo cáo và phê duyệt xuất nhập kho.", roleGroup, rbManager);
-        JPanel cardStaff = createRoleCard("Staff (Nhân viên)", "Truy cập tiêu chuẩn cho các hoạt động bán hàng hàng ngày.", roleGroup, rbStaff);
-        
-        cardAdmin.setAlignmentX(Component.LEFT_ALIGNMENT);
-        cardManager.setAlignmentX(Component.LEFT_ALIGNMENT);
-        cardStaff.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        centerPanel.add(cardAdmin);
-        centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        centerPanel.add(cardManager);
-        centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        centerPanel.add(cardStaff);
+        // HIỂN THỊ DANH SÁCH ROLE BẰNG VÒNG LẶP ĐỘNG
+        roleGroup = new ButtonGroup();
+        radioMap.clear();
 
-        // 3. Change Summary Box
+        JPanel roleCardsContainer = new JPanel();
+        roleCardsContainer.setLayout(new BoxLayout(roleCardsContainer, BoxLayout.Y_AXIS));
+        roleCardsContainer.setBackground(cardWhite);
+        roleCardsContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        String[][] activeRoles = {
+            {"R_ADMIN_ALL", "Quản trị viên", "Toàn quyền quản lý hệ thống, nhân sự và thiết lập."},
+            {"R_STORE_MNG", "Quản lý cửa hàng", "Quản lý hoạt động cửa hàng, xem báo cáo."},
+            {"R_CASHIER", "Nhân viên bán hàng", "Truy cập màn hình POS, tạo hóa đơn và thanh toán."},
+            {"R_STAFF_STOCK", "Nhân viên kho", "Quản lý sản phẩm, lập phiếu nhập và tồn kho."}
+        };
+
+        for (String[] roleInfo : activeRoles) {
+            String roleId = roleInfo[0];
+            String roleName = roleInfo[1]; 
+            String roleDesc = roleInfo[2];
+
+            JRadioButton rb = new JRadioButton();
+            rb.setActionCommand(roleId); 
+            radioMap.put(roleName, rb);  
+
+            JPanel card = createRoleCard(roleName, roleDesc, roleGroup, rb);
+            card.setAlignmentX(Component.LEFT_ALIGNMENT);
+            roleCardsContainer.add(card);
+            roleCardsContainer.add(Box.createRigidArea(new Dimension(0, 10)));
+        }
+
+        centerPanel.add(roleCardsContainer);
+
         JPanel summaryBox = new RoundedPanel(10, bgLight);
         summaryBox.setLayout(new BorderLayout());
         summaryBox.setBorder(BorderFactory.createCompoundBorder(
                 new DashedBorder(textGray, 1, 5), new EmptyBorder(15, 15, 15, 15)
         ));
         summaryBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
-        summaryBox.setAlignmentX(Component.LEFT_ALIGNMENT); // Ép sát lề trái
+        summaryBox.setAlignmentX(Component.LEFT_ALIGNMENT); 
         
         JLabel lblSum = new JLabel("<html><b>Tóm tắt thay đổi:</b><br><span style='font-size:10px; color:#666;'>Tài khoản được chọn sẽ giữ nguyên vai trò hiện tại trừ khi bạn chọn vai trò khác trước khi lưu.</span></html>");
         lblSum.setForeground(textDark);
@@ -396,35 +376,32 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         
         container.add(centerPanel, BorderLayout.CENTER);
 
-        // 4. Nút bấm
         JPanel bottomBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         bottomBtns.setBackground(cardWhite);
         JButton btnCancel = createCustomButton("Hủy bỏ", new Color(235, 238, 244), textDark);
         JButton btnSave = createCustomButton("Lưu thay đổi", primaryBlue, Color.WHITE);
         bottomBtns.add(btnCancel); 
-        // --- THÊM SỰ KIỆN CLICK CHO NÚT LƯU THAY ĐỔI ---
+        
+        // Cập nhật lại logic nút lưu để gọi hàm getActionCommand
         btnSave.addActionListener(e -> {
-            // 1. Kiểm tra xem người dùng đã chọn tài khoản nào bên trái chưa
             if (selectedAccountId == null || selectedAccountId.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn một tài khoản từ danh sách bên trái!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
-            // 2. Lấy Role ID tương ứng với RadioButton đang được tick
-            String newRoleId = "R_STAFF_SALE"; // Mặc định là nhân viên
-            if (rbAdmin.isSelected()) {
-                newRoleId = "R_ADMIN_ALL";
-            } else if (rbManager.isSelected()) {
-                newRoleId = "R_STORE_MNG";
+            ButtonModel selectedModel = roleGroup.getSelection();
+            if (selectedModel == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn một vai trò mới để gán!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                return;
             }
 
-            // 3. Gọi DB để cập nhật
+            String newRoleId = selectedModel.getActionCommand(); 
+
             boolean success = business.sql.rbac.AccountSql.getInstance().updateAccountRole(selectedAccountId, newRoleId);
             
             if (success) {
                 JOptionPane.showMessageDialog(this, "Cập nhật phân quyền thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                // 4. Làm mới lại toàn bộ giao diện để cột bên trái tự động tải lại dữ liệu mới
-                selectedAccountId = ""; // Reset lại ID đã chọn
+                selectedAccountId = ""; 
                 setupModernLayout();
                 this.revalidate();
                 this.repaint();
@@ -432,17 +409,13 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this, "Cập nhật thất bại. Vui lòng kiểm tra lại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         });
-        // ----------------------------------------------
+        
         bottomBtns.add(btnSave);
         container.add(bottomBtns, BorderLayout.SOUTH);
 
         return container;
     }
 
-    // =========================================================
-    // CÁC HÀM TIỆN ÍCH
-    // =========================================================
-    
     private JLabel createLabel(String text, Color color) {
         return createLabel(text, color, false);
     }
@@ -457,35 +430,32 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
     private JLabel createBadge(String role) {
         Color bg, fg;
         
-        // Khớp với chữ Tiếng Việt
-        if ("Quản trị".equals(role)) { 
+        if ("Quản trị viên".equals(role)) { 
             bg = new Color(255, 235, 238); fg = new Color(220, 53, 69); 
-        } else if ("Quản lý".equals(role)) { 
+        } else if ("Quản lý cửa hàng".equals(role)) { 
             bg = new Color(255, 248, 225); fg = new Color(245, 158, 11); 
+        } else if ("Nhân viên kho".equals(role)) {
+            bg = new Color(243, 232, 255); fg = new Color(147, 51, 234);
         } else { 
             bg = new Color(237, 242, 255); fg = primaryBlue; 
         }
         
-        // Ghi đè phương thức vẽ của JLabel
         JLabel badge = new JLabel(role, SwingConstants.CENTER) {
             @Override
             protected void paintComponent(Graphics g) {
-                // 1. Vẽ màu nền bo góc TRƯỚC
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(bg);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
                 g2.dispose();
-                
-                // 2. Gọi hàm cha để in chữ lên SAU (đè lên nền)
                 super.paintComponent(g);
             }
         };
         
         badge.setFont(new Font("Segoe UI", Font.BOLD, 11));
         badge.setForeground(fg);
-        badge.setOpaque(false); // Tắt nền vuông mặc định
-        badge.setBorder(new EmptyBorder(5, 15, 5, 15)); // Padding cho chữ không bị sát lề
+        badge.setOpaque(false); 
+        badge.setBorder(new EmptyBorder(5, 15, 5, 15)); 
         
         return badge;
     }
