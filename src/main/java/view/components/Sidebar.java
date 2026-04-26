@@ -96,14 +96,17 @@ public class Sidebar extends JPanel {
         }
         String s = role.trim().toLowerCase(Locale.ROOT);
         s = Normalizer.normalize(s, Normalizer.Form.NFD).replaceAll("\\p{M}", ""); // bỏ dấu
-        s = s.replaceAll("\\s+", ""); // bỏ khoảng trắng
+        s = s.replaceAll("[^a-z0-9]", "");
         return s;
     }
 
     private boolean isStaff() {
         return userRole.equals("staff")
                 || userRole.equals("nhanvien")
-                || userRole.equals("employee");
+                || userRole.equals("employee")
+                || userRole.equals("rstaffsale")
+                || userRole.equals("rstaffstock")
+                || userRole.equals("rstaffviewprod");
     }
 
     public interface MenuClickListener {
@@ -118,6 +121,10 @@ public class Sidebar extends JPanel {
     }
 
     private void addMenuItem(final String title) {
+        String normalizedTitle = normalizeRole(title);
+        if (isStaff() && normalizedTitle.equals("thongke")) {
+            return;
+        }
         final MenuItem[] itemHolder = new MenuItem[1];
         MenuItem item = new MenuItem(title, () -> {
             for (MenuItem m : menuItems) {

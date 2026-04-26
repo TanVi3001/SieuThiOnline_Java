@@ -18,6 +18,6 @@ public class AuthContext {
     }
 
     public static boolean isAdmin() {
-        return currentUser != null && "ADMIN".equalsIgnoreCase(currentUser.getRole());
+        return business.service.AuthorizationService.isAdmin(currentUser);
     }
 }

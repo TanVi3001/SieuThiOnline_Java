@@ -31,9 +31,15 @@ public class AccountSql implements SqlInterface<Account> {
      */
     public Account selectByUsername(String username) {
         Account acc = null;
-        String sql = "SELECT a.account_id, a.username, a.password, a.is_deleted, aar.role_id "
+        String sql = "SELECT a.account_id, a.username, a.password, a.is_deleted, "
+                + "       COALESCE(aar.role_id, rg.group_name, aarg.role_group_id) AS role_value "
                 + "FROM ACCOUNTS a "
-                + "LEFT JOIN ACCOUNT_ASSIGN_ROLE aar ON a.account_id = aar.account_id "
+                + "LEFT JOIN ACCOUNT_ASSIGN_ROLE aar "
+                + "       ON a.account_id = aar.account_id AND NVL(aar.is_deleted, 0) = 0 "
+                + "LEFT JOIN ACCOUNT_ASSIGN_ROLE_GROUP aarg "
+                + "       ON a.account_id = aarg.account_id AND NVL(aarg.is_deleted, 0) = 0 "
+                + "LEFT JOIN ROLE_GROUPS rg "
+                + "       ON aarg.role_group_id = rg.role_group_id AND NVL(rg.is_deleted, 0) = 0 "
                 + "WHERE a.username = ? AND a.is_deleted = 0";
 
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
@@ -44,7 +50,7 @@ public class AccountSql implements SqlInterface<Account> {
                             rs.getString("account_id"),
                             rs.getString("username"),
                             rs.getString("password"),
-                            rs.getString("role_id"), // Lấy mã role phục vụ phân loại Dashboard
+                            rs.getString("role_value"),
                             rs.getInt("is_deleted")
                     );
                 }
@@ -60,9 +66,15 @@ public class AccountSql implements SqlInterface<Account> {
     public List<Account> selectAll() {
         List<Account> list = new ArrayList<>();
         // ĐÃ SỬA: JOIN bảng ACCOUNTS với ACCOUNT_ASSIGN_ROLE để biết ai là Admin/Manager/Staff
-        String sql = "SELECT a.account_id, a.username, a.password, a.is_deleted, aar.role_id "
+        String sql = "SELECT a.account_id, a.username, a.password, a.is_deleted, "
+                   + "       COALESCE(aar.role_id, rg.group_name, aarg.role_group_id) AS role_value "
                    + "FROM ACCOUNTS a "
-                   + "LEFT JOIN ACCOUNT_ASSIGN_ROLE aar ON a.account_id = aar.account_id "
+                   + "LEFT JOIN ACCOUNT_ASSIGN_ROLE aar "
+                   + "       ON a.account_id = aar.account_id AND NVL(aar.is_deleted, 0) = 0 "
+                   + "LEFT JOIN ACCOUNT_ASSIGN_ROLE_GROUP aarg "
+                   + "       ON a.account_id = aarg.account_id AND NVL(aarg.is_deleted, 0) = 0 "
+                   + "LEFT JOIN ROLE_GROUPS rg "
+                   + "       ON aarg.role_group_id = rg.role_group_id AND NVL(rg.is_deleted, 0) = 0 "
                    + "WHERE a.is_deleted = 0";
                    
         try (Connection con = DatabaseConnection.getConnection(); 
@@ -74,7 +86,7 @@ public class AccountSql implements SqlInterface<Account> {
                         rs.getString("account_id"),
                         rs.getString("username"),
                         rs.getString("password"),
-                        rs.getString("role_id"), // Gắn mã quyền vào object Account
+                        rs.getString("role_value"),
                         rs.getInt("is_deleted")
                 ));
             }
@@ -314,10 +326,17 @@ public class AccountSql implements SqlInterface<Account> {
     public List<String[]> getAccountWithUserDetails() {
         List<String[]> list = new ArrayList<>();
         // Lấy account_id, username, role_id, is_deleted VÀ full_name, email từ bảng USERS
-        String sql = "SELECT a.account_id, a.username, u.full_name, u.email, aar.role_id, a.is_deleted "
+        String sql = "SELECT a.account_id, a.username, u.full_name, u.email, "
+                   + "       COALESCE(aar.role_id, rg.group_name, aarg.role_group_id) AS role_value, "
+                   + "       a.is_deleted "
                    + "FROM ACCOUNTS a "
                    + "JOIN USERS u ON a.user_id = u.user_id "
-                   + "LEFT JOIN ACCOUNT_ASSIGN_ROLE aar ON a.account_id = aar.account_id "
+                   + "LEFT JOIN ACCOUNT_ASSIGN_ROLE aar "
+                   + "       ON a.account_id = aar.account_id AND NVL(aar.is_deleted, 0) = 0 "
+                   + "LEFT JOIN ACCOUNT_ASSIGN_ROLE_GROUP aarg "
+                   + "       ON a.account_id = aarg.account_id AND NVL(aarg.is_deleted, 0) = 0 "
+                   + "LEFT JOIN ROLE_GROUPS rg "
+                   + "       ON aarg.role_group_id = rg.role_group_id AND NVL(rg.is_deleted, 0) = 0 "
                    + "WHERE a.is_deleted = 0";
                    
         try (Connection con = DatabaseConnection.getConnection(); 
@@ -330,7 +349,7 @@ public class AccountSql implements SqlInterface<Account> {
                         rs.getString("username"),
                         rs.getString("full_name"),
                         rs.getString("email"),
-                        rs.getString("role_id"),
+                        rs.getString("role_value"),
                         String.valueOf(rs.getInt("is_deleted"))
                 });
             }
