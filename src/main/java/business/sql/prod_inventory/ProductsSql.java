@@ -294,6 +294,20 @@ public class ProductsSql {
                         log.setReason("Cập nhật thông tin");
                         log.setIpAddress("local");
                         log.setDeviceInfo("JavaApp");
+                    model.account.AuditLog log = new model.account.AuditLog();
+                    log.setAccountId(
+                            business.service.SessionManager.getCurrentUser() != null
+                            ? business.service.SessionManager.getCurrentUser().getAccountId()
+                            : null
+                    );
+                    log.setActionType("UPDATE_PRICE");
+                    log.setEntityType("PRODUCT");
+                    log.setEntityId(p.getProductId());
+                    log.setOldValue("price=" + (oldPrice != null ? oldPrice.toPlainString() : "null"));
+                    log.setNewValue("price=" + (p.getBasePrice() != null ? p.getBasePrice().toPlainString() : "null"));
+                    log.setReason("Cap nhat gia san pham");
+                    log.setIpAddress("local");
+                    log.setDeviceInfo(System.getProperty("os.name") + " | Java " + System.getProperty("java.version"));
 
                         int ar = business.sql.rbac.AuditLogSql.getInstance().insertWithConn(con, log);
                         System.out.println("DEBUG AUDIT: rows = " + ar);
