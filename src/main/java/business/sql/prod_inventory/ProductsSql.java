@@ -34,14 +34,20 @@ public class ProductsSql {
      * @throws java.sql.SQLException
      */
     public int subtractStockWithConn(Connection con, String productId, int quantity) throws SQLException {
+        return subtractStockWithConn(con, productId, quantity, null);
+    }
+
+    public int subtractStockWithConn(Connection con, String productId, int quantity, String unitId) throws SQLException {
+        int baseQuantity = ProductUnitsSql.getInstance()
+                .convertToBaseQuantityWithConn(con, productId, unitId, quantity);
         String sql = "UPDATE INVENTORY "
                 + "SET quantity = quantity - ? "
                 + "WHERE product_id = ? AND quantity >= ? AND is_deleted = 0";
 
         try (PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setInt(1, quantity);
+            pst.setInt(1, baseQuantity);
             pst.setString(2, productId);
-            pst.setInt(3, quantity);
+            pst.setInt(3, baseQuantity);
 
             int res = pst.executeUpdate();
             if (res == 0) {
@@ -61,12 +67,18 @@ public class ProductsSql {
      * @throws java.sql.SQLException
      */
     public int addStockWithConn(Connection con, String productId, int quantity) throws SQLException {
+        return addStockWithConn(con, productId, quantity, null);
+    }
+
+    public int addStockWithConn(Connection con, String productId, int quantity, String unitId) throws SQLException {
+        int baseQuantity = ProductUnitsSql.getInstance()
+                .convertToBaseQuantityWithConn(con, productId, unitId, quantity);
         String sql = "UPDATE INVENTORY "
                 + "SET quantity = quantity + ? "
                 + "WHERE product_id = ? AND is_deleted = 0";
 
         try (PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setInt(1, quantity);
+            pst.setInt(1, baseQuantity);
             pst.setString(2, productId);
 
             int res = pst.executeUpdate();
@@ -168,6 +180,7 @@ public class ProductsSql {
                 psInv.setInt(3, p.getQuantity());
                 psInv.setString(4, safeUnit(p));
                 int invRows = psInv.executeUpdate();
+                ProductUnitsSql.getInstance().ensureBaseUnitWithConn(con, p.getProductId(), safeUnit(p));
 
                 // AUDIT INSERT
                 if (prodRows > 0) {
@@ -276,6 +289,7 @@ public class ProductsSql {
 
                 // Ghi audit log khi update product thành công
                 if (prodRows > 0) {
+                    ProductUnitsSql.getInstance().ensureBaseUnitWithConn(con, p.getProductId(), safeUnit(p));
                     model.account.AuditLog log = new model.account.AuditLog();
                     log.setAccountId(
                             business.service.SessionManager.getCurrentUser() != null

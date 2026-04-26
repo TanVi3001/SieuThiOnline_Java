@@ -194,6 +194,13 @@ CREATE TABLE SUPPLIERS
     is_deleted    NUMBER(1) DEFAULT 0
 );
 
+CREATE TABLE UNITS
+(
+    unit_id    VARCHAR2(50) PRIMARY KEY,
+    unit_name  NVARCHAR2(50) NOT NULL,
+    is_deleted NUMBER(1) DEFAULT 0
+);
+
 CREATE TABLE PRODUCTS
 (
     product_id   VARCHAR2(50) PRIMARY KEY,
@@ -201,9 +208,24 @@ CREATE TABLE PRODUCTS
     base_price   NUMBER(15, 2),
     category_id  VARCHAR2(50),
     supplier_id  VARCHAR2(50),
+    base_unit_id VARCHAR2(50),
     is_deleted   NUMBER(1) DEFAULT 0,
     CONSTRAINT FK_PRODUCTS_CATEGORIES FOREIGN KEY (category_id) REFERENCES CATEGORIES (category_id),
-    CONSTRAINT FK_PRODUCTS_SUPPLIERS FOREIGN KEY (supplier_id) REFERENCES SUPPLIERS (supplier_id)
+    CONSTRAINT FK_PRODUCTS_SUPPLIERS FOREIGN KEY (supplier_id) REFERENCES SUPPLIERS (supplier_id),
+    CONSTRAINT FK_PRODUCTS_BASE_UNIT FOREIGN KEY (base_unit_id) REFERENCES UNITS (unit_id)
+);
+
+CREATE TABLE PRODUCT_UNITS
+(
+    product_id              VARCHAR2(50),
+    unit_id                 VARCHAR2(50),
+    conversion_rate_to_base NUMBER(15, 4) NOT NULL,
+    is_base_unit            NUMBER(1) DEFAULT 0,
+    is_deleted              NUMBER(1) DEFAULT 0,
+    PRIMARY KEY (product_id, unit_id),
+    CONSTRAINT FK_PU_PRODUCTS FOREIGN KEY (product_id) REFERENCES PRODUCTS (product_id),
+    CONSTRAINT FK_PU_UNITS FOREIGN KEY (unit_id) REFERENCES UNITS (unit_id),
+    CONSTRAINT CK_PU_CONVERSION_POSITIVE CHECK (conversion_rate_to_base > 0)
 );
 
 CREATE TABLE STORES
@@ -288,10 +310,13 @@ CREATE TABLE ORDER_DETAILS
     order_id        VARCHAR2(50),
     product_id      VARCHAR2(50),
     quantity        NUMBER(10),
+    unit_id         VARCHAR2(50),
+    quantity_base   NUMBER(10),
     unit_price      NUMBER(15, 2),
     is_deleted      NUMBER(1) DEFAULT 0,
     CONSTRAINT FK_OD_ORDERS FOREIGN KEY (order_id) REFERENCES ORDERS (order_id),
-    CONSTRAINT FK_OD_PRODUCTS FOREIGN KEY (product_id) REFERENCES PRODUCTS (product_id)
+    CONSTRAINT FK_OD_PRODUCTS FOREIGN KEY (product_id) REFERENCES PRODUCTS (product_id),
+    CONSTRAINT FK_OD_UNITS FOREIGN KEY (unit_id) REFERENCES UNITS (unit_id)
 );
 
 CREATE TABLE DELIVERY_MANAGEMENT
@@ -429,5 +454,9 @@ INSERT INTO ROLES (role_id, role_name, function_id, can_view, can_add, can_edit,
 VALUES ('R_STAFF_SALE', N'Nhân viên bán hàng', 'F_ORDER', 1, 1, 0, 0, 1);
 INSERT INTO ROLES (role_id, role_name, function_id, can_view, can_add, can_edit, can_delete, can_export)
 VALUES ('R_STAFF_VIEW_PROD', N'Xem sản phẩm', 'F_PROD', 1, 0, 0, 0, 0);
+
+INSERT INTO UNITS (unit_id, unit_name) VALUES ('U_CAI', N'CÃ¡i');
+INSERT INTO UNITS (unit_id, unit_name) VALUES ('U_HOP', N'Há»™p');
+INSERT INTO UNITS (unit_id, unit_name) VALUES ('U_THUNG', N'ThÃ¹ng');
 
 COMMIT;

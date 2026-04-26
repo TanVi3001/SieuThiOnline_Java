@@ -11,13 +11,22 @@ public class OrderDetail {
     private final String productId;
     private final int quantity;
     private final double unitPrice;
+    private final String unitId;
+    private final int quantityInBaseUnit;
     private boolean isDeleted;
 
     public OrderDetail(String orderId, String productId, int quantity, double unitPrice) {
+        this(orderId, productId, quantity, unitPrice, null, 0);
+    }
+
+    public OrderDetail(String orderId, String productId, int quantity, double unitPrice,
+            String unitId, int quantityInBaseUnit) {
         this.orderId = orderId;
         this.productId = productId;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
+        this.unitId = unitId;
+        this.quantityInBaseUnit = quantityInBaseUnit;
         this.isDeleted = false;
     }
 
@@ -36,6 +45,14 @@ public class OrderDetail {
 
     public double getUnitPrice() {
         return unitPrice;
+    }
+
+    public String getUnitId() {
+        return unitId;
+    }
+
+    public int getQuantityInBaseUnit() {
+        return quantityInBaseUnit > 0 ? quantityInBaseUnit : quantity;
     }
     
     public boolean isDeleted() { 

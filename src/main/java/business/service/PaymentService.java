@@ -1,6 +1,7 @@
 package business.service; 
 
 import common.db.DatabaseConnection;
+import business.sql.prod_inventory.ProductUnitsSql;
 import business.sql.prod_inventory.ProductsSql; 
 import business.sql.sales_order.OrdersSql;      // DAO cho hóa đơn
 import business.sql.sales_order.OrderDetailsSql; // DAO cho chi tiết
@@ -25,13 +26,23 @@ public class PaymentService {
 
             // BƯỚC 3: Duyệt danh sách sản phẩm trong giỏ hàng
             for (OrderDetail ct : dsChiTiet) {
+                int baseQuantity = ProductUnitsSql.getInstance()
+                        .convertToBaseQuantityWithConn(con, ct.getProductId(), ct.getUnitId(), ct.getQuantity());
+                OrderDetail detailToSave = new OrderDetail(
+                        ct.getOrderId(),
+                        ct.getProductId(),
+                        ct.getQuantity(),
+                        ct.getUnitPrice(),
+                        ct.getUnitId(),
+                        baseQuantity
+                );
                 // 3.1: Lưu chi tiết hóa đơn
-                int resDetail = OrderDetailsSql.getInstance().insertWithConn(con, ct);
+                int resDetail = OrderDetailsSql.getInstance().insertWithConn(con, detailToSave);
                 if (resDetail <= 0) throw new SQLException("Lỗi lưu chi tiết hóa đơn!");
 
                 // 3.2: Trừ tồn kho sản phẩm
                 // Lấy số lượng hiện tại - số lượng bán
-                int resUpdateStock = ProductsSql.getInstance().subtractStockWithConn(con, ct.getProductId(), ct.getQuantity());
+                int resUpdateStock = ProductsSql.getInstance().subtractStockWithConn(con, ct.getProductId(), baseQuantity);
                 if (resUpdateStock <= 0) throw new SQLException("Lỗi trừ tồn kho cho SP: " + ct.getProductId());
             }
 
@@ -75,7 +86,7 @@ public class PaymentService {
             // 1. Hoàn lại kho
             List<OrderDetail> dsChiTiet = OrderDetailsSql.getInstance().selectByOrderId(orderId);
             for (OrderDetail ct : dsChiTiet) {
-                int resAddStock = ProductsSql.getInstance().addStockWithConn(con, ct.getProductId(), ct.getQuantity());
+                int resAddStock = ProductsSql.getInstance().addStockWithConn(con, ct.getProductId(), ct.getQuantityInBaseUnit());
                 if (resAddStock <= 0) throw new SQLException("Lỗi hoàn kho cho SP: " + ct.getProductId());
             }
 

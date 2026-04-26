@@ -12,6 +12,7 @@ public class Product {
     private BigDecimal basePrice;
     private String categoryId;
     private String supplierId;
+    private String baseUnitId;
     private int isDeleted;
     private int quantity;
 
@@ -87,6 +88,14 @@ public class Product {
 
     public void setSupplierId(String supplierId) {
         this.supplierId = supplierId;
+    }
+
+    public String getBaseUnitId() {
+        return baseUnitId;
+    }
+
+    public void setBaseUnitId(String baseUnitId) {
+        this.baseUnitId = baseUnitId;
     }
 
     public int getIsDeleted() {
