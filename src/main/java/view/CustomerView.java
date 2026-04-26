@@ -33,9 +33,165 @@ public class CustomerView extends javax.swing.JPanel {
         initEvents();
         initTableModel();
         loadDataToTable();
+        setupModernUI();
 
         this.revalidate();
         this.repaint();
+    }
+    
+    private void setupModernUI() {
+        // ── Màu chủ đạo ─────────────────────────────────────────────────────────
+        java.awt.Color navy    = new java.awt.Color(26, 43, 74);
+        java.awt.Color teal    = new java.awt.Color(0, 168, 140);
+        java.awt.Color red     = new java.awt.Color(211, 60, 60);
+        java.awt.Color yellow  = new java.awt.Color(230, 180, 50);
+        java.awt.Color bgField = new java.awt.Color(245, 247, 250);
+        java.awt.Color border  = new java.awt.Color(218, 224, 232);
+
+        // ── Panel TOP – thanh tìm kiếm ──────────────────────────────────────────
+        pnTop.removeAll();
+        pnTop.setLayout(new java.awt.BorderLayout(8, 0));
+        pnTop.setBackground(new java.awt.Color(240, 242, 245));
+        pnTop.setPreferredSize(new java.awt.Dimension(0, 52));
+        pnTop.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+            javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, border),
+            javax.swing.BorderFactory.createEmptyBorder(8, 16, 8, 16)
+        ));
+        jTextField1.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+        jTextField1.setBackground(java.awt.Color.WHITE);
+        jTextField1.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+            new javax.swing.border.LineBorder(border, 1, true),
+            javax.swing.BorderFactory.createEmptyBorder(5, 12, 5, 12)
+        ));
+        jTextField1.putClientProperty("JTextField.placeholderText", "Tìm kiếm khách hàng...");
+        styleButtonRound(btnSearch, teal, java.awt.Color.WHITE);
+        pnTop.add(jTextField1, java.awt.BorderLayout.CENTER);
+        pnTop.add(btnSearch, java.awt.BorderLayout.EAST);
+        pnTop.revalidate();
+        pnTop.repaint();
+        // ── Panel TRÁI – form nhập liệu ─────────────────────────────────────────
+        pnIn4Customer.setBackground(java.awt.Color.WHITE);
+        pnIn4Customer.setOpaque(true);
+        pnIn4Customer.setPreferredSize(new java.awt.Dimension(260, 0));
+        pnIn4Customer.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+            javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1, border),
+            javax.swing.BorderFactory.createEmptyBorder(16, 6, 16, 16)
+        ));
+
+        // Label style
+        java.awt.Font labelFont = new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12);
+        for (java.awt.Component c : pnIn4Customer.getComponents()) {
+            if (c instanceof javax.swing.JLabel lbl) {
+                lbl.setFont(labelFont);
+                lbl.setForeground(navy);
+            }
+        }
+
+        // Textfield style – đồng đều nhau
+        javax.swing.JTextField[] inputs = {txtCustomerID, txtCustomerName, txtPhone, txtEmail, txtAddress};
+        for (javax.swing.JTextField f : inputs) {
+            f.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+            f.setBackground(bgField);
+            f.setForeground(new java.awt.Color(44, 62, 80));
+            f.setPreferredSize(new java.awt.Dimension(220, 34));
+            f.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 34));
+            f.setMinimumSize(new java.awt.Dimension(100, 34));
+            f.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                new javax.swing.border.LineBorder(border, 1, true),
+                javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 10)
+            ));
+        }
+
+        // ── Panel BOTTOM – nút bấm ──────────────────────────────────────────────
+        pnButton.setBackground(new java.awt.Color(240, 242, 245));
+        pnButton.setPreferredSize(new java.awt.Dimension(0, 58));
+        pnButton.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+            javax.swing.BorderFactory.createMatteBorder(1, 0, 0, 0, border),
+            javax.swing.BorderFactory.createEmptyBorder(10, 16, 10, 16)
+        ));
+
+        styleButtonRound(btnThem, navy, java.awt.Color.WHITE);
+        styleButtonRound(btnCapNhat, teal, java.awt.Color.WHITE);
+        styleButtonRound(btnXoa, red, java.awt.Color.WHITE);
+        styleButtonRound(btnLamMoi, yellow, navy);
+
+        // ── Bảng jTable1 ────────────────────────────────────────────────────────
+        jTable1.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+        jTable1.setRowHeight(34);
+        jTable1.setGridColor(border);
+        jTable1.setSelectionBackground(new java.awt.Color(210, 220, 235));
+        jTable1.setSelectionForeground(navy);
+        jTable1.setShowHorizontalLines(true);
+        jTable1.setShowVerticalLines(false);
+        jTable1.setIntercellSpacing(new java.awt.Dimension(0, 1));
+        jTable1.setFillsViewportHeight(true);
+
+        // Header
+        javax.swing.table.JTableHeader header = jTable1.getTableHeader();
+        header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 38));
+        header.setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public java.awt.Component getTableCellRendererComponent(
+                    javax.swing.JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int col) {
+                javax.swing.JLabel lbl = (javax.swing.JLabel)
+                    super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+                lbl.setBackground(navy);
+                lbl.setForeground(java.awt.Color.WHITE);
+                lbl.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
+                lbl.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 12, 0, 12));
+                lbl.setOpaque(true);
+                return lbl;
+            }
+        });
+
+        // Alternate row
+        jTable1.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public java.awt.Component getTableCellRendererComponent(
+                    javax.swing.JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int col) {
+                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+                setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 12, 0, 12));
+                if (isSelected) {
+                    setBackground(new java.awt.Color(210, 220, 235));
+                    setForeground(navy);
+                } else {
+                    setBackground(row % 2 == 0 ? java.awt.Color.WHITE : new java.awt.Color(248, 250, 252));
+                    setForeground(new java.awt.Color(44, 62, 80));
+                }
+                return this;
+            }
+        });
+
+        this.revalidate();
+        this.repaint();
+    }
+
+    private void styleButtonRound(javax.swing.JButton btn, java.awt.Color bg, java.awt.Color fg) {
+        btn.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
+        btn.setForeground(fg);
+        btn.setFocusPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        btn.setOpaque(false);
+        btn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btn.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 22, 8, 22));
+
+        java.awt.Color hover = bg.darker();
+        btn.setUI(new javax.swing.plaf.basic.BasicButtonUI() {
+            @Override
+            public void paint(java.awt.Graphics g, javax.swing.JComponent c) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
+                        java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                java.awt.Color cur = btn.getModel().isRollover() ? hover : bg;
+                g2.setColor(cur);
+                g2.fillRoundRect(0, 0, c.getWidth(), c.getHeight(), 20, 20);
+                g2.dispose();
+                super.paint(g, c);
+            }
+        });
     }
 
     // =========================
@@ -281,7 +437,7 @@ public class CustomerView extends javax.swing.JPanel {
                 .addGap(0, 0, 0)
                 .addComponent(Address, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -342,19 +498,19 @@ public class CustomerView extends javax.swing.JPanel {
         pnTopLayout.setHorizontalGroup(
             pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnTopLayout.createSequentialGroup()
-                .addContainerGap(280, Short.MAX_VALUE)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 590, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnSearch)
-                .addGap(16, 16, 16))
+                .addContainerGap(479, Short.MAX_VALUE)
+                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 401, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(17, 17, 17))
         );
         pnTopLayout.setVerticalGroup(
             pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnTopLayout.createSequentialGroup()
-                .addContainerGap(11, Short.MAX_VALUE)
+                .addGap(9, 9, 9)
                 .addGroup(pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSearch))
+                    .addComponent(btnSearch)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
