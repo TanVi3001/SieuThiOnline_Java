@@ -35,6 +35,10 @@ public class LoginView extends javax.swing.JFrame {
     private void setupModernUI() {
         // ── 1. Dọn dẹp & set layout tổng ────────────────────────────────────────
         this.getContentPane().removeAll();
+        
+        this.getContentPane().setLayout(null);
+        this.getContentPane().invalidate();
+    
         this.getContentPane().setLayout(new java.awt.BorderLayout());
 
         // ── 2. PANEL TRÁI – minh họa siêu thị tối ───────────────────────────────
@@ -330,11 +334,14 @@ public class LoginView extends javax.swing.JFrame {
 
         // ── 3. PANEL PHẢI – form đăng nhập ──────────────────────────────────────
         javax.swing.JPanel rightOuter = new javax.swing.JPanel(new java.awt.GridBagLayout());
+        rightOuter.setPreferredSize(new java.awt.Dimension(400, 480));
         rightOuter.setBackground(java.awt.Color.WHITE);
 
         javax.swing.JPanel card = new javax.swing.JPanel(null);
         card.setBackground(java.awt.Color.WHITE);
         card.setPreferredSize(new java.awt.Dimension(400, 480));
+        card.setMinimumSize(new java.awt.Dimension(400, 480));
+        card.setMaximumSize(new java.awt.Dimension(400, 480));
 
         // ── Thanh gradient bên trái card ──────────────────────────────────────
         javax.swing.JPanel accentBar = new javax.swing.JPanel() {
@@ -473,7 +480,7 @@ public class LoginView extends javax.swing.JFrame {
         btnGradientLogin.setBorderPainted(false);
         btnGradientLogin.setFocusPainted(false);
         btnGradientLogin.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        // btnGradientLogin.addActionListener(evt -> btnLoginActionPerformed(null));
+        btnGradientLogin.addActionListener(evt -> btnLoginActionPerformed(null));
         card.add(btnGradientLogin);
 
         // ── Link "Chưa có tài khoản?" ─────────────────────────────────────────
@@ -492,7 +499,7 @@ public class LoginView extends javax.swing.JFrame {
         });
         card.add(lblRegisterLink);
 
-        // ── Nhóm IS216.Q22 ────────────────────────────────────────────────────
+        // ── Nhóm 12 - IS216.Q22 ────────────────────────────────────────────────────
         javax.swing.JLabel lblTeam = new javax.swing.JLabel("Nhóm 12 - IS216.Q22");
         lblTeam.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 11));
         lblTeam.setForeground(new java.awt.Color(176,190,197));
@@ -501,12 +508,19 @@ public class LoginView extends javax.swing.JFrame {
         card.add(lblTeam);
 
         // ── Gắn vào layout ────────────────────────────────────────────────────
-        rightOuter.add(card, new java.awt.GridBagConstraints());
+        java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = java.awt.GridBagConstraints.CENTER;
+        gbc.fill = java.awt.GridBagConstraints.NONE;
+        rightOuter.add(card, gbc);
 
         this.getContentPane().add(leftPanel,  java.awt.BorderLayout.WEST);
         this.getContentPane().add(rightOuter, java.awt.BorderLayout.CENTER);
 
-        this.setSize(900, 550);
+        this.pack(); // reset lại pack cũ
+        this.setSize(960, 580);
+        this.setMinimumSize(new java.awt.Dimension(960, 580));
         this.setLocationRelativeTo(null);
         this.revalidate();
         this.repaint();
