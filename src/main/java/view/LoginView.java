@@ -733,7 +733,7 @@ public class LoginView extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnLoginActionPerformed
+    private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {                                         
         // 1. Lấy dữ liệu
         String user = txtUsername.getText().trim();
         String pass = new String(txtPassword.getPassword());
@@ -748,21 +748,28 @@ public class LoginView extends javax.swing.JFrame {
         }
 
         try {
-            // 3. Authenticate: giờ trả về Account (null nếu fail)
+            // 3. Authenticate: Lấy thông tin Account kèm RoleID
             model.account.Account acc = business.service.LoginService.authenticate(user, pass);
 
             if (acc != null) {
                 // --- ĐĂNG NHẬP THÀNH CÔNG ---
-                javax.swing.JOptionPane.showMessageDialog(this,
-                        "Chào mừng " + acc.getUsername() + "! Bạn đã đăng nhập thành công.",
-                        "Thông báo",
-                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                String roleId = acc.getRole(); // Lấy role_id (R_ADMIN_ALL, R_STORE_MNG...)
 
-                // 4. Mở Dashboard
+                // 4. Điều hướng Dashboard dựa trên Role
                 java.awt.EventQueue.invokeLater(() -> {
-                    DashboardView mainScreen = new DashboardView();
-                    mainScreen.setVisible(true);
-                    mainScreen.setLocationRelativeTo(null);
+                    if ("R_ADMIN_ALL".equals(roleId)) {
+                        // Nếu là Admin tổng -> Mở Portal đen
+                        AdminDashboardView adminScreen = new AdminDashboardView();
+                        adminScreen.setVisible(true);
+                        adminScreen.setLocationRelativeTo(null);
+                        System.out.println("DEBUG: Mở Admin Dashboard cho " + user);
+                    } else {
+                        // Nếu là Manager hoặc Staff -> Mở Dashboard nghiệp vụ cửa hàng
+                        DashboardView mainScreen = new DashboardView();
+                        mainScreen.setVisible(true);
+                        mainScreen.setLocationRelativeTo(null);
+                        System.out.println("DEBUG: Mở Store Dashboard cho " + user);
+                    }
                 });
 
                 // 5. Đóng màn hình Login
@@ -784,7 +791,6 @@ public class LoginView extends javax.swing.JFrame {
                     javax.swing.JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         } finally {
-            // Xoá mảng char để hạn chế lưu mật khẩu trong RAM lâu
             java.util.Arrays.fill(txtPassword.getPassword(), '\0');
         }
     }
