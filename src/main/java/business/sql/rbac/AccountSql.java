@@ -142,6 +142,7 @@ public class AccountSql implements SqlInterface<Account> {
 
     /**
      * SỬA ĐỔI 2: Tự động phân loại quyền Admin/Store Manager dựa trên username
+     * tài khoản đăng kí đầu tiên là tk admin, còn những lần sau mặc định là nhân viên, muốn đổi quyền thì Admin vào Account Assign Role chỉnh
      */
     public boolean register(String fullName, String email, String phone, String username, String rawPassword) {
         String userId = "USR" + (System.currentTimeMillis() % 1000000);
@@ -156,6 +157,18 @@ public class AccountSql implements SqlInterface<Account> {
         try {
             con = DatabaseConnection.getConnection();
             con.setAutoCommit(false);
+
+            // =======================================================
+            // 1. KIỂM TRA XEM ĐÂY CÓ PHẢI LÀ NGƯỜI ĐẦU TIÊN KHÔNG?
+            // =======================================================
+            boolean isFirstUser = false;
+            String sqlCount = "SELECT COUNT(*) FROM ACCOUNTS";
+            try (PreparedStatement pstCount = con.prepareStatement(sqlCount);
+                 ResultSet rsCount = pstCount.executeQuery()) {
+                if (rsCount.next() && rsCount.getInt(1) == 0) {
+                    isFirstUser = true; // DB đang trống rỗng, đây là người khai thiên lập địa!
+                }
+            }
 
             // Check trùng username
             try (PreparedStatement pstCheckUser = con.prepareStatement(sqlCheckUser)) {
@@ -191,15 +204,12 @@ public class AccountSql implements SqlInterface<Account> {
                 pstAcc.setString(4, passwordHash);
                 pstAcc.executeUpdate();
 
-                // --- LOGIC PHÂN QUYỀN TỰ ĐỘNG DÁN VÀO ĐÂY ---
-                String roleId = "R_STAFF_SALE"; 
-                String lowerUser = username.toLowerCase();
-                
-                if (lowerUser.contains("admin")) {
-                    roleId = "R_ADMIN_ALL"; 
-                } else if (lowerUser.contains("store_manager")) {
-                    roleId = "R_STORE_MNG"; 
-                }
+                // =======================================================
+                // 2. GÁN QUYỀN THÔNG MINH
+                // =======================================================
+                // Nếu là người đầu tiên -> Làm Admin
+                // Từ người thứ 2 trở đi -> Bị ép làm Thu ngân
+                String roleId = isFirstUser ? "R_ADMIN_ALL" : "R_CASHIER"; 
 
                 String sqlAssignRole = "INSERT INTO ACCOUNT_ASSIGN_ROLE (account_id, role_id) VALUES (?, ?)";
                 try (PreparedStatement pstRole = con.prepareStatement(sqlAssignRole)) {
