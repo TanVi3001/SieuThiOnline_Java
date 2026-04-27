@@ -24,15 +24,17 @@ public class OrdersSql implements SqlInterface<Order> {
     }
 
     public int insertWithConn(Connection con, Order order) throws SQLException {
-        String sql = "INSERT INTO ORDERS (order_id, customer_id, employee_id, order_date, total_amount, status) "
-                + "VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO ORDERS (order_id, customer_id, employee_id, payment_method_id, order_date, total_amount, status, note) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1, order.getOrderId());
             pst.setString(2, order.getCustomerId());
             pst.setString(3, order.getEmployeeId());
-            pst.setDate(4, order.getOrderDate());
-            pst.setDouble(5, order.getTotalAmount());
-            pst.setString(6, order.getStatus());
+            pst.setString(4, order.getPaymentMethodId());
+            pst.setDate(5, order.getOrderDate());
+            pst.setDouble(6, order.getTotalAmount());
+            pst.setString(7, order.getStatus());
+            pst.setString(8, order.getNote());
             return pst.executeUpdate();
         }
     }
@@ -130,6 +132,13 @@ public class OrdersSql implements SqlInterface<Order> {
 
     @Override
     public List<Order> selectByCondition(String condition) {
+        if (condition == null
+                || condition.isBlank()
+                || "Tat ca".equalsIgnoreCase(condition)
+                || "Tất cả".equalsIgnoreCase(condition)) {
+            return selectAll();
+        }
+
         ArrayList<Order> list = new ArrayList<>();
         String sql = "SELECT * FROM ORDERS "
                 + "WHERE NVL(is_deleted, 0) = 0 AND UPPER(status) = UPPER(?) "

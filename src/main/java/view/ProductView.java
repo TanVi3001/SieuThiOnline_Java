@@ -457,9 +457,23 @@ public class ProductView extends javax.swing.JPanel {
         }
         String id = tblProducts.getValueAt(row, 0).toString();
         if (JOptionPane.showConfirmDialog(this, "Xóa sản phẩm " + id + "?") == JOptionPane.YES_OPTION) {
+            boolean usedInOrders = ProductsSql.getInstance().isUsedInOrders(id);
             if (ProductsSql.getInstance().delete(id)) {
+                if (usedInOrders) {
+                    JOptionPane.showMessageDialog(this,
+                            "Sản phẩm đã có trong hóa đơn nên hệ thống chỉ ẩn sản phẩm khỏi kho/danh sách bán.",
+                            "Đã ẩn sản phẩm",
+                            JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Xóa mềm sản phẩm thành công!");
+                }
                 loadDataToTable();
                 btnClearActionPerformed(null);
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Không thể xóa sản phẩm. Có thể sản phẩm đã bị ẩn hoặc không còn tồn tại.",
+                        "Lỗi",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_btnDeleteActionPerformed

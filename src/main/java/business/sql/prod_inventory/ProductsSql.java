@@ -390,6 +390,23 @@ public class ProductsSql {
         }
     }
 
+    public boolean isUsedInOrders(String productId) {
+        String sql = "SELECT COUNT(*) FROM ORDER_DETAILS "
+                + "WHERE product_id = ? AND NVL(is_deleted, 0) = 0";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("Loi ProductsSql.isUsedInOrders: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     /**
      * Tìm kiếm theo tên
      *

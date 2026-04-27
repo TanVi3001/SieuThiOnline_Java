@@ -1,4 +1,4 @@
-package business.service; 
+﻿package business.service; 
 
 import common.db.DatabaseConnection;
 import business.sql.prod_inventory.ProductUnitsSql;
@@ -82,6 +82,11 @@ public class PaymentService {
             Order order = OrdersSql.getInstance().selectById(orderId);
             if (order == null) throw new SQLException("Không tìm thấy đơn hàng!");
             String oldStatus = order.getStatus();
+
+            // Guard: Khong cho phep huy don da CANCELLED de tranh hoan kho nhieu lan
+            if ("CANCELLED".equalsIgnoreCase(oldStatus)) {
+                throw new SQLException("Don hang " + orderId + " da o trang thai CANCELLED. Khong the huy lai.");
+            }
 
             // 1. Hoàn lại kho
             List<OrderDetail> dsChiTiet = OrderDetailsSql.getInstance().selectByOrderId(orderId);
