@@ -42,7 +42,8 @@ public class OrderDetailsSql implements SqlInterface<OrderDetail> {
      */
     public int insertWithConn(Connection con, OrderDetail ct) throws SQLException {
     // FIX: Thêm cột order_detail_id vào câu lệnh SQL
-    String sql = "INSERT INTO ORDER_DETAILS (order_detail_id, order_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?, ?)";
+    String sql = "INSERT INTO ORDER_DETAILS (order_detail_id, order_id, product_id, quantity, unit_price, unit_id, quantity_base) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     try (PreparedStatement pst = con.prepareStatement(sql)) {
         // Tự động tạo một cái mã ID ngẫu nhiên (ví dụ: DET-12345...)
@@ -53,10 +54,31 @@ public class OrderDetailsSql implements SqlInterface<OrderDetail> {
         pst.setString(3, ct.getProductId());
         pst.setInt(4, ct.getQuantity());
         pst.setDouble(5, ct.getUnitPrice());
+        pst.setString(6, ct.getUnitId());
+        pst.setInt(7, ct.getQuantityInBaseUnit());
 
         return pst.executeUpdate();
+    } catch (SQLException e) {
+        if (e.getErrorCode() == 904) {
+            return insertLegacyWithConn(con, ct);
+        }
+        throw e;
     }
 }
+
+    private int insertLegacyWithConn(Connection con, OrderDetail ct) throws SQLException {
+        String sql = "INSERT INTO ORDER_DETAILS (order_detail_id, order_id, product_id, quantity, unit_price) "
+                + "VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement pst = con.prepareStatement(sql)) {
+            String randomId = "DET-" + java.util.UUID.randomUUID().toString().substring(0, 8);
+            pst.setString(1, randomId);
+            pst.setString(2, ct.getOrderId());
+            pst.setString(3, ct.getProductId());
+            pst.setInt(4, ct.getQuantity());
+            pst.setDouble(5, ct.getUnitPrice());
+            return pst.executeUpdate();
+        }
+    }
 
     @Override
     public int insert(OrderDetail t) {
@@ -83,7 +105,9 @@ public class OrderDetailsSql implements SqlInterface<OrderDetail> {
                             rs.getString("order_id"),
                             rs.getString("product_id"),
                             rs.getInt("quantity"),
-                            rs.getDouble("unit_price")
+                            rs.getDouble("unit_price"),
+                            getNullableString(rs, "unit_id"),
+                            getNullableInt(rs, "quantity_base")
                     );
                     ds.add(ct);
                 }
@@ -97,7 +121,7 @@ public class OrderDetailsSql implements SqlInterface<OrderDetail> {
     public List<Map<String, Object>> selectDetailRowsByOrderId(String orderId) {
         List<Map<String, Object>> rows = new ArrayList<>();
         String sql = "SELECT od.order_detail_id, od.order_id, od.product_id, "
-                + "       p.product_name, od.quantity, od.unit_price, "
+                + "       p.product_name, od.quantity, od.unit_price, od.unit_id, od.quantity_base, "
                 + "       (od.quantity * od.unit_price) AS line_total "
                 + "FROM ORDER_DETAILS od "
                 + "LEFT JOIN PRODUCTS p ON od.product_id = p.product_id "
@@ -116,6 +140,8 @@ public class OrderDetailsSql implements SqlInterface<OrderDetail> {
                     row.put("product_name", rs.getString("product_name"));
                     row.put("quantity", rs.getInt("quantity"));
                     row.put("unit_price", rs.getDouble("unit_price"));
+                    row.put("unit_id", getNullableString(rs, "unit_id"));
+                    row.put("quantity_base", getNullableInt(rs, "quantity_base"));
                     row.put("line_total", rs.getDouble("line_total"));
                     rows.add(row);
                 }
@@ -142,9 +168,11 @@ public ArrayList<OrderDetail> selectAll() {
             String pId = rs.getString("product_id");
             int qty = rs.getInt("quantity");
             double price = rs.getDouble("unit_price");
+            String unitId = getNullableString(rs, "unit_id");
+            int qtyBase = getNullableInt(rs, "quantity_base");
 
             // Sau đó truyền tất cả vào Constructor duy nhất của OrderDetail
-            OrderDetail ct = new OrderDetail(oId, pId, qty, price);
+            OrderDetail ct = new OrderDetail(oId, pId, qty, price, unitId, qtyBase);
             
             ds.add(ct);
         }
@@ -173,5 +201,21 @@ public ArrayList<OrderDetail> selectAll() {
     @Override
     public List<OrderDetail> selectByCondition(String condition) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    private String getNullableString(ResultSet rs, String column) {
+        try {
+            return rs.getString(column);
+        } catch (SQLException e) {
+            return null;
+        }
+    }
+
+    private int getNullableInt(ResultSet rs, String column) {
+        try {
+            return rs.getInt(column);
+        } catch (SQLException e) {
+            return 0;
+        }
     }
 }

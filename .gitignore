@@ -1,5 +1,6 @@
 # --- JAVA & MAVEN ---
 target/
+.m2/
 *.class
 HELP.md
 

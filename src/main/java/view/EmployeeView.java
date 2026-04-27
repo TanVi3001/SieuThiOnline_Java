@@ -25,6 +25,10 @@ public class EmployeeView extends javax.swing.JPanel {
     private final EmployeeSql employeeSql = new EmployeeSql();
 
     public EmployeeView() {
+        if (!business.service.AuthorizationService.canAccessEmployeeManagement()) {
+            showAccessDenied();
+            return;
+        }
         initComponents();
         initTable();
         initEvents();
@@ -217,6 +221,16 @@ public class EmployeeView extends javax.swing.JPanel {
                 g2.dispose(); super.paint(g, c);
             }
         });
+    }
+
+    private void showAccessDenied() {
+        setLayout(new java.awt.BorderLayout());
+        javax.swing.JLabel message = new javax.swing.JLabel(
+                "Bạn không có quyền truy cập chức năng quản lý nhân viên.",
+                javax.swing.SwingConstants.CENTER
+        );
+        message.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
+        add(message, java.awt.BorderLayout.CENTER);
     }
 
     private void initTable() {

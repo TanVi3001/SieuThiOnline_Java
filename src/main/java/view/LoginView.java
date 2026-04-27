@@ -784,11 +784,9 @@ public class LoginView extends javax.swing.JFrame {
 
             if (acc != null) {
                 // --- ĐĂNG NHẬP THÀNH CÔNG ---
-                String roleId = acc.getRole(); // Lấy role_id (R_ADMIN_ALL, R_STORE_MNG...)
-
                 // 4. Điều hướng Dashboard dựa trên Role
                 java.awt.EventQueue.invokeLater(() -> {
-                    if ("R_ADMIN_ALL".equals(roleId)) {
+                    if (business.service.AuthorizationService.isAdmin(acc)) {
                         // Nếu là Admin tổng -> Mở Portal đen
                         AdminDashboardView adminScreen = new AdminDashboardView();
                         adminScreen.setVisible(true);

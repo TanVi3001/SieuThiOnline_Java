@@ -34,14 +34,20 @@ public class ProductsSql {
      * @throws java.sql.SQLException
      */
     public int subtractStockWithConn(Connection con, String productId, int quantity) throws SQLException {
+        return subtractStockWithConn(con, productId, quantity, null);
+    }
+
+    public int subtractStockWithConn(Connection con, String productId, int quantity, String unitId) throws SQLException {
+        int baseQuantity = ProductUnitsSql.getInstance()
+                .convertToBaseQuantityWithConn(con, productId, unitId, quantity);
         String sql = "UPDATE INVENTORY "
                 + "SET quantity = quantity - ? "
                 + "WHERE product_id = ? AND quantity >= ? AND is_deleted = 0";
 
         try (PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setInt(1, quantity);
+            pst.setInt(1, baseQuantity);
             pst.setString(2, productId);
-            pst.setInt(3, quantity);
+            pst.setInt(3, baseQuantity);
 
             int res = pst.executeUpdate();
             if (res == 0) {
@@ -61,12 +67,18 @@ public class ProductsSql {
      * @throws java.sql.SQLException
      */
     public int addStockWithConn(Connection con, String productId, int quantity) throws SQLException {
+        return addStockWithConn(con, productId, quantity, null);
+    }
+
+    public int addStockWithConn(Connection con, String productId, int quantity, String unitId) throws SQLException {
+        int baseQuantity = ProductUnitsSql.getInstance()
+                .convertToBaseQuantityWithConn(con, productId, unitId, quantity);
         String sql = "UPDATE INVENTORY "
                 + "SET quantity = quantity + ? "
                 + "WHERE product_id = ? AND is_deleted = 0";
 
         try (PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setInt(1, quantity);
+            pst.setInt(1, baseQuantity);
             pst.setString(2, productId);
 
             int res = pst.executeUpdate();
@@ -168,6 +180,7 @@ public class ProductsSql {
                 psInv.setInt(3, p.getQuantity());
                 psInv.setString(4, safeUnit(p));
                 int invRows = psInv.executeUpdate();
+                ProductUnitsSql.getInstance().ensureBaseUnitWithConn(con, p.getProductId(), safeUnit(p));
 
                 // AUDIT INSERT
                 if (prodRows > 0) {
@@ -265,6 +278,7 @@ public class ProductsSql {
 
                 // 3. AUDIT LOG (Bọc Try-Catch riêng để lỡ Log có lỗi thì không chết lây Product)
                 if (prodRows > 0) {
+                    ProductUnitsSql.getInstance().ensureBaseUnitWithConn(con, p.getProductId(), safeUnit(p));
                     try {
                         model.account.AuditLog log = new model.account.AuditLog();
                         log.setAccountId(
@@ -363,6 +377,23 @@ public class ProductsSql {
 
         } catch (SQLException e) {
             System.err.println("Lỗi kết nối/transaction ProductsSql.delete: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean isUsedInOrders(String productId) {
+        String sql = "SELECT COUNT(*) FROM ORDER_DETAILS "
+                + "WHERE product_id = ? AND NVL(is_deleted, 0) = 0";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("Loi ProductsSql.isUsedInOrders: " + e.getMessage());
             e.printStackTrace();
             return false;
         }

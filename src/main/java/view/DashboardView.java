@@ -53,7 +53,8 @@ public final class DashboardView extends javax.swing.JFrame {
         }
 
         // ===== PHÂN QUYỀN THEO USERNAME =====
-        boolean isStaff = "staff".equalsIgnoreCase(username);
+        boolean canAccessEmployee = business.service.AuthorizationService.canAccessEmployeeManagement();
+        boolean canAccessStatistics = business.service.AuthorizationService.canAccessStatistics();
 
         // Sidebar cũ (NetBeans) không dùng nữa
         pnLeft.setVisible(false);
@@ -66,7 +67,7 @@ public final class DashboardView extends javax.swing.JFrame {
         mainContentPanel.setBackground(new java.awt.Color(245, 245, 247));
 
         // Truyền role cho Sidebar mới dựa trên username
-        String roleForSidebar = isStaff ? "STAFF" : "ADMIN";
+        String roleForSidebar = business.service.AuthorizationService.currentRoleForUi();
         view.components.Sidebar newSidebar = new view.components.Sidebar(roleForSidebar);
 
         // Menu click
@@ -81,7 +82,7 @@ public final class DashboardView extends javax.swing.JFrame {
                     break;
 
                 case "Quản lý nhân viên":
-                    if (isStaff) {
+                    if (!canAccessEmployee) {
                         javax.swing.JOptionPane.showMessageDialog(
                                 this,
                                 "Bạn không có quyền truy cập chức năng này!",
@@ -102,7 +103,7 @@ public final class DashboardView extends javax.swing.JFrame {
                     break;
 
                 case "Thống kê":
-                    if (isStaff) {
+                    if (!canAccessStatistics) {
                         javax.swing.JOptionPane.showMessageDialog(
                                 this,
                                 "Bạn không có quyền truy cập chức năng này!",
@@ -165,7 +166,7 @@ public final class DashboardView extends javax.swing.JFrame {
 
             // 3. Thực thi phân quyền
             // Kiểm tra: Nếu KHÔNG PHẢI là Admin thì ẩn nút
-            if (!role.equalsIgnoreCase("ADMIN")) {
+            if (!business.service.AuthorizationService.isAdmin(user)) {
 
                 // Ẩn nút Quản lý nhân viên
                 if (btnEmployee != null) {
@@ -341,6 +342,10 @@ public final class DashboardView extends javax.swing.JFrame {
 
     private void btnStatisticActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnStatisticActionPerformed  
         // TODO add your handling code here:
+        if (!business.service.AuthorizationService.canAccessStatistics()) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Bạn không có quyền truy cập chức năng này!");
+            return;
+        }
         showPanel(new view.StatisticView());// Gọi cái JPanel
     }// GEN-LAST:event_btnStatisticActionPerformed
 
@@ -351,6 +356,10 @@ public final class DashboardView extends javax.swing.JFrame {
 
     private void btnEmployeeActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnEmployeeActionPerformed
         // TODO add your handling code here:
+        if (!business.service.AuthorizationService.canAccessEmployeeManagement()) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Bạn không có quyền truy cập chức năng này!");
+            return;
+        }
         showPanel(new view.EmployeeView());
     }// GEN-LAST:event_btnEmployeeActionPerformed
 

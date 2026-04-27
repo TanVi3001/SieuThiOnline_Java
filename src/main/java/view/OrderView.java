@@ -355,10 +355,15 @@ public class OrderView extends javax.swing.JPanel {
 
     private void cbStatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbStatusActionPerformed
         String selected = cbStatus.getSelectedItem().toString();
-        if (selected.equals(STATUS_ALL)) {
-            try {
+        try {
+            if (selected.equals(STATUS_ALL)) {
+                loadDataToTable();
+            } else {
                 fillTable(OrdersSql.getInstance().selectByCondition(selected));
-            } catch (Exception ex) { ex.printStackTrace(); }
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi lọc hóa đơn: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_cbStatusActionPerformed
 
