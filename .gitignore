@@ -21,6 +21,9 @@ build/
 # --- VS CODE ---
 .vscode/
 
+# --- CSV ---
+data/*.csv
+
 # --- DATABASE & REPORTS (Bảo vệ file cá nhân) ---
 **/src/main/resources/db/
 *.log

@@ -10,26 +10,45 @@ package view;
  */
 import business.sql.prod_inventory.ProductsSql;
 import common.utils.Validator;
+import java.awt.BorderLayout;
 import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import model.product.Product;
+import view.components.ExportToolbar;
 
 public class ProductView extends javax.swing.JPanel {
 
     /**
      * Creates new form ProductView
      */
+    private ExportToolbar toolbar; // Khai bÃ¡o toolbar á»Ÿ má»©c class Ä‘á»ƒ dá»… truy cáº­p
+
     public ProductView() {
         initComponents();
+
         initTableModel();
         initEvents();
         loadDataToTable();
+
+        // 1. Khá»Ÿi táº¡o ExportToolbar má»›i (chá»©a Auto-Complete ComboBox)
+        toolbar = new ExportToolbar(this);
+        add(toolbar, BorderLayout.PAGE_START);
+
+        // 2. Gáº®N NÃƒO CHO NÃšT TÃŒM KIáº¾M Tá»ª TOOLBAR
+        toolbar.getBtnSearch().addActionListener(e -> {
+            String keyword = toolbar.getSearchText();
+            // Gá»i xuá»‘ng DB Ä‘á»ƒ tÃ¬m danh sÃ¡ch sáº£n pháº©m khá»›p vá»›i tá»« khÃ³a
+            List<Product> filteredList = ProductsSql.getInstance().searchByName(keyword);
+            // Äá»• láº¡i dá»¯ liá»‡u lÃªn báº£ng
+            fillTable(filteredList);
+        });
 
         this.revalidate();
         this.repaint();
@@ -37,7 +56,7 @@ public class ProductView extends javax.swing.JPanel {
 
     private void initTableModel() {
         DefaultTableModel model = new DefaultTableModel(
-                new Object[]{"Mã sản phẩm", "Tên sản phẩm", "Giá", "Số lượng", "Loại sản phẩm"}, 0
+                new Object[]{"MÃ£ sáº£n pháº©m", "TÃªn sáº£n pháº©m", "GiÃ¡", "Sá»‘ lÆ°á»£ng", "Loáº¡i sáº£n pháº©m"}, 0
         ) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -51,7 +70,7 @@ public class ProductView extends javax.swing.JPanel {
         tblProducts.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                ProductView.this.tblProductsMouseClicked(evt); // gọi hàm của class ngoài
+                ProductView.this.tblProductsMouseClicked(evt); // gá»i hÃ m cá»§a class ngoÃ i
             }
         });
     }
@@ -72,17 +91,17 @@ public class ProductView extends javax.swing.JPanel {
 
     private boolean validateInput() {
         if (Validator.isEmpty(txtName.getText())) {
-            JOptionPane.showMessageDialog(this, "Tên sản phẩm không được rỗng!");
+            JOptionPane.showMessageDialog(this, "TÃªn sáº£n pháº©m khÃ´ng Ä‘Æ°á»£c rá»—ng!");
             return false;
         }
         if (!Validator.isPositiveInteger(txtQuantity.getText())) {
-            JOptionPane.showMessageDialog(this, "Số lượng phải là số nguyên dương!");
+            JOptionPane.showMessageDialog(this, "Sá»‘ lÆ°á»£ng pháº£i lÃ  sá»‘ nguyÃªn dÆ°Æ¡ng!");
             return false;
         }
         try {
             BigDecimal bigDecimal = new BigDecimal(txtPrice.getText());
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Giá không hợp lệ!");
+            JOptionPane.showMessageDialog(this, "GiÃ¡ khÃ´ng há»£p lá»‡!");
             return false;
         }
         return true;
@@ -97,19 +116,19 @@ public class ProductView extends javax.swing.JPanel {
         String categoryId = txtCategory.getText().trim();
 
         if (name.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Tên sản phẩm không được rỗng!");
+            javax.swing.JOptionPane.showMessageDialog(this, "TÃªn sáº£n pháº©m khÃ´ng Ä‘Æ°á»£c rá»—ng!");
             return null;
         }
         if (priceText.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Giá không được rỗng!");
+            javax.swing.JOptionPane.showMessageDialog(this, "GiÃ¡ khÃ´ng Ä‘Æ°á»£c rá»—ng!");
             return null;
         }
         if (qtyText.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Số lượng không được rỗng!");
+            javax.swing.JOptionPane.showMessageDialog(this, "Sá»‘ lÆ°á»£ng khÃ´ng Ä‘Æ°á»£c rá»—ng!");
             return null;
         }
         if (categoryId.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Loại sản phẩm (category_id) không được rỗng!");
+            javax.swing.JOptionPane.showMessageDialog(this, "Loáº¡i sáº£n pháº©m (category_id) khÃ´ng Ä‘Æ°á»£c rá»—ng!");
             return null;
         }
 
@@ -117,7 +136,7 @@ public class ProductView extends javax.swing.JPanel {
             java.math.BigDecimal price = new java.math.BigDecimal(priceText);
             int qty = Integer.parseInt(qtyText);
 
-            // product_id: tự sinh tạm thời
+            // product_id: tá»± sinh táº¡m thá»i
             String productId = "PROD_" + System.currentTimeMillis();
 
             p.setProductId(productId);
@@ -126,14 +145,14 @@ public class ProductView extends javax.swing.JPanel {
             p.setQuantity(qty);
             p.setCategoryId(categoryId);
 
-            // tạm hard-code để qua FK (phải tồn tại trong DB)
+            // táº¡m hard-code Ä‘á»ƒ qua FK (pháº£i tá»“n táº¡i trong DB)
             p.setSupplierId("SUP001");
             p.setStoreId("ST001");
-            p.setUnit("Cái");
+            p.setUnit("CÃ¡i");
 
             return p;
         } catch (Exception e) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Giá/Số lượng không hợp lệ!");
+            javax.swing.JOptionPane.showMessageDialog(this, "GiÃ¡/Sá»‘ lÆ°á»£ng khÃ´ng há»£p lá»‡!");
             return null;
         }
     }
@@ -187,7 +206,7 @@ public class ProductView extends javax.swing.JPanel {
         pnForm.setLayout(new java.awt.GridBagLayout());
 
         ProductName.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        ProductName.setText("Tên sản phẩm");
+        ProductName.setText("TÃªn sáº£n pháº©m");
         ProductName.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -209,7 +228,7 @@ public class ProductView extends javax.swing.JPanel {
         pnForm.add(txtName, gridBagConstraints);
 
         price.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        price.setText("Giá");
+        price.setText("GiÃ¡");
         price.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -229,7 +248,7 @@ public class ProductView extends javax.swing.JPanel {
         pnForm.add(txtPrice, gridBagConstraints);
 
         Quantity.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        Quantity.setText("Số lượng");
+        Quantity.setText("Sá»‘ lÆ°á»£ng");
         Quantity.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -249,7 +268,7 @@ public class ProductView extends javax.swing.JPanel {
         pnForm.add(txtQuantity, gridBagConstraints);
 
         Category.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        Category.setText("Loại sản phẩm");
+        Category.setText("Loáº¡i sáº£n pháº©m");
         Category.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -282,7 +301,7 @@ public class ProductView extends javax.swing.JPanel {
                 {null, null, null, null, null}
             },
             new String [] {
-                "Mã sản phẩm", "Tên sản phẩm", "Giá", "Số lượng", "Loại sản phẩm"
+                "MÃ£ sáº£n pháº©m", "TÃªn sáº£n pháº©m", "GiÃ¡", "Sá»‘ lÆ°á»£ng", "Loáº¡i sáº£n pháº©m"
             }
         ));
         jScrollPane1.setViewportView(tblProducts);
@@ -293,23 +312,23 @@ public class ProductView extends javax.swing.JPanel {
         pnlButton.setPreferredSize(new java.awt.Dimension(0, 60));
 
         btnAdd.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnAdd.setText("Thêm");
+        btnAdd.setText("ThÃªm");
         btnAdd.addActionListener(this::btnAddActionPerformed);
         pnlButton.add(btnAdd);
 
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnUpdate.setText("Cập nhật");
+        btnUpdate.setText("Cáº­p nháº­t");
         btnUpdate.addActionListener(this::btnUpdateActionPerformed);
         pnlButton.add(btnUpdate);
 
         btnDelete.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnDelete.setText("Xóa");
+        btnDelete.setText("XÃ³a");
         btnDelete.addActionListener(this::btnDeleteActionPerformed);
         pnlButton.add(btnDelete);
 
         btnClear.setBackground(new java.awt.Color(255, 255, 204));
         btnClear.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnClear.setText("Làm mới");
+        btnClear.setText("LÃ m má»›i");
         btnClear.addActionListener(this::btnClearActionPerformed);
         pnlButton.add(btnClear);
 
@@ -318,12 +337,14 @@ public class ProductView extends javax.swing.JPanel {
         jPanel1.setBackground(new java.awt.Color(236, 240, 241));
         jPanel1.setPreferredSize(new java.awt.Dimension(877, 35));
 
+        txtSearch.addActionListener(this::txtSearchActionPerformed);
+
         btnSearch.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnSearch.setText("Tìm kiếm");
+        btnSearch.setText("TÃ¬m kiáº¿m");
         btnSearch.addActionListener(this::btnSearchActionPerformed);
 
         btnExportPDF.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnExportPDF.setText("Xuất Execl");
+        btnExportPDF.setText("Xuáº¥t Execl");
         btnExportPDF.addActionListener(this::btnExportPDFActionPerformed);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -363,121 +384,100 @@ public class ProductView extends javax.swing.JPanel {
             return;
         }
 
-        // Nếu chưa có productId thì tự sinh
+        // Náº¿u chÆ°a cÃ³ productId thÃ¬ tá»± sinh
         if (p.getProductId() == null || p.getProductId().trim().isEmpty()) {
             p.setProductId("PROD" + (System.currentTimeMillis() % 1000000));
         }
 
-        // Bắt buộc cho FK (đảm bảo các mã này tồn tại trong DB)
+        // Báº¯t buá»™c cho FK (Ä‘áº£m báº£o cÃ¡c mÃ£ nÃ y tá»“n táº¡i trong DB)
         if (p.getCategoryId() == null || p.getCategoryId().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Loại sản phẩm (category_id) không được rỗng!");
+            JOptionPane.showMessageDialog(this, "Loáº¡i sáº£n pháº©m (category_id) khÃ´ng Ä‘Æ°á»£c rá»—ng!");
             return;
         }
 
         if (p.getSupplierId() == null || p.getSupplierId().trim().isEmpty()) {
-            p.setSupplierId("SUP001"); // tạm mặc định
+            p.setSupplierId("SUP001"); // táº¡m máº·c Ä‘á»‹nh
         }
 
         if (p.getStoreId() == null || p.getStoreId().trim().isEmpty()) {
-            p.setStoreId("ST001"); // tạm mặc định
+            p.setStoreId("ST001"); // táº¡m máº·c Ä‘á»‹nh
         }
 
         if (p.getUnit() == null || p.getUnit().trim().isEmpty()) {
-            p.setUnit("Cái");
+            p.setUnit("CÃ¡i");
         }
 
         boolean ok = ProductsSql.getInstance().insert(p);
 
         if (ok) {
-            JOptionPane.showMessageDialog(this, "Thêm thành công!");
+            JOptionPane.showMessageDialog(this, "ThÃªm thÃ nh cÃ´ng!");
             loadDataToTable();
             btnClearActionPerformed(null);
         } else {
             JOptionPane.showMessageDialog(this,
-                    "Thêm thất bại! Kiểm tra category_id / supplier_id / store_id có tồn tại trong DB.",
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    "ThÃªm tháº¥t báº¡i! Kiá»ƒm tra category_id / supplier_id / store_id cÃ³ tá»“n táº¡i trong DB.",
+                    "Lá»—i", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnAddActionPerformed
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
         int row = tblProducts.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Chọn sản phẩm để cập nhật!");
+            JOptionPane.showMessageDialog(this, "Chá»n dÃ²ng cáº§n sá»­a!");
             return;
         }
 
-        if (!validateInput()) {
-            return;
-        }
-
+        // Láº¥y ID gá»‘c tá»« cá»™t 0 Ä‘á»ƒ lÃ m Ä‘iá»u kiá»‡n WHERE
+        String idOld = tblProducts.getValueAt(row, 0).toString().trim();
         Product p = getProductFromForm();
         if (p == null) {
             return;
         }
 
-        // Giữ nguyên ID của dòng đang chọn
-        String id = tblProducts.getValueAt(row, 0).toString();
-        p.setProductId(id);
+        p.setProductId(idOld); // Ã‰p ID cÅ© vÃ o Ä‘á»ƒ SQL tÃ¬m Ä‘Ãºng dÃ²ng
 
-        // Nếu UI chưa có ô supplier/store thì set mặc định để không lỗi FK
-        if (p.getSupplierId() == null || p.getSupplierId().trim().isEmpty()) {
-            p.setSupplierId("SUP001");
-        }
-        if (p.getStoreId() == null || p.getStoreId().trim().isEmpty()) {
-            p.setStoreId("ST001");
-        }
-        if (p.getUnit() == null || p.getUnit().trim().isEmpty()) {
-            p.setUnit("Cái");
-        }
-
-        int confirm = JOptionPane.showConfirmDialog(
-                this,
-                "Cập nhật sản phẩm " + id + "?",
-                "Xác nhận cập nhật",
-                JOptionPane.YES_NO_OPTION
-        );
-
-        if (confirm == JOptionPane.YES_OPTION) {
-            boolean ok = ProductsSql.getInstance().update(p);
-            if (ok) {
-                JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
-                loadDataToTable();
-                btnClearActionPerformed(null);
-            } else {
-                JOptionPane.showMessageDialog(this, "Cập nhật thất bại!");
-            }
+        if (ProductsSql.getInstance().update(p)) {
+            JOptionPane.showMessageDialog(this, "Cáº­p nháº­t thÃ nh cÃ´ng!");
+            loadDataToTable(); // Äá»’NG Bá»˜ Láº I UI
+        } else {
+            JOptionPane.showMessageDialog(this, "Tháº¥t báº¡i! Check mÃ£ Loáº¡i/GiÃ¡.");
         }
     }//GEN-LAST:event_btnUpdateActionPerformed
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
         int row = tblProducts.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Chọn sản phẩm để xóa!");
+            JOptionPane.showMessageDialog(this, "Chon dong can xoa!");
             return;
         }
+
         String id = tblProducts.getValueAt(row, 0).toString();
-        if (JOptionPane.showConfirmDialog(this, "Xóa sản phẩm " + id + "?") == JOptionPane.YES_OPTION) {
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Xoa san pham " + id + "?",
+                "Xac nhan",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
             boolean usedInOrders = ProductsSql.getInstance().isUsedInOrders(id);
             if (ProductsSql.getInstance().delete(id)) {
                 if (usedInOrders) {
                     JOptionPane.showMessageDialog(this,
-                            "Sản phẩm đã có trong hóa đơn nên hệ thống chỉ ẩn sản phẩm khỏi kho/danh sách bán.",
-                            "Đã ẩn sản phẩm",
+                            "San pham da co trong hoa don nen he thong chi an san pham khoi kho/danh sach ban.",
+                            "Da an san pham",
                             JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(this, "Xóa mềm sản phẩm thành công!");
+                    JOptionPane.showMessageDialog(this, "Xoa mem san pham thanh cong!");
                 }
                 loadDataToTable();
                 btnClearActionPerformed(null);
             } else {
                 JOptionPane.showMessageDialog(this,
-                        "Không thể xóa sản phẩm. Có thể sản phẩm đã bị ẩn hoặc không còn tồn tại.",
-                        "Lỗi",
+                        "Khong the xoa san pham. Co the san pham da bi an hoac khong con ton tai.",
+                        "Loi",
                         JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_btnDeleteActionPerformed
-
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
         txtName.setText("");
         txtPrice.setText("");
@@ -495,20 +495,20 @@ public class ProductView extends javax.swing.JPanel {
     private void btnExportPDFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportPDFActionPerformed
         // TODO add your handling code here:
         try {
-            // 1. Lấy dữ liệu từ bảng
+            // 1. Láº¥y dá»¯ liá»‡u tá»« báº£ng
             List<Map<String, Object>> productList = getAllProductsFromTable();
 
             if (productList.isEmpty()) {
                 javax.swing.JOptionPane.showMessageDialog(this,
-                        "Không có dữ liệu để xuất!",
-                        "Thông báo",
+                        "KhÃ´ng cÃ³ dá»¯ liá»‡u Ä‘á»ƒ xuáº¥t!",
+                        "ThÃ´ng bÃ¡o",
                         javax.swing.JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
 
-            // 2. Chọn nơi lưu file
+            // 2. Chá»n nÆ¡i lÆ°u file
             javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
-            fileChooser.setDialogTitle("Lưu file Excel");
+            fileChooser.setDialogTitle("LÆ°u file Excel");
             fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
             fileChooser.setSelectedFile(new java.io.File("SanPham_" + System.currentTimeMillis() + ".xlsx"));
 
@@ -516,20 +516,20 @@ public class ProductView extends javax.swing.JPanel {
             if (userSelection == javax.swing.JFileChooser.APPROVE_OPTION) {
                 String filePath = fileChooser.getSelectedFile().getAbsolutePath();
 
-                // 3. Gọi service xuất Excel
+                // 3. Gá»i service xuáº¥t Excel
                 common.report.ExcelExporter.exportInventoryFromMap(productList, filePath);
 
-                // 4. Hiển thị thành công
+                // 4. Hiá»ƒn thá»‹ thÃ nh cÃ´ng
                 javax.swing.JOptionPane.showMessageDialog(this,
-                        "✅ Xuất Excel thành công!\nFile: " + filePath,
-                        "Thành công",
+                        "âœ… Xuáº¥t Excel thÃ nh cÃ´ng!\nFile: " + filePath,
+                        "ThÃ nh cÃ´ng",
                         javax.swing.JOptionPane.INFORMATION_MESSAGE);
             }
 
         } catch (Exception ex) {
             javax.swing.JOptionPane.showMessageDialog(this,
-                    "❌ Lỗi xuất Excel: " + ex.getMessage(),
-                    "Lỗi",
+                    "âŒ Lá»—i xuáº¥t Excel: " + ex.getMessage(),
+                    "Lá»—i",
                     javax.swing.JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
         }
@@ -538,6 +538,10 @@ public class ProductView extends javax.swing.JPanel {
     private void txtNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNameActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtNameActionPerformed
+
+    private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSearchActionPerformed
 
     private void tblProductsMouseClicked(java.awt.event.MouseEvent evt) {
         int row = tblProducts.getSelectedRow();
@@ -555,7 +559,7 @@ public class ProductView extends javax.swing.JPanel {
         txtQuantity.setText(qtyObj == null ? "" : qtyObj.toString());
         txtCategory.setText(categoryObj == null ? "" : categoryObj.toString());
     }
-// Helper: lấy tất cả dữ liệu từ JTable
+// Helper: láº¥y táº¥t cáº£ dá»¯ liá»‡u tá»« JTable
 
     private List<Map<String, Object>> getAllProductsFromTable() {
         List<Map<String, Object>> list = new ArrayList<>();
@@ -586,16 +590,38 @@ public class ProductView extends javax.swing.JPanel {
                     p.getProductName(),
                     p.getBasePrice(),
                     p.getQuantity(),
-                    p.getCategoryId() // thêm cột Loại SP
+                    p.getCategoryId() // thÃªm cá»™t Loáº¡i SP
                 };
                 model.addRow(row);
             }
         } catch (Exception e) {
-            System.out.println("Lỗi load bảng: " + e.getMessage());
+            System.out.println("Lá»—i load báº£ng: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
+    public void refreshTable() {
+        // 1. Sá»­a tblSanPham -> tblProducts
+        DefaultTableModel model = (DefaultTableModel) tblProducts.getModel();
+        model.setRowCount(0);
+
+        try {
+            // 2. Gá»i Ä‘Ãºng Instance cá»§a ProductsSql Ä‘á»ƒ láº¥y dá»¯ liá»‡u
+            List<model.product.Product> list = business.sql.prod_inventory.ProductsSql.getInstance().selectAll();
+
+            for (model.product.Product p : list) {
+                model.addRow(new Object[]{
+                    p.getProductId(),
+                    p.getProductName(),
+                    p.getBasePrice(),
+                    p.getQuantity(),
+                    p.getCategoryId() // Sá»­a getCategoryName -> getCategoryId
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel Category;

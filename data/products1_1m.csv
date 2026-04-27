@@ -1,0 +1,6 @@
+product_id,product_name,base_price,category_id,supplier_id
+SP00001,Sữa tươi Vinamilk 180ml,12000.01,CAT002,SUP002
+SP00002,Bánh mì tươi Kinh Đô,15000.00,CAT001,SUP001
+SP00003,Sữa chua TH True Milk,8500.00,CAT002,SUP002
+SP00004,Bánh bao trứng muối,18000.00,CAT001,SUP001
+SP00005,Nước suối Aquafina 500ml,5000.00,CAT001,SUP001

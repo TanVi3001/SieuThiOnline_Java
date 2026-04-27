@@ -245,31 +245,20 @@ public class ProductsSql {
 
             try (PreparedStatement psProd = con.prepareStatement(sqlProduct); PreparedStatement psInv = con.prepareStatement(sqlInventory)) {
 
-                // Lấy giá cũ để log (nếu cần)
-                java.math.BigDecimal oldPrice = null;
-                String sqlOld = "SELECT base_price FROM PRODUCTS WHERE product_id = ? AND is_deleted = 0";
-                try (PreparedStatement psOld = con.prepareStatement(sqlOld)) {
-                    psOld.setString(1, p.getProductId());
-                    try (ResultSet rs = psOld.executeQuery()) {
-                        if (rs.next()) {
-                            oldPrice = rs.getBigDecimal("base_price");
-                        }
-                    }
-                }
-
-                // UPDATE PRODUCTS
-                psProd.setString(1, p.getProductName());
+                // 1. UPDATE PRODUCTS (Thêm .trim() để dọn sạch khoảng trắng thừa)
+                psProd.setString(1, p.getProductName() != null ? p.getProductName().trim() : "");
                 psProd.setBigDecimal(2, p.getBasePrice());
-                psProd.setString(3, p.getCategoryId());
-                psProd.setString(4, p.getSupplierId());
-                psProd.setString(5, p.getProductId());
-                int prodRows = psProd.executeUpdate();
-                System.out.println("DEBUG prodRows = " + prodRows + ", productId=" + p.getProductId());
+                psProd.setString(3, p.getCategoryId() != null ? p.getCategoryId().trim() : "");
+                psProd.setString(4, p.getSupplierId() != null ? p.getSupplierId().trim() : "SUP001");
+                psProd.setString(5, p.getProductId().trim()); // Khóa chính cực kỳ quan trọng
 
-                // UPDATE INVENTORY
+                int prodRows = psProd.executeUpdate();
+                System.out.println("DEBUG UPDATE: prodRows = " + prodRows + ", ID = " + p.getProductId());
+
+                // 2. UPDATE INVENTORY
                 psInv.setInt(1, p.getQuantity());
                 psInv.setString(2, safeUnit(p));
-                psInv.setString(3, p.getProductId());
+                psInv.setString(3, p.getProductId().trim());
                 psInv.setString(4, safeStoreId(p));
                 int invRows = psInv.executeUpdate();
 
@@ -279,7 +268,7 @@ public class ProductsSql {
                             + "(product_id, store_id, quantity, unit, last_updated, is_deleted) "
                             + "VALUES (?, ?, ?, ?, SYSDATE, 0)";
                     try (PreparedStatement psInsInv = con.prepareStatement(insertInv)) {
-                        psInsInv.setString(1, p.getProductId());
+                        psInsInv.setString(1, p.getProductId().trim());
                         psInsInv.setString(2, safeStoreId(p));
                         psInsInv.setInt(3, p.getQuantity());
                         psInsInv.setString(4, safeUnit(p));
@@ -287,34 +276,38 @@ public class ProductsSql {
                     }
                 }
 
-                // Ghi audit log khi update product thành công
+                // 3. AUDIT LOG (Bọc Try-Catch riêng để lỡ Log có lỗi thì không chết lây Product)
                 if (prodRows > 0) {
                     ProductUnitsSql.getInstance().ensureBaseUnitWithConn(con, p.getProductId(), safeUnit(p));
-                    model.account.AuditLog log = new model.account.AuditLog();
-                    log.setAccountId(
-                            business.service.SessionManager.getCurrentUser() != null
-                            ? business.service.SessionManager.getCurrentUser().getAccountId()
-                            : null
-                    );
-                    log.setActionType("UPDATE_PRICE");
-                    log.setEntityType("PRODUCT");
-                    log.setEntityId(p.getProductId());
-                    log.setOldValue("price=" + (oldPrice != null ? oldPrice.toPlainString() : "null"));
-                    log.setNewValue("price=" + (p.getBasePrice() != null ? p.getBasePrice().toPlainString() : "null"));
-                    log.setReason("Cap nhat gia san pham");
-                    log.setIpAddress("local");
-                    log.setDeviceInfo(System.getProperty("os.name") + " | Java " + System.getProperty("java.version"));
+                    try {
+                        model.account.AuditLog log = new model.account.AuditLog();
+                        log.setAccountId(
+                                business.service.SessionManager.getCurrentUser() != null
+                                ? business.service.SessionManager.getCurrentUser().getAccountId()
+                                : null
+                        );
+                        log.setActionType("UPDATE_PRICE");
+                        log.setEntityType("PRODUCT");
+                        log.setEntityId(p.getProductId());
+                        log.setOldValue("Update Action");
+                        log.setNewValue("Price=" + p.getBasePrice());
+                        log.setReason("Cập nhật thông tin");
+                        log.setIpAddress("local");
+                        log.setDeviceInfo("JavaApp");
 
-                    int ar = business.sql.rbac.AuditLogSql.getInstance().insertWithConn(con, log);
-                    System.out.println("DEBUG audit rows = " + ar);
+                        int ar = business.sql.rbac.AuditLogSql.getInstance().insertWithConn(con, log);
+                        System.out.println("DEBUG AUDIT: rows = " + ar);
+                    } catch (Exception auditEx) {
+                        System.err.println("CẢNH BÁO: Lỗi ghi Audit Log, nhưng vẫn cho phép Update DB: " + auditEx.getMessage());
+                    }
                 }
 
                 con.commit();
                 return prodRows > 0;
 
             } catch (Exception e) {
-                con.rollback();
-                System.err.println("Lỗi ProductsSql.update: " + e.getMessage());
+                con.rollback(); // Có lỗi thì lùi lại hết
+                System.err.println("❌ LỖI UPDATE SQL: " + e.getMessage());
                 e.printStackTrace();
                 return false;
             } finally {
@@ -322,8 +315,7 @@ public class ProductsSql {
             }
 
         } catch (SQLException e) {
-            System.err.println("Lỗi kết nối/transaction ProductsSql.update: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Lỗi kết nối/transaction: " + e.getMessage());
             return false;
         }
     }
@@ -520,5 +512,35 @@ public class ProductsSql {
 
         int ar = AuditLogSql.getInstance().insertWithConn(con, log);
         System.out.println("AUDIT PRODUCT rows=" + ar + ", action=" + actionType + ", entityId=" + entityId);
+    }
+
+    public List<String> getSearchSuggestions(String keyword) {
+        List<String> list = new ArrayList<>();
+        String sql;
+
+        // Nếu không gõ gì (Click vào) -> Lấy 15 món ngẫu nhiên/mới nhất
+        if (keyword == null || keyword.trim().isEmpty()) {
+            sql = "SELECT DISTINCT product_name FROM PRODUCTS WHERE is_deleted = 0 AND ROWNUM <= 15";
+        } else {
+            // Nếu có gõ -> Lọc theo từ khóa
+            sql = "SELECT DISTINCT product_name FROM PRODUCTS "
+                    + "WHERE is_deleted = 0 AND LOWER(product_name) LIKE LOWER(?) AND ROWNUM <= 15";
+        }
+
+        try (Connection con = common.db.DatabaseConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                ps.setString(1, "%" + keyword.trim() + "%");
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getString("product_name"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }
