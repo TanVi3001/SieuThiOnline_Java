@@ -22,9 +22,23 @@ public class StatisticView extends javax.swing.JPanel {
      * Creates new form StatisticView
      */
     public StatisticView() {
+        if (!business.service.AuthorizationService.canAccessStatistics()) {
+            showAccessDenied();
+            return;
+        }
         initComponents();
         initStatisticTable();
         loadStatistics();
+    }
+
+    private void showAccessDenied() {
+        setLayout(new java.awt.BorderLayout());
+        javax.swing.JLabel message = new javax.swing.JLabel(
+                "Bạn không có quyền truy cập chức năng thống kê.",
+                javax.swing.SwingConstants.CENTER
+        );
+        message.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
+        add(message, java.awt.BorderLayout.CENTER);
     }
 
     private void initStatisticTable() {
