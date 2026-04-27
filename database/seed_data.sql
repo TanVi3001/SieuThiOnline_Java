@@ -1,49 +1,27 @@
--- ==========================================================
--- 1. XÓA DỮ LIỆU CŨ (Để tránh lỗi trùng khóa khi chạy lại)
--- =-- Xóa theo thứ tự ngược lại của khóa ngoại
--- ==========================================================
-DELETE FROM ACCOUNT_ASSIGN_ROLE_GROUP WHERE account_id IN ('ACC001', 'ACC002');
-DELETE FROM ACCOUNTS WHERE username IN ('admin', 'staff');
-DELETE FROM USERS WHERE email IN ('admin@sieuthionline.local', 'staff@sieuthionline.local');
-DELETE FROM ROLE_GROUPS WHERE role_group_id IN ('RG001', 'RG002');
+-- ==========================================
+-- SCRIPT ĐỒNG BỘ DỮ LIỆU LÕI (BASE DATA)
+-- Dành cho Team chạy trước khi Import 1 triệu dòng
+-- ==========================================
 
--- ---------------------------------------------------------
--- 2) THÊM NHÓM QUYỀN (ROLE_GROUPS)
--- ---------------------------------------------------------
-INSERT INTO ROLE_GROUPS (role_group_id, group_name, is_deleted)
-VALUES ('RG001', 'ADMIN', 0);
+-- 1. TẠO CỬA HÀNG (STORES)
+INSERT INTO STORES (store_id, store_name, address, is_deleted) 
+VALUES ('ST001', N'Siêu thị Trung tâm UIT', N'Làng Đại học Thủ Đức', 0);
 
-INSERT INTO ROLE_GROUPS (role_group_id, group_name, is_deleted)
-VALUES ('RG002', 'STAFF', 0);
+-- 2. TẠO NHÀ CUNG CẤP CHUẨN (SUPPLIERS)
+INSERT INTO SUPPLIERS (supplier_id, supplier_name, is_deleted) VALUES ('SUP001', N'Công ty CP Hàng Tiêu Dùng Masan', 0);
+INSERT INTO SUPPLIERS (supplier_id, supplier_name, is_deleted) VALUES ('SUP002', N'Tập đoàn Suntory PepsiCo', 0);
+INSERT INTO SUPPLIERS (supplier_id, supplier_name, is_deleted) VALUES ('SUP003', N'Unilever Việt Nam', 0);
+INSERT INTO SUPPLIERS (supplier_id, supplier_name, is_deleted) VALUES ('SUP004', N'Vinafood 1', 0);
 
--- ---------------------------------------------------------
--- 3) THÊM THÔNG TIN NGƯỜI DÙNG (USERS)
--- ---------------------------------------------------------
-INSERT INTO USERS (user_id, full_name, email, phone_number, is_deleted)
-VALUES ('U001', 'System Admin', 'admin@sieuthionline.local', '0900000001', 0);
+-- 3. TẠO DANH MỤC THỰC TẾ (CATEGORIES) - Đúng scope của Vĩ
+INSERT INTO CATEGORIES (category_id, category_name, description, is_deleted) 
+VALUES ('CAT001', N'Thực phẩm khô', N'Gạo, mì, đường, gia vị', 0);
 
-INSERT INTO USERS (user_id, full_name, email, phone_number, is_deleted)
-VALUES ('U002', 'Store Staff', 'staff@sieuthionline.local', '0900000002', 0);
+INSERT INTO CATEGORIES (category_id, category_name, description, is_deleted) 
+VALUES ('CAT002', N'Đồ uống & Giải khát', N'Nước suối, nước ngọt, trà', 0);
 
--- ---------------------------------------------------------
--- 4) THÊM TÀI KHOẢN (ACCOUNTS)
--- Mật khẩu để '123' cho ông dễ test, vì code chưa có Bcrypt
--- ---------------------------------------------------------
-INSERT INTO ACCOUNTS (account_id, user_id, username, password, status, is_deleted)
-VALUES ('ACC001', 'U001', 'admin', '123', 'ACTIVE', 0);
+INSERT INTO CATEGORIES (category_id, category_name, description, is_deleted) 
+VALUES ('CAT003', N'Hàng tiêu dùng cá nhân', N'Dầu gội, sữa tắm, kem đánh răng', 0);
 
-INSERT INTO ACCOUNTS (account_id, user_id, username, password, status, is_deleted)
-VALUES ('ACC002', 'U002', 'staff', '123', 'ACTIVE', 0);
-
--- ---------------------------------------------------------
--- 5) GÁN QUYỀN VÀO NHÓM (ACCOUNT_ASSIGN_ROLE_GROUP)
--- Theo Schema của ông, đây là bảng trung gian để phân quyền
--- ---------------------------------------------------------
-INSERT INTO ACCOUNT_ASSIGN_ROLE_GROUP (account_id, role_group_id, is_deleted)
-VALUES ('ACC001', 'RG001', 0);
-
-INSERT INTO ACCOUNT_ASSIGN_ROLE_GROUP (account_id, role_group_id, is_deleted)
-VALUES ('ACC002', 'RG002', 0);
-
--- Kết thúc bằng COMMIT để lưu dữ liệu thật vào DB
+-- CHỐT SỔ (BẮT BUỘC)
 COMMIT;
