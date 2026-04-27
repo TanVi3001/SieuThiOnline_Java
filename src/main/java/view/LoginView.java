@@ -35,6 +35,10 @@ public class LoginView extends javax.swing.JFrame {
     private void setupModernUI() {
         // ── 1. Dọn dẹp & set layout tổng ────────────────────────────────────────
         this.getContentPane().removeAll();
+        
+        this.getContentPane().setLayout(null);
+        this.getContentPane().invalidate();
+    
         this.getContentPane().setLayout(new java.awt.BorderLayout());
 
         // ── 2. PANEL TRÁI – minh họa siêu thị tối ───────────────────────────────
@@ -329,10 +333,42 @@ public class LoginView extends javax.swing.JFrame {
         leftPanel.setOpaque(true);
 
         // ── 3. PANEL PHẢI – form đăng nhập ──────────────────────────────────────
-        javax.swing.JPanel rightOuter = new javax.swing.JPanel(new java.awt.GridBagLayout());
+        javax.swing.JPanel rightOuter = new javax.swing.JPanel(null) {
+            @Override
+            public void doLayout() {
+                int w = getWidth(), h = getHeight();
+                if (getComponentCount() > 0) {
+                    int cardW = (int)(w * 0.75f);
+                    int cardH = (int)(h * 0.85f);
+                    getComponent(0).setBounds((w-cardW)/2, (h-cardH)/2, cardW, cardH);
+                }
+            }
+        };
         rightOuter.setBackground(java.awt.Color.WHITE);
 
-        javax.swing.JPanel card = new javax.swing.JPanel(null);
+        javax.swing.JPanel card = new javax.swing.JPanel(null){
+            private java.util.Map<java.awt.Component, java.awt.Rectangle> originalBounds = null;
+
+            @Override
+            public void doLayout() {
+                int w = getWidth(), h = getHeight();
+                if (w == 0 || h == 0) return;
+
+                // Lưu bounds gốc 1 lần duy nhất khi size còn là 400x480
+                if (originalBounds == null) {
+                    originalBounds = new java.util.HashMap<>();
+                    for (java.awt.Component c : getComponents())
+                        originalBounds.put(c, c.getBounds());
+                }
+
+                float sx = w / 400f, sy = h / 480f;
+                for (java.awt.Component c : getComponents()) {
+                    java.awt.Rectangle r = originalBounds.get(c);
+                    if (r != null)
+                        c.setBounds((int)(r.x*sx), (int)(r.y*sy), (int)(r.width*sx), (int)(r.height*sy));
+                }
+            }
+        };
         card.setBackground(java.awt.Color.WHITE);
         card.setPreferredSize(new java.awt.Dimension(400, 480));
 
@@ -473,7 +509,7 @@ public class LoginView extends javax.swing.JFrame {
         btnGradientLogin.setBorderPainted(false);
         btnGradientLogin.setFocusPainted(false);
         btnGradientLogin.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        // btnGradientLogin.addActionListener(evt -> btnLoginActionPerformed(null));
+        btnGradientLogin.addActionListener(evt -> btnLoginActionPerformed(null));
         card.add(btnGradientLogin);
 
         // ── Link "Chưa có tài khoản?" ─────────────────────────────────────────
@@ -492,21 +528,30 @@ public class LoginView extends javax.swing.JFrame {
         });
         card.add(lblRegisterLink);
 
-        // ── Nhóm IS216.Q22 ────────────────────────────────────────────────────
+        // ── Nhóm 12 - IS216.Q22 ────────────────────────────────────────────────────
         javax.swing.JLabel lblTeam = new javax.swing.JLabel("Nhóm 12 - IS216.Q22");
         lblTeam.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 11));
         lblTeam.setForeground(new java.awt.Color(176,190,197));
         lblTeam.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblTeam.setBounds(75, 460, 250, 14); 
+        lblTeam.setBounds(75, 415, 250, 14); 
         card.add(lblTeam);
 
         // ── Gắn vào layout ────────────────────────────────────────────────────
-        rightOuter.add(card, new java.awt.GridBagConstraints());
+        /*java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.anchor = java.awt.GridBagConstraints.CENTER;
+        gbc.fill = java.awt.GridBagConstraints.NONE;*/
+        rightOuter.add(card);
 
         this.getContentPane().add(leftPanel,  java.awt.BorderLayout.WEST);
         this.getContentPane().add(rightOuter, java.awt.BorderLayout.CENTER);
 
-        this.setSize(900, 550);
+        this.pack(); // reset lại pack cũ
+        this.setSize(960, 620);
+        //this.setMinimumSize(new java.awt.Dimension(960, 620));
         this.setLocationRelativeTo(null);
         this.revalidate();
         this.repaint();

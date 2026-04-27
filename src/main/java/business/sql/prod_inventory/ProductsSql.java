@@ -52,6 +52,32 @@ public class ProductsSql {
     }
 
     /**
+     * Cộng trả tồn kho trong transaction khi hủy đơn hàng
+     *
+     * @param con
+     * @param productId
+     * @param quantity
+     * @return
+     * @throws java.sql.SQLException
+     */
+    public int addStockWithConn(Connection con, String productId, int quantity) throws SQLException {
+        String sql = "UPDATE INVENTORY "
+                + "SET quantity = quantity + ? "
+                + "WHERE product_id = ? AND is_deleted = 0";
+
+        try (PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setInt(1, quantity);
+            pst.setString(2, productId);
+
+            int res = pst.executeUpdate();
+            if (res == 0) {
+                throw new SQLException("Không tìm thấy sản phẩm để hoàn kho: " + productId);
+            }
+            return res;
+        }
+    }
+
+    /**
      * Lấy toàn bộ sản phẩm + tồn kho (join inventory)
      *
      * @return

@@ -29,6 +29,194 @@ public class EmployeeView extends javax.swing.JPanel {
         initTable();
         initEvents();
         loadDataToTable();
+        setupModernUI();
+    }
+    
+    private void setupModernUI() {
+        java.awt.Color bgLight    = new java.awt.Color(244, 246, 250);
+        java.awt.Color navy       = new java.awt.Color(43, 54, 116);
+        java.awt.Color textGray   = new java.awt.Color(163, 174, 208);
+        java.awt.Color borderGray = new java.awt.Color(230, 235, 241);
+        java.awt.Color bgField    = new java.awt.Color(248, 249, 252);
+        java.awt.Color teal       = new java.awt.Color(0, 168, 140);
+        java.awt.Color red        = new java.awt.Color(220, 53, 69);
+        java.awt.Color yellow     = new java.awt.Color(230, 180, 50);
+
+        // ── Nền tổng ────────────────────────────────────────────────────────────
+        this.setBackground(bgLight);
+        this.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // ── jPanel1 – thanh tìm kiếm ────────────────────────────────────────────
+        jPanel1.removeAll();
+        jPanel1.setLayout(new java.awt.BorderLayout(10, 0));
+        jPanel1.setBackground(bgLight);
+        jPanel1.setPreferredSize(new java.awt.Dimension(0, 56));
+        jPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 12, 0));
+
+        txtSearch.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+        txtSearch.setBackground(java.awt.Color.WHITE);
+        txtSearch.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+            new javax.swing.border.LineBorder(borderGray, 1, true),
+            javax.swing.BorderFactory.createEmptyBorder(0, 14, 0, 14)
+        ));
+        txtSearch.putClientProperty("JTextField.placeholderText", "Tìm kiếm nhân viên...");
+        jPanel1.add(txtSearch, java.awt.BorderLayout.CENTER);
+
+        styleBtn(btnSearch, teal, java.awt.Color.WHITE);
+        btnSearch.setPreferredSize(new java.awt.Dimension(110, 40));
+        jPanel1.add(btnSearch, java.awt.BorderLayout.EAST);
+
+        // ── pnForm – card form trái ─────────────────────────────────────────────
+        pnForm.removeAll();
+        pnForm.setLayout(new java.awt.BorderLayout());
+        pnForm.setBackground(bgLight);
+        pnForm.setPreferredSize(new java.awt.Dimension(260, 0));
+        pnForm.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 12));
+
+        javax.swing.JPanel formCard = new javax.swing.JPanel() {
+            @Override protected void paintComponent(java.awt.Graphics g) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(java.awt.Color.WHITE);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+                g2.dispose(); super.paintComponent(g);
+            }
+        };
+        formCard.setOpaque(false);
+        formCard.setLayout(new javax.swing.BoxLayout(formCard, javax.swing.BoxLayout.Y_AXIS));
+        formCard.setBorder(javax.swing.BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        javax.swing.JLabel lblCardTitle = new javax.swing.JLabel("Thông tin nhân viên");
+        lblCardTitle.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 15));
+        lblCardTitle.setForeground(navy);
+        lblCardTitle.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        lblCardTitle.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 16, 0));
+        formCard.add(lblCardTitle);
+
+        addRow(formCard, "Tên nhân viên", txtEmployeeName, navy, borderGray, bgField);
+        addRow(formCard, "Số điện thoại", txtEmployeePhone, navy, borderGray, bgField);
+        addRow(formCard, "Email", txtEmployeeEmail, navy, borderGray, bgField);
+        addRow(formCard, "Chức vụ", txtEmployeeRole, navy, borderGray, bgField);
+
+        // Giới tính
+        javax.swing.JLabel lblGender = new javax.swing.JLabel("Giới tính");
+        lblGender.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+        lblGender.setForeground(navy);
+        lblGender.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        lblGender.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 0, 6, 0));
+        formCard.add(lblGender);
+
+        javax.swing.JPanel genderPanel = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+        genderPanel.setOpaque(false);
+        genderPanel.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        genderPanel.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 30));
+
+        rdoMale.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+        rdoMale.setForeground(navy); rdoMale.setOpaque(false);
+        rdoFemale.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+        rdoFemale.setForeground(navy); rdoFemale.setOpaque(false);
+        genderPanel.add(rdoMale);
+        genderPanel.add(javax.swing.Box.createHorizontalStrut(16));
+        genderPanel.add(rdoFemale);
+        formCard.add(genderPanel);
+
+        pnForm.add(formCard, java.awt.BorderLayout.CENTER);
+
+        // ── pnButton – nút bấm ──────────────────────────────────────────────────
+        pnButton.setBackground(bgLight);
+        pnButton.setPreferredSize(new java.awt.Dimension(0, 62));
+        pnButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 0, 0, 0));
+        pnButton.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 0));
+
+        styleBtn(btnAdd,    navy,   java.awt.Color.WHITE);
+        styleBtn(btnUpdate, teal,   java.awt.Color.WHITE);
+        styleBtn(btnDelete, red,    java.awt.Color.WHITE);
+        styleBtn(btnClear,  yellow, navy);
+
+        for (javax.swing.JButton b : new javax.swing.JButton[]{btnAdd, btnUpdate, btnDelete, btnClear})
+            b.setPreferredSize(new java.awt.Dimension(110, 40));
+
+        // ── Bảng ────────────────────────────────────────────────────────────────
+        tbEmployee.setBorder(null);
+        tbEmployee.getViewport().setBackground(java.awt.Color.WHITE);
+
+        jTable1.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+        jTable1.setRowHeight(36);
+        jTable1.setGridColor(borderGray);
+        jTable1.setSelectionBackground(new java.awt.Color(210, 220, 235));
+        jTable1.setSelectionForeground(navy);
+        jTable1.setShowHorizontalLines(true);
+        jTable1.setShowVerticalLines(false);
+        jTable1.setIntercellSpacing(new java.awt.Dimension(0, 1));
+        jTable1.setFillsViewportHeight(true);
+
+        javax.swing.table.JTableHeader header = jTable1.getTableHeader();
+        header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 40));
+        header.setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override public java.awt.Component getTableCellRendererComponent(
+                    javax.swing.JTable t, Object v, boolean sel, boolean foc, int row, int col) {
+                javax.swing.JLabel l = (javax.swing.JLabel)
+                    super.getTableCellRendererComponent(t, v, sel, foc, row, col);
+                l.setBackground(navy); l.setForeground(java.awt.Color.WHITE);
+                l.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
+                l.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 14, 0, 14));
+                l.setOpaque(true); return l;
+            }
+        });
+
+        jTable1.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+            @Override public java.awt.Component getTableCellRendererComponent(
+                    javax.swing.JTable t, Object v, boolean sel, boolean foc, int row, int col) {
+                super.getTableCellRendererComponent(t, v, sel, foc, row, col);
+                setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 14, 0, 14));
+                setBackground(sel ? new java.awt.Color(210, 220, 235)
+                        : row % 2 == 0 ? java.awt.Color.WHITE : new java.awt.Color(248, 249, 252));
+                setForeground(sel ? navy : new java.awt.Color(44, 62, 80));
+                return this;
+            }
+        });
+
+        this.revalidate();
+        this.repaint();
+    }
+
+    private void addRow(javax.swing.JPanel parent, String labelText,
+            javax.swing.JTextField field,
+            java.awt.Color navy, java.awt.Color borderGray, java.awt.Color bgField) {
+        javax.swing.JLabel lbl = new javax.swing.JLabel(labelText);
+        lbl.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
+        lbl.setForeground(navy);
+        lbl.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        lbl.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 0, 4, 0));
+        parent.add(lbl);
+
+        field.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
+        field.setBackground(bgField);
+        field.setForeground(new java.awt.Color(44, 62, 80));
+        field.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        field.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 36));
+        field.setPreferredSize(new java.awt.Dimension(220, 36));
+        field.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+            new javax.swing.border.LineBorder(borderGray, 1, true),
+            javax.swing.BorderFactory.createEmptyBorder(4, 10, 4, 10)
+        ));
+        parent.add(field);
+    }
+
+    private void styleBtn(javax.swing.JButton btn, java.awt.Color bg, java.awt.Color fg) {
+        btn.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
+        btn.setForeground(fg); btn.setFocusPainted(false);
+        btn.setContentAreaFilled(false); btn.setBorderPainted(false);
+        btn.setOpaque(false); btn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btn.setUI(new javax.swing.plaf.basic.BasicButtonUI() {
+            @Override public void paint(java.awt.Graphics g, javax.swing.JComponent c) {
+                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(btn.getModel().isRollover() ? bg.darker() : bg);
+                g2.fillRoundRect(0, 0, c.getWidth(), c.getHeight(), 12, 12);
+                g2.dispose(); super.paint(g, c);
+            }
+        });
     }
 
     private void initTable() {
@@ -47,7 +235,7 @@ public class EmployeeView extends javax.swing.JPanel {
         });
     }
 
-    // ====== THÊM CÁC H��M HỖ TRỢ ======
+    // ====== THÊM CÁC HÀM HỖ TRỢ ======
     private void loadDataToTable() {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         model.setRowCount(0);

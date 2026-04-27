@@ -16,7 +16,7 @@ public class ImportProductDialog extends JDialog {
     private ProductView parentView;
 
     public ImportProductDialog(JFrame owner) {
-        super(owner, "Import Hệ Thống - 1 Triệu Dòng", true);
+        super(owner, "Import Hệ Thống", true);
         initComponents();
     }
 

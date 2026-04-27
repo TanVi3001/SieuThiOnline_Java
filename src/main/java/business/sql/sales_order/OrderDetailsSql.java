@@ -8,7 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * OrderDetailsSql: Xử lý lưu chi tiết hóa đơn vào Oracle Leader Vĩ: Đã fix
@@ -90,6 +92,39 @@ public class OrderDetailsSql implements SqlInterface<OrderDetail> {
             e.printStackTrace();
         }
         return ds;
+    }
+
+    public List<Map<String, Object>> selectDetailRowsByOrderId(String orderId) {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        String sql = "SELECT od.order_detail_id, od.order_id, od.product_id, "
+                + "       p.product_name, od.quantity, od.unit_price, "
+                + "       (od.quantity * od.unit_price) AS line_total "
+                + "FROM ORDER_DETAILS od "
+                + "LEFT JOIN PRODUCTS p ON od.product_id = p.product_id "
+                + "WHERE od.order_id = ? AND NVL(od.is_deleted, 0) = 0 "
+                + "ORDER BY od.order_detail_id";
+
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, orderId);
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("order_detail_id", rs.getString("order_detail_id"));
+                    row.put("order_id", rs.getString("order_id"));
+                    row.put("product_id", rs.getString("product_id"));
+                    row.put("product_name", rs.getString("product_name"));
+                    row.put("quantity", rs.getInt("quantity"));
+                    row.put("unit_price", rs.getDouble("unit_price"));
+                    row.put("line_total", rs.getDouble("line_total"));
+                    rows.add(row);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Loi tai OrderDetailsSql.selectDetailRowsByOrderId: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return rows;
     }
 
     @Override
