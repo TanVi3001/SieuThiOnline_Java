@@ -17,7 +17,7 @@ public final class DashboardView extends javax.swing.JFrame {
             .getLogger(DashboardView.class.getName());
 
     private javax.swing.Timer sessionTimer;
-    private boolean isLoggingOut = false; // <--- Cầu chì nằm đây
+    private boolean isLoggingOut = false; 
     private javax.swing.JPanel mainContentPanel;
 
     /**
@@ -42,7 +42,6 @@ public final class DashboardView extends javax.swing.JFrame {
 
         SystemName.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
-        // Lấy user hiện tại 1 lần
         model.account.Account currentUser = business.service.LoginService.getCurrentUser();
         String username = "";
         if (currentUser != null && currentUser.getUsername() != null) {
@@ -52,25 +51,21 @@ public final class DashboardView extends javax.swing.JFrame {
             SystemName.setText("HỆ THỐNG SIÊU THỊ - Chưa đăng nhập");
         }
 
-        // ===== PHÂN QUYỀN THEO USERNAME =====
-        boolean canAccessEmployee = business.service.AuthorizationService.canAccessEmployeeManagement();
-        boolean canAccessStatistics = business.service.AuthorizationService.canAccessStatistics();
+        // ===== FIX LỖI BUILD: Gọi đúng tên hàm mới =====
+        boolean canAccessEmployee = business.service.AuthorizationService.canAccessStatisticsAndEmployees();
+        boolean canAccessStatistics = business.service.AuthorizationService.canAccessStatisticsAndEmployees();
 
-        // Sidebar cũ (NetBeans) không dùng nữa
         pnLeft.setVisible(false);
 
-        // Dựng layout mới
         this.getContentPane().removeAll();
         this.getContentPane().setLayout(new java.awt.BorderLayout());
 
         mainContentPanel = new javax.swing.JPanel(new java.awt.BorderLayout());
         mainContentPanel.setBackground(new java.awt.Color(245, 245, 247));
 
-        // Truyền role cho Sidebar mới dựa trên username
         String roleForSidebar = business.service.AuthorizationService.currentRoleForUi();
         view.components.Sidebar newSidebar = new view.components.Sidebar(roleForSidebar);
 
-        // Menu click
         newSidebar.setMenuClickListener(title -> {
             switch (title) {
                 case "Tổng quan":
@@ -129,7 +124,6 @@ public final class DashboardView extends javax.swing.JFrame {
         this.getContentPane().add(newSidebar, java.awt.BorderLayout.WEST);
         this.getContentPane().add(mainContentPanel, java.awt.BorderLayout.CENTER);
 
-        // Hiển thị TongQuanPanel làm màn hình mặc định
         showPanel(new TongQuanPanel());
 
         this.revalidate();
@@ -138,53 +132,37 @@ public final class DashboardView extends javax.swing.JFrame {
         startSessionCheck();
     }
 
-    /*
-     * DashboardView() {
-     * throw new UnsupportedOperationException("Not supported yet."); // Generated
-     * from
-     * nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-     * }
-     */
     private void authorize() {
         try {
-            // 1. Lấy thông tin người dùng
             model.account.Account user = business.service.LoginService.getCurrentUser();
 
-            // Kiểm tra xem có lấy được User không
             if (user == null) {
                 System.err.println("DEBUG: Không tìm thấy thông tin người dùng (User is null)");
                 return;
             }
 
-            // 2. Lấy Role và làm sạch chuỗi (Trim để xóa khoảng trắng dư thừa)
             String role = user.getRole();
             if (role == null) {
                 System.err.println("DEBUG: User không có quyền (Role is null)");
                 return;
             }
-            role = role.trim(); // Xóa dấu cách nếu có (ví dụ "ADMIN " thành "ADMIN")
+            role = role.trim(); 
 
-            // 3. Thực thi phân quyền
-            // Kiểm tra: Nếu KHÔNG PHẢI là Admin thì ẩn nút
             if (!business.service.AuthorizationService.isAdmin(user)) {
 
-                // Ẩn nút Quản lý nhân viên
                 if (btnEmployee != null) {
                     btnEmployee.setVisible(false);
                 }
 
-                // Ẩn nút Thống kê
                 if (btnStatistic != null) {
                     btnStatistic.setVisible(false);
                 }
 
-                // In ra console để ông kiểm tra xem code có chạy vào đây không
                 System.out.println("DEBUG: Đã nhận diện Staff. Đang ẩn các nút Admin...");
             } else {
                 System.out.println("DEBUG: Đã nhận diện Admin. Giữ nguyên các nút.");
             }
 
-            // 4. Ép giao diện vẽ lại (Quan trọng để các nút biến mất ngay lập tức)
             this.revalidate();
             this.repaint();
 
@@ -193,12 +171,6 @@ public final class DashboardView extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
-
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -340,52 +312,44 @@ public final class DashboardView extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnStatisticActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnStatisticActionPerformed  
-        // TODO add your handling code here:
-        if (!business.service.AuthorizationService.canAccessStatistics()) {
+    // ===== FIX LỖI BUILD: Gọi đúng tên hàm mới =====
+    private void btnStatisticActionPerformed(java.awt.event.ActionEvent evt) {  
+        if (!business.service.AuthorizationService.canAccessStatisticsAndEmployees()) {
             javax.swing.JOptionPane.showMessageDialog(this, "Bạn không có quyền truy cập chức năng này!");
             return;
         }
-        showPanel(new view.StatisticView());// Gọi cái JPanel
-    }// GEN-LAST:event_btnStatisticActionPerformed
+        showPanel(new view.StatisticView());
+    }                                              
 
-    private void btnProductActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnProductActionPerformed
-        // TODO add your handling code here:
-        showPanel(new ProductView()); // Gọi cái JPanel
-    }// GEN-LAST:event_btnProductActionPerformed
+    private void btnProductActionPerformed(java.awt.event.ActionEvent evt) {                                           
+        showPanel(new ProductView()); 
+    }                                          
 
-    private void btnEmployeeActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnEmployeeActionPerformed
-        // TODO add your handling code here:
-        if (!business.service.AuthorizationService.canAccessEmployeeManagement()) {
+    // ===== FIX LỖI BUILD: Gọi đúng tên hàm mới =====
+    private void btnEmployeeActionPerformed(java.awt.event.ActionEvent evt) {                                            
+        if (!business.service.AuthorizationService.canAccessStatisticsAndEmployees()) {
             javax.swing.JOptionPane.showMessageDialog(this, "Bạn không có quyền truy cập chức năng này!");
             return;
         }
         showPanel(new view.EmployeeView());
-    }// GEN-LAST:event_btnEmployeeActionPerformed
+    }                                           
 
-    private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnLogoutActionPerformed
-        // TODO add your handling code here:
-        // 1. Hiện bảng xác nhận cho "chắc cú"
+    private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {                                          
         int confirm = javax.swing.JOptionPane.showConfirmDialog(this,
                 "Bạn có thực sự muốn đăng xuất không?", "Xác nhận",
                 javax.swing.JOptionPane.YES_NO_OPTION);
 
         if (confirm == javax.swing.JOptionPane.YES_OPTION) {
-            // 1. CỰC KỲ QUAN TRỌNG: Dừng cái Timer tuần tra lại ngay lập tức
-            // BẬT CẦU CHÌ NGAY TẠI ĐÂY
             this.isLoggingOut = true;
             if (sessionTimer != null && sessionTimer.isRunning()) {
                 sessionTimer.stop();
             }
 
-            // 2. Bây giờ mới đi hủy Token trong DB
             String tk = business.service.LoginService.getToken();
             business.sql.rbac.TokenSql.getInstance().revokeToken(tk);
 
-            // 3. Xóa session local
             business.service.LoginService.logout();
 
-            // 4. Chuyển về màn hình Login (Lúc này sẽ không bị hiện cái thông báo lỗi kia nữa)
             java.awt.EventQueue.invokeLater(() -> {
                 view.LoginView login = new view.LoginView();
                 login.setVisible(true);
@@ -394,33 +358,17 @@ public final class DashboardView extends javax.swing.JFrame {
 
             this.dispose();
         }
+    }                                         
 
-    }// GEN-LAST:event_btnLogoutActionPerformed
-
-    private void btnOrderActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnOrderActionPerformed
-        // TODO add your handling code here:
+    private void btnOrderActionPerformed(java.awt.event.ActionEvent evt) {                                         
         showPanel(new OrderView());
-    }// GEN-LAST:event_btnOrderActionPerformed
+    }                                        
 
-    private void btnCustomerActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnCustomerActionPerformed
-        // TODO add your handling code here:
+    private void btnCustomerActionPerformed(java.awt.event.ActionEvent evt) {                                            
         showPanel(new CustomerView());
+    }                                           
 
-    }// GEN-LAST:event_btnCustomerActionPerformed
-
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        // <editor-fold defaultstate="collapsed" desc=" Look and feel setting code
-        // (optional) ">
-        /*
-         * If Nimbus (introduced in Java SE 6) is not available, stay with the default
-         * look and feel.
-         * For details see
-         * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-         */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -431,12 +379,9 @@ public final class DashboardView extends javax.swing.JFrame {
         } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
             logger.log(java.util.logging.Level.SEVERE, null, ex);
         }
-        // </editor-fold>
 
-        // PHẢI ĐẶT ĐẦU TIÊN: Trị lỗi màn hình 2K/4K bị bé xíu
         System.setProperty("sun.java2d.uiScale", "1.5");
 
-        /* Set the FlatLaf look and feel */
         try {
             com.formdev.flatlaf.FlatLightLaf.setup();
         } catch (Exception ex) {
@@ -444,7 +389,6 @@ public final class DashboardView extends javax.swing.JFrame {
                     ex);
         }
 
-        /* Khởi tạo và hiển thị */
         java.awt.EventQueue.invokeLater(() -> {
             DashboardView dashboard = new DashboardView();
             dashboard.setVisible(true);
@@ -452,14 +396,9 @@ public final class DashboardView extends javax.swing.JFrame {
     }
 
     public void showPanel(javax.swing.JPanel childPanel) {
-        // [SỬA LỖI] Bây giờ đổi qua dùng mainContentPanel thay vì jPanel3 bị bug
         mainContentPanel.removeAll();
-
-        // Ép Layout để panel con lấp đầy vùng xanh
         mainContentPanel.setLayout(new java.awt.BorderLayout());
         mainContentPanel.add(childPanel, java.awt.BorderLayout.CENTER);
-
-        // Làm tươi giao diện
         mainContentPanel.revalidate();
         mainContentPanel.repaint();
     }
@@ -478,14 +417,12 @@ public final class DashboardView extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private static class SettingsView extends JPanel {
-
         public SettingsView() {
         }
     }
 
     private void startSessionCheck() {
         sessionTimer = new javax.swing.Timer(1000, e -> {
-            // LỚP CHẶN 1: Nếu đang trong quá trình đăng xuất chủ động, không làm gì cả
             if (isLoggingOut) {
                 ((javax.swing.Timer) e.getSource()).stop();
                 return;
@@ -495,7 +432,6 @@ public final class DashboardView extends javax.swing.JFrame {
             boolean isValid = business.sql.rbac.TokenSql.getInstance().isTokenValid(currentToken);
 
             if (!isValid) {
-                // LỚP CHẶN 2: Kiểm tra lại lần nữa trước khi hiện thông báo
                 if (!isLoggingOut) {
                     ((javax.swing.Timer) e.getSource()).stop();
 
