@@ -28,12 +28,14 @@ public class PaymentService {
             for (OrderDetail ct : dsChiTiet) {
                 int baseQuantity = ProductUnitsSql.getInstance()
                         .convertToBaseQuantityWithConn(con, ct.getProductId(), ct.getUnitId(), ct.getQuantity());
+                String resolvedUnitId = ProductUnitsSql.getInstance()
+                        .resolveUnitIdWithConn(con, ct.getUnitId());
                 OrderDetail detailToSave = new OrderDetail(
                         ct.getOrderId(),
                         ct.getProductId(),
                         ct.getQuantity(),
                         ct.getUnitPrice(),
-                        ct.getUnitId(),
+                        resolvedUnitId,
                         baseQuantity
                 );
                 // 3.1: Lưu chi tiết hóa đơn

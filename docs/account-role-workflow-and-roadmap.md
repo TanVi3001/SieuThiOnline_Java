@@ -42,6 +42,24 @@ Implementation notes:
 
 ## Follow-up plan
 
+## Manual verification
+
+Manual DB verification on 2026-04-28 passed against local Oracle `localhost:1521:orcl`.
+
+Verified flow:
+
+- Created an isolated test product with base stock `100`.
+- Configured product unit `Thung = 24` base units.
+- Converted `1 Thung` to base quantity `24`.
+- Confirmed stock subtraction changes inventory from `100` to `76`.
+- Created a paid order through `PaymentService`; order details stored resolved unit id and `quantity_base`.
+- Confirmed best-selling statistics counted `24` base units, not `1` display unit.
+- Cancelled the order and confirmed inventory returned to `100`.
+- Soft-deleted the product after invoice history existed.
+- Confirmed product and inventory were hidden with `is_deleted = 1`.
+- Confirmed historical order detail still existed after product soft delete.
+- Confirmed staff role is recognized as cashier/sales staff and not as manager/admin.
+
 ### Phase 1 - Stabilize account administration
 
 - Add an admin-only "create account" flow in the admin portal.
