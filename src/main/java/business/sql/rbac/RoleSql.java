@@ -57,5 +57,33 @@ public class RoleSql implements SqlInterface<Role> {
         }
         return list;
     }
+    
+    /**
+     * HÀM MỚI: Lấy danh sách các Role hiện có để đổ vào Combobox tạo tài khoản
+     */
+    public List<String> getAvailableRoles() {
+        List<String> roles = new ArrayList<>();
+        String sql = "SELECT DISTINCT role_id FROM ROLES WHERE is_deleted = 0";
+        
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
+             
+            while (rs.next()) {
+                roles.add(rs.getString("role_id"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        // Cầu chì an toàn: Nếu Database ROLES đang trống, trả về danh sách cứng tạm thời
+        if (roles.isEmpty()) {
+            roles.add("R_ADMIN_ALL");
+            roles.add("R_STORE_MNG");
+            roles.add("R_STAFF_SALE");
+            roles.add("R_STAFF_STOCK");
+        }
+        return roles;
+    }
 }
 

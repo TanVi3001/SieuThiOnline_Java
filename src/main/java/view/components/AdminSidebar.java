@@ -55,7 +55,7 @@ public class AdminSidebar extends JPanel {
         menuPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
         // THÊM CÁC MỤC MENU TIẾNG VIỆT
-        addMenuItem("Tổng quan hệ thống");
+        addMenuItem("Tạo tài khoản");
         addMenuItem("Quản lý tài khoản"); 
         addMenuItem("Quản lý phân quyền");
         addMenuItem("Nhật ký hệ thống");

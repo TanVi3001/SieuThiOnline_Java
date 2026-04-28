@@ -408,4 +408,71 @@ public class AccountSql implements SqlInterface<Account> {
             return false;
         }
     }
+    
+    /**
+     * HÀM MỚI: Dành cho Admin tạo tài khoản nhân viên (Mật khẩu mặc định: 1234)
+     */
+    public boolean createEmployeeAccount(String fullName, String email, String phone, String username, String roleId) {
+        String userId = "USR" + (System.currentTimeMillis() % 1000000);
+        String accId = "ACC" + (System.currentTimeMillis() % 1000000);
+        String rawPassword = "1234"; // Mật khẩu mặc định cho nhân viên mới
+
+        String sqlCheckUser = "SELECT 1 FROM ACCOUNTS WHERE username = ? AND is_deleted = 0";
+        String sqlCheckEmail = "SELECT 1 FROM USERS WHERE email = ? AND is_deleted = 0";
+        String sqlUser = "INSERT INTO USERS (user_id, full_name, email, phone_number) VALUES (?, ?, ?, ?)";
+        String sqlAccount = "INSERT INTO ACCOUNTS (account_id, user_id, username, password, status) VALUES (?, ?, ?, ?, 'Hoạt động')";
+        String sqlAssignRole = "INSERT INTO ACCOUNT_ASSIGN_ROLE (account_id, role_id) VALUES (?, ?)";
+
+        Connection con = null;
+        try {
+            con = DatabaseConnection.getConnection();
+            con.setAutoCommit(false);
+
+            // Kiểm tra trùng lặp
+            try (PreparedStatement pstCheckUser = con.prepareStatement(sqlCheckUser)) {
+                pstCheckUser.setString(1, username);
+                try (ResultSet rs = pstCheckUser.executeQuery()) {
+                    if (rs.next()) return false;
+                }
+            }
+            try (PreparedStatement pstCheckEmail = con.prepareStatement(sqlCheckEmail)) {
+                pstCheckEmail.setString(1, email);
+                try (ResultSet rs = pstCheckEmail.executeQuery()) {
+                    if (rs.next()) return false;
+                }
+            }
+
+            String passwordHash = PasswordUtils.hash(rawPassword);
+
+            // Lưu vào 3 bảng
+            try (PreparedStatement pstUser = con.prepareStatement(sqlUser); 
+                 PreparedStatement pstAcc = con.prepareStatement(sqlAccount);
+                 PreparedStatement pstRole = con.prepareStatement(sqlAssignRole)) {
+
+                pstUser.setString(1, userId);
+                pstUser.setString(2, fullName);
+                pstUser.setString(3, email);
+                pstUser.setString(4, phone);
+                pstUser.executeUpdate();
+
+                pstAcc.setString(1, accId);
+                pstAcc.setString(2, userId);
+                pstAcc.setString(3, username);
+                pstAcc.setString(4, passwordHash);
+                pstAcc.executeUpdate();
+
+                pstRole.setString(1, accId);
+                pstRole.setString(2, roleId);
+                pstRole.executeUpdate();
+            }
+            con.commit();
+            return true;
+        } catch (Exception e) {
+            if (con != null) { try { con.rollback(); } catch (Exception ignored) {} }
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (con != null) { try { con.setAutoCommit(true); con.close(); } catch (Exception ignored) {} }
+        }
+    }
 }

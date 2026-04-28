@@ -38,8 +38,8 @@ public class AdminDashboardView extends javax.swing.JFrame {
         // NỐI CÁC MỤC MENU VỚI PANEL TƯƠNG ỨNG
         adminSidebar.setMenuClickListener(title -> {
             switch (title) {
-                case "Tổng quan hệ thống":
-                    // showPanel(new AdminGlobalOverview());
+                case "Tạo tài khoản": 
+                    showPanel(new view.CreateAccountPanel()); 
                     break;
                 case "Quản lý tài khoản":
                     showPanel(new view.AccountRoleAssignmentPanel());
