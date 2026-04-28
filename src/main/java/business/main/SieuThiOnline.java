@@ -159,13 +159,6 @@ public class SieuThiOnline {
             e.printStackTrace();
         }
 
-        java.awt.EventQueue.invokeLater(() -> {
-            // ── DEV BYPASS: bỏ qua màn hình đăng nhập ──────────────
-            model.account.Account devAcc = new model.account.Account(
-                    "ACC_DEV_01", "USR_DEV_01", "admin", "bypass", "R_ADMIN_ALL", "ACTIVE", null, null, 0
-            );
-            business.service.SessionManager.startSession(devAcc, "bypass-token-dev");
-            new view.DashboardView().setVisible(true);
-            // ── END BYPASS ──────────────────────────────────────────
-        });    }
+        java.awt.EventQueue.invokeLater(() -> new view.LoginView().setVisible(true));
+    }
 }
