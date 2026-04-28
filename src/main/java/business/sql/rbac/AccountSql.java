@@ -209,7 +209,7 @@ public class AccountSql implements SqlInterface<Account> {
                 // =======================================================
                 // Nếu là người đầu tiên -> Làm Admin
                 // Từ người thứ 2 trở đi -> Bị ép làm Thu ngân
-                String roleId = isFirstUser ? "R_ADMIN_ALL" : "R_CASHIER"; 
+                String roleId = isFirstUser ? "R_ADMIN_ALL" : "R_STAFF_SALE"; 
 
                 String sqlAssignRole = "INSERT INTO ACCOUNT_ASSIGN_ROLE (account_id, role_id) VALUES (?, ?)";
                 try (PreparedStatement pstRole = con.prepareStatement(sqlAssignRole)) {
@@ -335,9 +335,10 @@ public class AccountSql implements SqlInterface<Account> {
      */
     public List<String[]> getAccountWithUserDetails() {
         List<String[]> list = new ArrayList<>();
-        // Lấy account_id, username, role_id, is_deleted VÀ full_name, email từ bảng USERS
+        
+        // ĐÃ FIX: Thêm CAST(rg.group_name AS VARCHAR2(100)) để tránh lỗi ORA-00932 của Oracle
         String sql = "SELECT a.account_id, a.username, u.full_name, u.email, "
-                   + "       COALESCE(aar.role_id, rg.group_name, aarg.role_group_id) AS role_value, "
+                   + "       COALESCE(aar.role_id, CAST(rg.group_name AS VARCHAR2(100)), aarg.role_group_id) AS role_value, "
                    + "       a.is_deleted "
                    + "FROM ACCOUNTS a "
                    + "JOIN USERS u ON a.user_id = u.user_id "
