@@ -35,10 +35,10 @@ Implementation notes:
 | First account becomes admin; later accounts default to staff | Done | `AccountSql.register(...)` uses account count and assigns `R_ADMIN_ALL` or `R_STAFF_SALE` | Add an admin-only account creation form so admins can create users without using public registration |
 | Admin can assign roles to member accounts | Mostly done | `AccountRoleAssignmentPanel` calls role update logic through `AccountSql.updateAccountRole(...)` | Improve UX and validation; add audit messaging for role changes if needed |
 | Staff cannot see statistics and employee management | Done | `AuthorizationService.canAccessStatisticsAndEmployees()` is used by `Sidebar` and guarded again in `DashboardView` | Manually test with `R_STAFF_SALE` and `R_STAFF_STOCK` accounts |
-| Unit of measure setup and conversion | Partially done | `UnitOfMeasureService` and `ProductUnitsSql` support product-unit configuration and conversion to base quantity | Connect unit selection to product import/export/order screens; verify DB migration has `UNITS`, `PRODUCT_UNITS`, and `PRODUCTS.base_unit_id` |
+| Unit of measure setup and conversion | Mostly done | `UnitOfMeasureService`, `ProductUnitsSql`, `SellPanel`, and `PaymentService` support unit selection and conversion to base quantity; statistics aggregate `quantity_base` when available | Add a dedicated product-unit configuration UI for editing conversion rates after product creation |
 | Immutable warehouse / soft delete for products | Mostly done | `ProductsSql.delete(...)` soft-deletes product and inventory; `ProductView` checks `ProductsSql.isUsedInOrders(...)` and shows an "hidden" message when product has invoices | Tighten delete behavior wording: products used in invoices should always be treated as hidden, never physically deleted; add tests/manual checklist |
-| Invoice/order execution | Partially done | `OrdersSql`, `OrderDetailsSql`, `PaymentMethodsSql`, `OrderView`, and payment-related migration exist | Finish order detail UI flow, payment method handling, status transitions, stock rollback on cancel, invoice printing/export if required |
-| Statistics execution | Partially done | `StatisticSql` has totals, monthly revenue, best sellers, and recent orders; `StatisticView` exists | Wire all metrics cleanly into UI, add date filters, handle cancelled orders consistently, verify values against seed data |
+| Invoice/order execution | Mostly done | `PaymentService` saves orders/details and stock changes transactionally; `OrderView` supports detail viewing, status update, cancel rollback, and PDF invoice export | Improve invoice layout and add manual test cases for payment/cancel/export |
+| Statistics execution | Mostly done | `StatisticSql` has totals, monthly revenue, best sellers, and recent orders; best-seller quantity now uses base-unit quantity when available; `StatisticView` renders dashboard/table | Add date filters and verify values against seed data |
 
 ## Follow-up plan
 
@@ -52,8 +52,8 @@ Implementation notes:
 ### Phase 2 - Complete unit of measure behavior
 
 - Confirm schema support for `UNITS`, `PRODUCT_UNITS`, and base unit fields.
-- Add unit controls to product creation/update UI.
-- Apply conversion consistently when importing stock, selling products, and returning/cancelling orders.
+- Add unit controls to product creation/update UI for non-base units.
+- Apply conversion consistently when importing stock.
 - Add validation so conversion rates must be positive and one base unit exists per product.
 
 ### Phase 3 - Harden warehouse soft delete
@@ -66,8 +66,8 @@ Implementation notes:
 ### Phase 4 - Finish invoices and order lifecycle
 
 - Verify order creation writes `ORDERS`, `ORDER_DETAILS`, payment method, and stock changes in one transaction.
-- Implement/verify cancel order logic restores stock exactly once.
-- Add invoice view/print/export behavior if not already complete.
+- Verify cancel order logic restores stock exactly once.
+- Improve invoice print/export layout if more polish is needed.
 - Handle edge cases: insufficient stock, deleted product, missing customer, failed payment method.
 
 ### Phase 5 - Finish statistics

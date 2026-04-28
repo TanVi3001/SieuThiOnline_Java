@@ -81,7 +81,66 @@ public class ProductUnitsSql {
                 }
             }
         }
+
+        BigDecimal rateByName = findRateToBaseByUnitNameWithConn(con, productId, unitId);
+        if (rateByName != null) {
+            return rateByName;
+        }
+
+        if (!hasConfiguredUnitsWithConn(con, productId) || isProductBaseUnitWithConn(con, productId, unitId)) {
+            return BigDecimal.ONE;
+        }
+
         throw new SQLException("Chua cau hinh don vi " + unitId + " cho san pham " + productId);
+    }
+
+    private BigDecimal findRateToBaseByUnitNameWithConn(Connection con, String productId, String unitName)
+            throws SQLException {
+        String sql = "SELECT pu.conversion_rate_to_base "
+                + "FROM PRODUCT_UNITS pu "
+                + "JOIN UNITS u ON pu.unit_id = u.unit_id "
+                + "WHERE pu.product_id = ? AND LOWER(u.unit_name) = LOWER(?) "
+                + "AND NVL(pu.is_deleted, 0) = 0 AND NVL(u.is_deleted, 0) = 0";
+        try (PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, productId);
+            pst.setString(2, unitName);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    BigDecimal rate = rs.getBigDecimal("conversion_rate_to_base");
+                    if (rate == null || rate.compareTo(BigDecimal.ZERO) <= 0) {
+                        throw new SQLException("Ty le quy doi khong hop le cho san pham " + productId);
+                    }
+                    return rate;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean hasConfiguredUnitsWithConn(Connection con, String productId) throws SQLException {
+        String sql = "SELECT 1 FROM PRODUCT_UNITS WHERE product_id = ? AND NVL(is_deleted, 0) = 0";
+        try (PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, productId);
+            try (ResultSet rs = pst.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    private boolean isProductBaseUnitWithConn(Connection con, String productId, String unitIdOrName) throws SQLException {
+        String sql = "SELECT 1 "
+                + "FROM PRODUCTS p "
+                + "LEFT JOIN UNITS u ON p.base_unit_id = u.unit_id "
+                + "WHERE p.product_id = ? "
+                + "AND (p.base_unit_id = ? OR LOWER(u.unit_name) = LOWER(?))";
+        try (PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, productId);
+            pst.setString(2, unitIdOrName);
+            pst.setString(3, unitIdOrName);
+            try (ResultSet rs = pst.executeQuery()) {
+                return rs.next();
+            }
+        }
     }
 
     public List<ProductUnit> selectByProductId(String productId) {

@@ -58,7 +58,7 @@ public class StatisticSql {
         List<Map<String, Object>> rows = new ArrayList<>();
         String sql = "SELECT * FROM ("
                 + "SELECT od.product_id, NVL(p.product_name, od.product_id) AS product_name, "
-                + "       SUM(od.quantity) AS total_sold, "
+                + "       SUM(NVL(od.quantity_base, od.quantity)) AS total_sold, "
                 + "       SUM(od.quantity * od.unit_price) AS total_revenue "
                 + "FROM ORDER_DETAILS od "
                 + "JOIN ORDERS o ON od.order_id = o.order_id "
