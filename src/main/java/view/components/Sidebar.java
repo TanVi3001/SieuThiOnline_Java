@@ -1,13 +1,12 @@
 package view.components;
 
+import business.service.AuthorizationService;
 import com.formdev.flatlaf.FlatLightLaf;
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class Sidebar extends JPanel {
 
@@ -15,9 +14,8 @@ public class Sidebar extends JPanel {
     private final JPanel menuPanel;
     private final String userRole;
 
-    // Chỉ dùng constructor này, bắt buộc truyền role
     public Sidebar(String userRole) {
-        this.userRole = normalizeRole(userRole);
+        this.userRole = userRole; 
         this.menuItems = new ArrayList<>();
 
         setLayout(new BorderLayout());
@@ -50,18 +48,30 @@ public class Sidebar extends JPanel {
         menuPanel.setBackground(Color.WHITE);
         menuPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        addMenuItem("Tổng quan");
-        addMenuItem("Quản lý sản phẩm");
+        // --- ĐÃ GẮN NÃO PHÂN QUYỀN VÀO ĐÂY ---
+        addMenuItem("Tổng quan"); // Ai cũng thấy
 
-        // staff / nhân viên -> KHÔNG hiện menu quản lý nhân viên
-        if (!isStaff()) {
+        if (AuthorizationService.canAccessProductsAndInventory()) {
+            addMenuItem("Quản lý sản phẩm");
+        }
+        
+        if (AuthorizationService.canAccessStatisticsAndEmployees()) {
             addMenuItem("Quản lý nhân viên");
         }
-
-        addMenuItem("Khách hàng");
-        addMenuItem("Hóa đơn");
-        addMenuItem("Thống kê");
-        addMenuItem("Cài đặt");
+        
+        if (AuthorizationService.canAccessPOS()) {
+            addMenuItem("Khách hàng");
+        }
+        
+        if (AuthorizationService.canAccessInvoices()) {
+            addMenuItem("Hóa đơn");
+        }
+        
+        if (AuthorizationService.canAccessStatisticsAndEmployees()) {
+            addMenuItem("Thống kê");
+        }
+        
+        addMenuItem("Cài đặt"); // Ai cũng thấy
 
         JScrollPane scrollPane = new JScrollPane(menuPanel);
         scrollPane.setBorder(null);
@@ -90,27 +100,7 @@ public class Sidebar extends JPanel {
         }
     }
 
-    private String normalizeRole(String role) {
-        if (role == null) {
-            return "";
-        }
-        String s = role.trim().toLowerCase(Locale.ROOT);
-        s = Normalizer.normalize(s, Normalizer.Form.NFD).replaceAll("\\p{M}", ""); // bỏ dấu
-        s = s.replaceAll("[^a-z0-9]", "");
-        return s;
-    }
-
-    private boolean isStaff() {
-        return userRole.equals("staff")
-                || userRole.equals("nhanvien")
-                || userRole.equals("employee")
-                || userRole.equals("rstaffsale")
-                || userRole.equals("rstaffstock")
-                || userRole.equals("rstaffviewprod");
-    }
-
     public interface MenuClickListener {
-
         void onMenuClick(String title);
     }
 
@@ -121,10 +111,6 @@ public class Sidebar extends JPanel {
     }
 
     private void addMenuItem(final String title) {
-        String normalizedTitle = normalizeRole(title);
-        if (isStaff() && normalizedTitle.equals("thongke")) {
-            return;
-        }
         final MenuItem[] itemHolder = new MenuItem[1];
         MenuItem item = new MenuItem(title, () -> {
             for (MenuItem m : menuItems) {

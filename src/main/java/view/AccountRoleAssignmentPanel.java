@@ -363,7 +363,7 @@ public class AccountRoleAssignmentPanel extends javax.swing.JPanel {
         String[][] activeRoles = {
             {"R_ADMIN_ALL", "Quản trị viên", "Toàn quyền quản lý hệ thống, nhân sự và thiết lập."},
             {"R_STORE_MNG", "Quản lý cửa hàng", "Quản lý hoạt động cửa hàng, xem báo cáo."},
-            {"R_CASHIER", "Nhân viên bán hàng", "Truy cập màn hình POS, tạo hóa đơn và thanh toán."},
+            {"R_STAFF_SALE", "Nhân viên bán hàng", "Truy cập màn hình POS, tạo hóa đơn và thanh toán."}, // <-- Đổi R_CASHIER thành R_STAFF_SALE
             {"R_STAFF_STOCK", "Nhân viên kho", "Quản lý sản phẩm, lập phiếu nhập và tồn kho."}
         };
 
