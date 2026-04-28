@@ -9,18 +9,25 @@ package view;
  * @author Admin
  */
 import business.sql.prod_inventory.ProductsSql;
+import business.sql.prod_inventory.ProductUnitsSql;
+import business.service.UnitOfMeasureService;
 import common.utils.Validator;
 import java.awt.BorderLayout;
-import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JFrame;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import model.product.Product;
+import model.product.ProductUnit;
 import view.components.ExportToolbar;
 
 public class ProductView extends javax.swing.JPanel {
@@ -30,11 +37,14 @@ public class ProductView extends javax.swing.JPanel {
      */
     private ExportToolbar toolbar; // Khai báo toolbar ở mức class để dễ truy cập
 
+    private javax.swing.JButton btnUnitConfig;
+
     public ProductView() {
         initComponents();
 
         initTableModel();
         initEvents();
+        initUnitConfigButton();
         loadDataToTable();
 
         // 1. Khởi tạo ExportToolbar mới (chứa Auto-Complete ComboBox)
@@ -73,6 +83,99 @@ public class ProductView extends javax.swing.JPanel {
                 ProductView.this.tblProductsMouseClicked(evt); // gọi hàm của class ngoài
             }
         });
+    }
+
+    private void initUnitConfigButton() {
+        btnUnitConfig = new javax.swing.JButton("Don vi");
+        btnUnitConfig.setFont(new java.awt.Font("Segoe UI", 1, 14));
+        btnUnitConfig.addActionListener(e -> showUnitConfigDialog());
+        pnlButton.add(btnUnitConfig);
+    }
+
+    private String getSelectedProductId() {
+        int viewRow = tblProducts.getSelectedRow();
+        if (viewRow < 0) {
+            return null;
+        }
+        int modelRow = tblProducts.convertRowIndexToModel(viewRow);
+        Object value = tblProducts.getModel().getValueAt(modelRow, 0);
+        return value == null ? null : value.toString().trim();
+    }
+
+    private void showUnitConfigDialog() {
+        String productId = getSelectedProductId();
+        if (productId == null || productId.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Chon san pham can cau hinh don vi!");
+            return;
+        }
+
+        DefaultTableModel unitModel = new DefaultTableModel(
+                new Object[]{"Don vi", "Ty le ve don vi goc", "Don vi goc"}, 0
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        loadProductUnits(productId, unitModel);
+
+        JTable unitTable = new JTable(unitModel);
+        JTextField txtUnitName = new JTextField();
+        JTextField txtRate = new JTextField("1");
+        JCheckBox chkBase = new JCheckBox("Dat lam don vi goc");
+
+        JPanel form = new JPanel(new java.awt.GridLayout(0, 1, 0, 6));
+        form.add(new JLabel("Cac don vi hien co"));
+        form.add(new JScrollPane(unitTable));
+        form.add(new JLabel("Ten don vi"));
+        form.add(txtUnitName);
+        form.add(new JLabel("Ty le quy doi ve don vi goc"));
+        form.add(txtRate);
+        form.add(chkBase);
+
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                form,
+                "Cau hinh don vi cho " + productId,
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (result != JOptionPane.OK_OPTION) {
+            return;
+        }
+
+        String unitName = txtUnitName.getText().trim();
+        String rateText = txtRate.getText().trim();
+        if (unitName.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Ten don vi khong duoc rong!");
+            return;
+        }
+
+        try {
+            BigDecimal rate = new BigDecimal(rateText);
+            boolean ok = new UnitOfMeasureService()
+                    .configureProductUnit(productId, unitName, rate, chkBase.isSelected());
+            if (ok) {
+                JOptionPane.showMessageDialog(this, "Da cap nhat don vi tinh!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Khong cap nhat duoc don vi tinh.", "Loi", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Ty le quy doi phai la so hop le!", "Loi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void loadProductUnits(String productId, DefaultTableModel model) {
+        model.setRowCount(0);
+        List<ProductUnit> units = ProductUnitsSql.getInstance().selectByProductId(productId);
+        for (ProductUnit unit : units) {
+            model.addRow(new Object[]{
+                unit.getUnitId(),
+                unit.getConversionRateToBase(),
+                unit.getIsBaseUnit() == 1 ? "Co" : ""
+            });
+        }
     }
 
     private void fillTable(List<Product> list) {
