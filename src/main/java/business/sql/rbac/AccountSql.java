@@ -32,7 +32,7 @@ public class AccountSql implements SqlInterface<Account> {
     public Account selectByUsername(String username) {
         Account acc = null;
         String sql = "SELECT a.account_id, a.username, a.password, a.is_deleted, "
-                + "       COALESCE(aar.role_id, rg.group_name, aarg.role_group_id) AS role_value "
+                + "       COALESCE(aar.role_id, CAST(rg.group_name AS VARCHAR2(100)), aarg.role_group_id) AS role_value "
                 + "FROM ACCOUNTS a "
                 + "LEFT JOIN ACCOUNT_ASSIGN_ROLE aar "
                 + "       ON a.account_id = aar.account_id AND NVL(aar.is_deleted, 0) = 0 "
@@ -67,7 +67,7 @@ public class AccountSql implements SqlInterface<Account> {
         List<Account> list = new ArrayList<>();
         // ĐÃ SỬA: JOIN bảng ACCOUNTS với ACCOUNT_ASSIGN_ROLE để biết ai là Admin/Manager/Staff
         String sql = "SELECT a.account_id, a.username, a.password, a.is_deleted, "
-                   + "       COALESCE(aar.role_id, rg.group_name, aarg.role_group_id) AS role_value "
+                   + "       COALESCE(aar.role_id, CAST(rg.group_name AS VARCHAR2(100)), aarg.role_group_id) AS role_value "
                    + "FROM ACCOUNTS a "
                    + "LEFT JOIN ACCOUNT_ASSIGN_ROLE aar "
                    + "       ON a.account_id = aar.account_id AND NVL(aar.is_deleted, 0) = 0 "
