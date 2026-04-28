@@ -31,6 +31,11 @@ public class UnitsSql {
         }
 
         String unitId = generateUnitId(safeName);
+        String existingGeneratedId = findUnitNameByIdWithConn(con, unitId);
+        if (existingGeneratedId != null) {
+            return unitId;
+        }
+
         String sql = "INSERT INTO UNITS (unit_id, unit_name, is_deleted) VALUES (?, ?, 0)";
         try (PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1, unitId);
@@ -49,6 +54,16 @@ public class UnitsSql {
             pst.setString(1, unitName.trim());
             try (ResultSet rs = pst.executeQuery()) {
                 return rs.next() ? rs.getString("unit_id") : null;
+            }
+        }
+    }
+
+    private String findUnitNameByIdWithConn(Connection con, String unitId) throws SQLException {
+        String sql = "SELECT unit_name FROM UNITS WHERE unit_id = ? AND NVL(is_deleted, 0) = 0";
+        try (PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, unitId);
+            try (ResultSet rs = pst.executeQuery()) {
+                return rs.next() ? rs.getString("unit_name") : null;
             }
         }
     }

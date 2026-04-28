@@ -81,7 +81,148 @@ public class ProductUnitsSql {
                 }
             }
         }
+
+        BigDecimal rateByName = findRateToBaseByUnitNameWithConn(con, productId, unitId);
+        if (rateByName != null) {
+            return rateByName;
+        }
+
+        BigDecimal rateByGeneratedId = findRateToBaseByGeneratedUnitIdWithConn(con, productId, unitId);
+        if (rateByGeneratedId != null) {
+            return rateByGeneratedId;
+        }
+
+        if (!hasConfiguredUnitsWithConn(con, productId) || isProductBaseUnitWithConn(con, productId, unitId)) {
+            return BigDecimal.ONE;
+        }
+
         throw new SQLException("Chua cau hinh don vi " + unitId + " cho san pham " + productId);
+    }
+
+    public String resolveUnitIdWithConn(Connection con, String unitIdOrName) throws SQLException {
+        if (unitIdOrName == null || unitIdOrName.isBlank()) {
+            return null;
+        }
+
+        String exactSql = "SELECT unit_id FROM UNITS WHERE unit_id = ? AND NVL(is_deleted, 0) = 0";
+        try (PreparedStatement pst = con.prepareStatement(exactSql)) {
+            pst.setString(1, unitIdOrName);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("unit_id");
+                }
+            }
+        }
+
+        String byNameSql = "SELECT unit_id FROM UNITS WHERE LOWER(unit_name) = LOWER(?) AND NVL(is_deleted, 0) = 0";
+        try (PreparedStatement pst = con.prepareStatement(byNameSql)) {
+            pst.setString(1, unitIdOrName);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("unit_id");
+                }
+            }
+        }
+
+        String generatedUnitId = generateUnitId(unitIdOrName);
+        try (PreparedStatement pst = con.prepareStatement(exactSql)) {
+            pst.setString(1, generatedUnitId);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("unit_id");
+                }
+            }
+        }
+
+        return unitIdOrName;
+    }
+
+    private BigDecimal findRateToBaseByUnitNameWithConn(Connection con, String productId, String unitName)
+            throws SQLException {
+        String sql = "SELECT pu.conversion_rate_to_base "
+                + "FROM PRODUCT_UNITS pu "
+                + "JOIN UNITS u ON pu.unit_id = u.unit_id "
+                + "WHERE pu.product_id = ? AND LOWER(u.unit_name) = LOWER(?) "
+                + "AND NVL(pu.is_deleted, 0) = 0 AND NVL(u.is_deleted, 0) = 0";
+        try (PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, productId);
+            pst.setString(2, unitName);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    BigDecimal rate = rs.getBigDecimal("conversion_rate_to_base");
+                    if (rate == null || rate.compareTo(BigDecimal.ZERO) <= 0) {
+                        throw new SQLException("Ty le quy doi khong hop le cho san pham " + productId);
+                    }
+                    return rate;
+                }
+            }
+        }
+        return null;
+    }
+
+    private BigDecimal findRateToBaseByGeneratedUnitIdWithConn(Connection con, String productId, String unitName)
+            throws SQLException {
+        String generatedUnitId = generateUnitId(unitName);
+        String sql = "SELECT conversion_rate_to_base "
+                + "FROM PRODUCT_UNITS "
+                + "WHERE product_id = ? AND unit_id = ? AND NVL(is_deleted, 0) = 0";
+        try (PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, productId);
+            pst.setString(2, generatedUnitId);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    BigDecimal rate = rs.getBigDecimal("conversion_rate_to_base");
+                    if (rate == null || rate.compareTo(BigDecimal.ZERO) <= 0) {
+                        throw new SQLException("Ty le quy doi khong hop le cho san pham " + productId);
+                    }
+                    return rate;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean hasConfiguredUnitsWithConn(Connection con, String productId) throws SQLException {
+        String sql = "SELECT 1 FROM PRODUCT_UNITS WHERE product_id = ? AND NVL(is_deleted, 0) = 0";
+        try (PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, productId);
+            try (ResultSet rs = pst.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    private boolean isProductBaseUnitWithConn(Connection con, String productId, String unitIdOrName) throws SQLException {
+        String sql = "SELECT 1 "
+                + "FROM PRODUCTS p "
+                + "LEFT JOIN UNITS u ON p.base_unit_id = u.unit_id "
+                + "WHERE p.product_id = ? "
+                + "AND (p.base_unit_id = ? OR p.base_unit_id = ? OR LOWER(u.unit_name) = LOWER(?))";
+        try (PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, productId);
+            pst.setString(2, unitIdOrName);
+            pst.setString(3, generateUnitId(unitIdOrName));
+            pst.setString(4, unitIdOrName);
+            try (ResultSet rs = pst.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    private String generateUnitId(String unitName) {
+        String normalized = java.text.Normalizer
+                .normalize(unitName == null ? "" : unitName, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .replaceAll("[^A-Za-z0-9]+", "_")
+                .replaceAll("^_+|_+$", "")
+                .toUpperCase();
+        if (normalized.isBlank()) {
+            normalized = "UNIT";
+        }
+        if (normalized.length() > 30) {
+            normalized = normalized.substring(0, 30);
+        }
+        return "U_" + normalized;
     }
 
     public List<ProductUnit> selectByProductId(String productId) {
