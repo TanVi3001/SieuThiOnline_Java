@@ -20,6 +20,8 @@ public final class AuthorizationService {
         String role = normalize(account.getRole());
         return role.equals("radminall")
                 || role.equals("admin")
+                || role.equals("nhomadmin")
+                || role.equals("nhamadmin")
                 || role.equals("quantrivien");
     }
 
