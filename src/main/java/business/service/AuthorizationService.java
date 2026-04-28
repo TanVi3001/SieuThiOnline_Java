@@ -53,7 +53,7 @@ public final class AuthorizationService {
 
     // Màn hình Sản phẩm & Nhập kho: Nhân viên kho, Quản lý, Admin
     public static boolean canAccessProductsAndInventory() {
-        return isWarehouseStaff() || isStoreManager() || isAdmin();
+        return isCashier() || isWarehouseStaff() || isStoreManager() || isAdmin();
     }
 
     // Màn hình Hóa đơn: Thu ngân (để xem/in lại), Quản lý, Admin
