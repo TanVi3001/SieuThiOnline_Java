@@ -792,6 +792,11 @@ public class LoginView extends javax.swing.JFrame {
                         adminScreen.setVisible(true);
                         adminScreen.setLocationRelativeTo(null);
                         System.out.println("DEBUG: Mở Admin Dashboard cho " + user);
+                    } 
+                    else if (business.service.AuthorizationService.isWarehouseStaff(acc)) {
+                        WarehouseDashboardView warehouseScreen = new WarehouseDashboardView();
+                        warehouseScreen.setVisible(true);
+                        warehouseScreen.setLocationRelativeTo(null);
                     } else {
                         // Nếu là Manager hoặc Staff -> Mở Dashboard nghiệp vụ cửa hàng
                         DashboardView mainScreen = new DashboardView();
