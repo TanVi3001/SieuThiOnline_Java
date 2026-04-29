@@ -19,6 +19,13 @@ import javax.swing.table.DefaultTableModel;
 import model.product.Product;
 import model.product.ProductUnit;
 
+// THÊM THƯ VIỆN ĐỂ ĐỌC FILE VÀ MỞ CỬA SỔ CHỌN FILE
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.nio.charset.StandardCharsets;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 public class ProductView extends JPanel {
 
     // --- CẤU HÌNH MÀU SẮC CHUẨN MODERN UI ---
@@ -33,7 +40,7 @@ public class ProductView extends JPanel {
     private JTextField txtName, txtPrice, txtQuantity, txtCategory, txtSearch;
     private JTable tblProducts;
     private DefaultTableModel tableModel;
-    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch, btnExportPDF, btnUnitConfig;
+    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch, btnExportPDF, btnUnitConfig, btnImport;
 
     public ProductView() {
         setLayout(new BorderLayout(20, 20));
@@ -53,11 +60,12 @@ public class ProductView extends JPanel {
             btnUpdate.setVisible(false);
             btnDelete.setVisible(false);
             btnUnitConfig.setVisible(false);
+            btnImport.setVisible(false); // Thu ngân cũng không được import file
         }
     }
 
     private void initUI() {
-        // --- HEADER (Tiêu đề + Ô Tìm kiếm + Nút Xuất Excel) ---
+        // --- HEADER (Tiêu đề + Ô Tìm kiếm + Nút Xuất Excel + Nút Nhập CSV) ---
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
 
@@ -80,9 +88,13 @@ public class ProductView extends JPanel {
         btnSearch = createCustomButton("Tìm kiếm", primaryBlue, Color.WHITE);
         btnExportPDF = createCustomButton("Xuất Excel", new Color(0, 163, 108), Color.WHITE);
         
+        // NÚT NHẬP CSV MÀU TÍM
+        btnImport = createCustomButton("Nhập CSV", new Color(103, 58, 183), Color.WHITE);
+        
         toolPanel.add(txtSearch);
         toolPanel.add(btnSearch);
         toolPanel.add(btnExportPDF);
+        toolPanel.add(btnImport); // Gắn nút vào thanh công cụ
 
         headerPanel.add(titlePanel, BorderLayout.WEST);
         headerPanel.add(toolPanel, BorderLayout.EAST);
@@ -267,6 +279,9 @@ public class ProductView extends JPanel {
         btnSearch.addActionListener(e -> btnSearchActionPerformed());
         btnExportPDF.addActionListener(e -> btnExportPDFActionPerformed());
         btnUnitConfig.addActionListener(e -> showUnitConfigDialog());
+        
+        // 👇 GẮN SỰ KIỆN CHO NÚT NHẬP CSV 👇
+        btnImport.addActionListener(e -> handleImportCSV());
     }
 
     private void btnAddActionPerformed() {                                         
@@ -535,6 +550,76 @@ public class ProductView extends JPanel {
         List<ProductUnit> units = ProductUnitsSql.getInstance().selectByProductId(productId);
         for (ProductUnit unit : units) {
             model.addRow(new Object[]{ unit.getUnitId(), unit.getConversionRateToBase(), unit.getIsBaseUnit() == 1 ? "Có" : "" });
+        }
+    }
+
+    // ==========================================
+    // HÀM XỬ LÝ NHẬP FILE CSV VÀO HỆ THỐNG
+    // ==========================================
+    private void handleImportCSV() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn file CSV sản phẩm để nhập vào hệ thống");
+        
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("File dữ liệu CSV (*.csv)", "csv");
+        fileChooser.setFileFilter(filter);
+
+        int userSelection = fileChooser.showOpenDialog(this);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToImport = fileChooser.getSelectedFile();
+            int successCount = 0;
+            int failCount = 0;
+
+            try (BufferedReader br = new BufferedReader(new FileReader(fileToImport, StandardCharsets.UTF_8))) {
+                String line;
+                boolean isHeader = true;
+
+                while ((line = br.readLine()) != null) {
+                    if (isHeader) {
+                        isHeader = false; // Bỏ qua dòng tiêu đề
+                        continue;
+                    }
+
+                    String[] data = line.split(",");
+                    
+                    // Mã SP, Tên SP, Giá, Số lượng, Mã Danh Mục
+                    if (data.length >= 5) {
+                        try {
+                            Product p = new Product();
+                            p.setProductId(data[0].trim());
+                            p.setProductName(data[1].trim());
+                            p.setBasePrice(new BigDecimal(data[2].trim()));
+                            p.setQuantity(Integer.parseInt(data[3].trim()));
+                            p.setCategoryId(data[4].trim()); 
+                            
+                            p.setSupplierId("SUP001"); 
+                            p.setStoreId("ST001");    
+                            p.setUnit("Cái");
+
+                            if (ProductsSql.getInstance().insert(p)) {
+                                successCount++;
+                            } else {
+                                failCount++;
+                            }
+                        } catch (Exception ex) {
+                            failCount++;
+                            System.err.println("Lỗi dòng dữ liệu: " + line);
+                        }
+                    }
+                }
+
+                JOptionPane.showMessageDialog(this, 
+                    "Quá trình nhập dữ liệu kết thúc!\n" +
+                    "✅ Thành công: " + successCount + " sản phẩm\n" +
+                    "❌ Thất bại: " + failCount + " (Có thể trùng mã hoặc sai định dạng)",
+                    "Thông báo Import", JOptionPane.INFORMATION_MESSAGE);
+                
+                loadDataToTable(); // Tự động load lại bảng
+
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Không thể đọc file: " + e.getMessage(), "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            }
         }
     }
 }

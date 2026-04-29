@@ -52,7 +52,6 @@ public class WarehouseSidebar extends JPanel {
         menuPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
         // THÊM CÁC MỤC MENU CHUẨN KHO HÀNG
-        addMenuItem("Tổng quan kho");
         addMenuItem("Quản lý tồn kho"); 
         addMenuItem("Quản lý sản phẩm");
         addMenuItem("Nhà cung cấp");

@@ -30,9 +30,6 @@ public class WarehouseDashboardView extends JFrame {
         warehouseSidebar = new WarehouseSidebar();
         warehouseSidebar.setMenuClickListener(title -> {
             switch (title) {
-                case "Tổng quan kho":
-                    // showPanel(new view.InventoryOverviewPanel());
-                    break;
                 case "Quản lý tồn kho":
                     // showPanel(new view.InventoryManagementPanel());
                     break;
