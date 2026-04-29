@@ -1,194 +1,446 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
 package view;
 
-/**
- *
- * @author Admin
- */
 import business.sql.prod_inventory.ProductsSql;
 import business.sql.prod_inventory.ProductUnitsSql;
 import business.service.UnitOfMeasureService;
+import business.service.AuthorizationService;
 import common.utils.Validator;
-import java.awt.BorderLayout;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import model.product.Product;
 import model.product.ProductUnit;
-import view.components.ExportToolbar;
 
-public class ProductView extends javax.swing.JPanel {
+public class ProductView extends JPanel {
 
-    /**
-     * Creates new form ProductView
-     */
-    private ExportToolbar toolbar; // Khai báo toolbar ở mức class để dễ truy cập
+    // --- CẤU HÌNH MÀU SẮC CHUẨN MODERN UI ---
+    private final Color bgLight = new Color(244, 246, 250);
+    private final Color cardWhite = Color.WHITE;
+    private final Color primaryBlue = new Color(67, 97, 238);
+    private final Color textDark = new Color(43, 54, 116);
+    private final Color textGray = new Color(163, 174, 208);
+    private final Color borderGray = new Color(230, 235, 241);
 
-    private javax.swing.JButton btnUnitConfig;
+    // --- KHAI BÁO UI COMPONENTS ---
+    private JTextField txtName, txtPrice, txtQuantity, txtCategory, txtSearch;
+    private JTable tblProducts;
+    private DefaultTableModel tableModel;
+    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch, btnExportPDF, btnUnitConfig;
 
     public ProductView() {
-        initComponents();
+        setLayout(new BorderLayout(20, 20));
+        setBackground(bgLight);
+        setBorder(new EmptyBorder(20, 30, 20, 30)); // Padding cho toàn màn hình
 
-        initTableModel();
+        initUI();
         initEvents();
-        initUnitConfigButton();
         loadDataToTable();
 
-        // 1. Khởi tạo ExportToolbar mới (chứa Auto-Complete ComboBox)
-        toolbar = new ExportToolbar(this);
-        add(toolbar, BorderLayout.PAGE_START);
-
-        // 2. GẮN NÃO CHO NÚT TÌM KIẾM TỪ TOOLBAR
-        toolbar.getBtnSearch().addActionListener(e -> {
-            String keyword = toolbar.getSearchText();
-            // Gọi xuống DB để tìm danh sách sản phẩm khớp với từ khóa
-            List<Product> filteredList = ProductsSql.getInstance().searchByName(keyword);
-            // Đổ lại dữ liệu lên bảng
-            fillTable(filteredList);
-        });
-
-        this.revalidate();
-        this.repaint();
+        // ---------------------------------------------------------
+        // KIỂM TRA QUYỀN (AUTHORIZATION) BẢO VỆ DỮ LIỆU
+        // ---------------------------------------------------------
+        if (AuthorizationService.isCashier()) {
+            // Nếu là Thu ngân -> Tàng hình các nút chỉnh sửa, chỉ cho xem
+            btnAdd.setVisible(false);
+            btnUpdate.setVisible(false);
+            btnDelete.setVisible(false);
+            btnUnitConfig.setVisible(false);
+        }
     }
 
-    private void initTableModel() {
-        DefaultTableModel model = new DefaultTableModel(
-                new Object[]{"Mã sản phẩm", "Tên sản phẩm", "Giá", "Số lượng", "Loại sản phẩm"}, 0
-        ) {
+    private void initUI() {
+        // --- HEADER (Tiêu đề + Ô Tìm kiếm + Nút Xuất Excel) ---
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
+
+        JPanel titlePanel = new JPanel(new GridLayout(2, 1));
+        titlePanel.setOpaque(false);
+        JLabel lblTitle = new JLabel("Danh Mục Sản Phẩm");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        lblTitle.setForeground(textDark);
+        JLabel lblSub = new JLabel("Quản lý thông tin, giá bán và số lượng tồn kho");
+        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblSub.setForeground(textGray);
+        titlePanel.add(lblTitle);
+        titlePanel.add(lblSub);
+
+        JPanel toolPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        toolPanel.setOpaque(false);
+        txtSearch = createTextField("Nhập tên sản phẩm...");
+        txtSearch.setPreferredSize(new Dimension(280, 40));
+        
+        btnSearch = createCustomButton("Tìm kiếm", primaryBlue, Color.WHITE);
+        btnExportPDF = createCustomButton("Xuất Excel", new Color(0, 163, 108), Color.WHITE);
+        
+        toolPanel.add(txtSearch);
+        toolPanel.add(btnSearch);
+        toolPanel.add(btnExportPDF);
+
+        headerPanel.add(titlePanel, BorderLayout.WEST);
+        headerPanel.add(toolPanel, BorderLayout.EAST);
+        add(headerPanel, BorderLayout.NORTH);
+
+        // --- CENTER (Form Nhập liệu + Bảng Dữ liệu) ---
+        JPanel centerPanel = new JPanel(new BorderLayout(20, 0));
+        centerPanel.setOpaque(false);
+
+        // 1. LEFT FORM (Thẻ Form trắng bo góc bên trái)
+        RoundedPanel formCard = new RoundedPanel(20, cardWhite);
+        formCard.setPreferredSize(new Dimension(350, 0));
+        formCard.setLayout(new GridBagLayout());
+        formCard.setBorder(new EmptyBorder(20, 25, 20, 25));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+        gbc.anchor = GridBagConstraints.WEST;
+
+        txtName = createTextField("Nhập tên...");
+        txtPrice = createTextField("Nhập giá (VNĐ)...");
+        txtQuantity = createTextField("Nhập số lượng...");
+        txtCategory = createTextField("Nhập mã loại...");
+
+        int y = 0;
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0); formCard.add(createLabel("Tên sản phẩm (*)"), gbc);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 15, 0); formCard.add(txtName, gbc);
+
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0); formCard.add(createLabel("Giá bán (*)"), gbc);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 15, 0); formCard.add(txtPrice, gbc);
+
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0); formCard.add(createLabel("Số lượng (*)"), gbc);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 15, 0); formCard.add(txtQuantity, gbc);
+
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0); formCard.add(createLabel("Loại sản phẩm (*)"), gbc);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 30, 0); formCard.add(txtCategory, gbc);
+
+        // Grid chứa 5 nút chức năng
+        btnAdd = createCustomButton("Thêm", primaryBlue, Color.WHITE);
+        btnUpdate = createCustomButton("Cập nhật", new Color(255, 153, 0), Color.BLACK);
+        btnDelete = createCustomButton("Xóa", new Color(220, 53, 69), Color.WHITE);
+        btnClear = createCustomButton("Làm mới", new Color(230, 235, 241), textDark);
+        btnUnitConfig = createCustomButton("Đơn vị", textGray, Color.WHITE);
+
+        JPanel btnGrid = new JPanel(new GridLayout(3, 2, 10, 10));
+        btnGrid.setOpaque(false);
+        btnGrid.add(btnAdd);
+        btnGrid.add(btnUpdate);
+        btnGrid.add(btnDelete);
+        btnGrid.add(btnClear);
+        btnGrid.add(btnUnitConfig);
+
+        gbc.gridy = y++; formCard.add(btnGrid, gbc);
+        centerPanel.add(formCard, BorderLayout.WEST);
+
+        // 2. RIGHT TABLE (Thẻ chứa JTable bo góc bên phải)
+        RoundedPanel tableCard = new RoundedPanel(20, cardWhite);
+        tableCard.setLayout(new BorderLayout());
+        tableCard.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        tableModel = new DefaultTableModel(new Object[]{"Mã SP", "Tên sản phẩm", "Giá", "Số lượng", "Loại SP"}, 0) {
+            @Override public boolean isCellEditable(int row, int column) { return false; }
+        };
+        tblProducts = new JTable(tableModel);
+        tblProducts.setRowHeight(35); // Bảng cao ráo, dễ bấm
+        tblProducts.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tblProducts.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        tblProducts.getTableHeader().setBackground(bgLight);
+        tblProducts.getTableHeader().setReorderingAllowed(false);
+        tblProducts.setShowVerticalLines(false);
+        tblProducts.setSelectionBackground(new Color(237, 242, 255));
+        tblProducts.setSelectionForeground(textDark);
+
+        JScrollPane scrollPane = new JScrollPane(tblProducts);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(Color.WHITE);
+        tableCard.add(scrollPane, BorderLayout.CENTER);
+
+        centerPanel.add(tableCard, BorderLayout.CENTER);
+        add(centerPanel, BorderLayout.CENTER);
+    }
+
+    // ==========================================
+    // CÁC HÀM UI HELPERS
+    // ==========================================
+    private JLabel createLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lbl.setForeground(textDark);
+        return lbl;
+    }
+
+    private JTextField createTextField(String placeholder) {
+        JTextField txt = new JTextField();
+        txt.setPreferredSize(new Dimension(200, 40));
+        txt.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txt.putClientProperty("JTextField.placeholderText", placeholder);
+        txt.setBorder(BorderFactory.createCompoundBorder(
+                new RoundBorder(borderGray, 8), new EmptyBorder(5, 10, 5, 10)
+        ));
+        return txt;
+    }
+
+    private JButton createCustomButton(String text, Color bg, Color fg) {
+        JButton btn = new JButton(text) {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(bg);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                super.paintComponent(g);
+                g2.dispose();
             }
         };
-        tblProducts.setModel(model);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setForeground(fg);
+        btn.setPreferredSize(new Dimension(100, 38));
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        btn.addMouseListener(new MouseAdapter() {
+            @Override public void mouseEntered(MouseEvent e) { btn.setOpaque(false); }
+        });
+        return btn;
     }
 
+    class RoundedPanel extends JPanel {
+        private int radius;
+        private Color bgColor;
+
+        public RoundedPanel(int radius, Color bgColor) {
+            this.radius = radius;
+            this.bgColor = bgColor;
+            setOpaque(false);
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(bgColor);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
+
+    class RoundBorder implements javax.swing.border.Border {
+        private Color color;
+        private int radius;
+
+        public RoundBorder(Color color, int radius) { this.color = color; this.radius = radius; }
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(color);
+            g2.setStroke(new BasicStroke(1.2f));
+            g2.drawRoundRect(x, y, width - 1, height - 1, radius, radius);
+            g2.dispose();
+        }
+        @Override public Insets getBorderInsets(Component c) { return new Insets(1, 1, 1, 1); }
+        @Override public boolean isBorderOpaque() { return false; }
+    }
+
+    // ==========================================
+    // LOGIC & SỰ KIỆN TỪ FILE CŨ (GIỮ NGUYÊN)
+    // ==========================================
     private void initEvents() {
-        tblProducts.addMouseListener(new java.awt.event.MouseAdapter() {
+        tblProducts.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                ProductView.this.tblProductsMouseClicked(evt); // gọi hàm của class ngoài
+            public void mouseClicked(MouseEvent evt) {
+                tblProductsMouseClicked(evt);
             }
         });
-    }
-
-    private void initUnitConfigButton() {
-        btnUnitConfig = new javax.swing.JButton("Don vi");
-        btnUnitConfig.setFont(new java.awt.Font("Segoe UI", 1, 14));
+        btnAdd.addActionListener(e -> btnAddActionPerformed());
+        btnUpdate.addActionListener(e -> btnUpdateActionPerformed());
+        btnDelete.addActionListener(e -> btnDeleteActionPerformed());
+        btnClear.addActionListener(e -> btnClearActionPerformed());
+        btnSearch.addActionListener(e -> btnSearchActionPerformed());
+        btnExportPDF.addActionListener(e -> btnExportPDFActionPerformed());
         btnUnitConfig.addActionListener(e -> showUnitConfigDialog());
-        pnlButton.add(btnUnitConfig);
     }
 
-    private String getSelectedProductId() {
-        int viewRow = tblProducts.getSelectedRow();
-        if (viewRow < 0) {
-            return null;
-        }
-        int modelRow = tblProducts.convertRowIndexToModel(viewRow);
-        Object value = tblProducts.getModel().getValueAt(modelRow, 0);
-        return value == null ? null : value.toString().trim();
-    }
+    private void btnAddActionPerformed() {                                         
+        if (!validateInput()) return;
+        Product p = getProductFromForm();
+        if (p == null) return;
 
-    private void showUnitConfigDialog() {
-        String productId = getSelectedProductId();
-        if (productId == null || productId.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Chon san pham can cau hinh don vi!");
+        if (p.getProductId() == null || p.getProductId().trim().isEmpty()) {
+            p.setProductId("PROD" + (System.currentTimeMillis() % 1000000));
+        }
+
+        if (p.getCategoryId() == null || p.getCategoryId().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Loại sản phẩm (category_id) không được rỗng!");
             return;
         }
 
-        DefaultTableModel unitModel = new DefaultTableModel(
-                new Object[]{"Don vi", "Ty le ve don vi goc", "Don vi goc"}, 0
-        ) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        loadProductUnits(productId, unitModel);
+        if (p.getSupplierId() == null || p.getSupplierId().trim().isEmpty()) {
+            p.setSupplierId("SUP001");
+        }
+        if (p.getStoreId() == null || p.getStoreId().trim().isEmpty()) {
+            p.setStoreId("ST001"); 
+        }
+        if (p.getUnit() == null || p.getUnit().trim().isEmpty()) {
+            p.setUnit("Cái");
+        }
 
-        JTable unitTable = new JTable(unitModel);
-        JTextField txtUnitName = new JTextField();
-        JTextField txtRate = new JTextField("1");
-        JCheckBox chkBase = new JCheckBox("Dat lam don vi goc");
+        boolean ok = ProductsSql.getInstance().insert(p);
+        if (ok) {
+            JOptionPane.showMessageDialog(this, "Thêm thành công!");
+            loadDataToTable();
+            btnClearActionPerformed();
+        } else {
+            JOptionPane.showMessageDialog(this, "Thêm thất bại! Kiểm tra category_id / supplier_id / store_id.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }                                        
 
-        JPanel form = new JPanel(new java.awt.GridLayout(0, 1, 0, 6));
-        form.add(new JLabel("Cac don vi hien co"));
-        form.add(new JScrollPane(unitTable));
-        form.add(new JLabel("Ten don vi"));
-        form.add(txtUnitName);
-        form.add(new JLabel("Ty le quy doi ve don vi goc"));
-        form.add(txtRate);
-        form.add(chkBase);
-
-        int result = JOptionPane.showConfirmDialog(
-                this,
-                form,
-                "Cau hinh don vi cho " + productId,
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE
-        );
-
-        if (result != JOptionPane.OK_OPTION) {
+    private void btnUpdateActionPerformed() {                                            
+        int row = tblProducts.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Chọn dòng cần sửa!");
             return;
         }
 
-        String unitName = txtUnitName.getText().trim();
-        String rateText = txtRate.getText().trim();
-        if (unitName.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Ten don vi khong duoc rong!");
+        String idOld = tblProducts.getValueAt(row, 0).toString().trim();
+        Product p = getProductFromForm();
+        if (p == null) return;
+
+        p.setProductId(idOld); 
+
+        if (ProductsSql.getInstance().update(p)) {
+            JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+            loadDataToTable(); 
+        } else {
+            JOptionPane.showMessageDialog(this, "Thất bại! Check mã Loại/Giá.");
+        }
+    }                                           
+
+    private void btnDeleteActionPerformed() {                                            
+        int row = tblProducts.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Chọn dòng cần xóa!");
             return;
         }
 
-        try {
-            BigDecimal rate = new BigDecimal(rateText);
-            boolean ok = new UnitOfMeasureService()
-                    .configureProductUnit(productId, unitName, rate, chkBase.isSelected());
-            if (ok) {
-                JOptionPane.showMessageDialog(this, "Da cap nhat don vi tinh!");
+        String id = tblProducts.getValueAt(row, 0).toString();
+        int confirm = JOptionPane.showConfirmDialog(this, "Xóa sản phẩm " + id + "?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            boolean usedInOrders = ProductsSql.getInstance().isUsedInOrders(id);
+            if (ProductsSql.getInstance().delete(id)) {
+                if (usedInOrders) {
+                    JOptionPane.showMessageDialog(this, "Sản phẩm đã có trong hóa đơn nên hệ thống chỉ ẩn sản phẩm.", "Đã ẩn sản phẩm", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Xóa mềm sản phẩm thành công!");
+                }
+                loadDataToTable();
+                btnClearActionPerformed();
             } else {
-                JOptionPane.showMessageDialog(this, "Khong cap nhat duoc don vi tinh.", "Loi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Không thể xóa sản phẩm.", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ty le quy doi phai la so hop le!", "Loi", JOptionPane.ERROR_MESSAGE);
+        }
+    }                                           
+
+    private void btnClearActionPerformed() {                                          
+        txtName.setText("");
+        txtPrice.setText("");
+        txtQuantity.setText("");
+        txtCategory.setText("");
+        tblProducts.clearSelection();
+    }                                         
+
+    private void btnSearchActionPerformed() {                                           
+        String keyword = txtSearch.getText().trim();
+        List<Product> list = ProductsSql.getInstance().searchByName(keyword);
+        fillTable(list);
+    }                                          
+
+    private void btnExportPDFActionPerformed() {                                              
+        try {
+            List<Map<String, Object>> productList = getAllProductsFromTable();
+
+            if (productList.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Không có dữ liệu để xuất!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Lưu file Excel");
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileChooser.setSelectedFile(new java.io.File("SanPham_" + System.currentTimeMillis() + ".xlsx"));
+
+            int userSelection = fileChooser.showSaveDialog(this);
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+                common.report.ExcelExporter.exportInventoryFromMap(productList, filePath);
+                JOptionPane.showMessageDialog(this, "✅ Xuất Excel thành công!\nFile: " + filePath, "Thành công", JOptionPane.INFORMATION_MESSAGE);
+            }
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "❌ Lỗi xuất Excel: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
+    }                                             
+
+    private void tblProductsMouseClicked(MouseEvent evt) {
+        int row = tblProducts.getSelectedRow();
+        if (row < 0) return;
+
+        Object nameObj = tblProducts.getValueAt(row, 1);
+        Object priceObj = tblProducts.getValueAt(row, 2);
+        Object qtyObj = tblProducts.getValueAt(row, 3);
+        Object categoryObj = tblProducts.getValueAt(row, 4);
+
+        txtName.setText(nameObj == null ? "" : nameObj.toString());
+        txtPrice.setText(priceObj == null ? "" : priceObj.toString());
+        txtQuantity.setText(qtyObj == null ? "" : qtyObj.toString());
+        txtCategory.setText(categoryObj == null ? "" : categoryObj.toString());
+    }
+
+    private List<Map<String, Object>> getAllProductsFromTable() {
+        List<Map<String, Object>> list = new ArrayList<>();
+        int rowCount = tblProducts.getRowCount();
+        for (int i = 0; i < rowCount; i++) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("productId", tblProducts.getValueAt(i, 0));
+            row.put("productName", tblProducts.getValueAt(i, 1));
+            row.put("price", tblProducts.getValueAt(i, 2));
+            row.put("quantity", tblProducts.getValueAt(i, 3));
+            list.add(row);
+        }
+        return list;
+    }
+
+    public void loadDataToTable() {
+        tableModel.setRowCount(0);
+        try {
+            List<Product> list = ProductsSql.getInstance().selectAll();
+            for (Product p : list) {
+                Object[] row = { p.getProductId(), p.getProductName(), p.getBasePrice(), p.getQuantity(), p.getCategoryId() };
+                tableModel.addRow(row);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    private void loadProductUnits(String productId, DefaultTableModel model) {
-        model.setRowCount(0);
-        List<ProductUnit> units = ProductUnitsSql.getInstance().selectByProductId(productId);
-        for (ProductUnit unit : units) {
-            model.addRow(new Object[]{
-                unit.getUnitId(),
-                unit.getConversionRateToBase(),
-                unit.getIsBaseUnit() == 1 ? "Co" : ""
-            });
-        }
+    public void refreshTable() {
+        loadDataToTable();
     }
 
     private void fillTable(List<Product> list) {
-        DefaultTableModel model = (DefaultTableModel) tblProducts.getModel();
-        model.setRowCount(0);
+        tableModel.setRowCount(0);
         for (Product p : list) {
-            model.addRow(new Object[]{
-                p.getProductId(),
-                p.getProductName(),
-                p.getBasePrice(),
-                p.getQuantity(),
-                p.getCategoryId()
-            });
+            tableModel.addRow(new Object[]{ p.getProductId(), p.getProductName(), p.getBasePrice(), p.getQuantity(), p.getCategoryId() });
         }
     }
 
@@ -202,7 +454,7 @@ public class ProductView extends javax.swing.JPanel {
             return false;
         }
         try {
-            BigDecimal bigDecimal = new BigDecimal(txtPrice.getText());
+            new BigDecimal(txtPrice.getText());
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Giá không hợp lệ!");
             return false;
@@ -212,541 +464,77 @@ public class ProductView extends javax.swing.JPanel {
 
     private Product getProductFromForm() {
         Product p = new Product();
-
         String name = txtName.getText().trim();
         String priceText = txtPrice.getText().trim();
         String qtyText = txtQuantity.getText().trim();
         String categoryId = txtCategory.getText().trim();
 
-        if (name.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Tên sản phẩm không được rỗng!");
-            return null;
-        }
-        if (priceText.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Giá không được rỗng!");
-            return null;
-        }
-        if (qtyText.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Số lượng không được rỗng!");
-            return null;
-        }
-        if (categoryId.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Loại sản phẩm (category_id) không được rỗng!");
+        if (name.isEmpty() || priceText.isEmpty() || qtyText.isEmpty() || categoryId.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập đủ Tên, Giá, Số lượng và Loại SP!");
             return null;
         }
 
         try {
-            java.math.BigDecimal price = new java.math.BigDecimal(priceText);
-            int qty = Integer.parseInt(qtyText);
-
-            // product_id: tự sinh tạm thời
-            String productId = "PROD_" + System.currentTimeMillis();
-
-            p.setProductId(productId);
             p.setProductName(name);
-            p.setBasePrice(price);
-            p.setQuantity(qty);
+            p.setBasePrice(new BigDecimal(priceText));
+            p.setQuantity(Integer.parseInt(qtyText));
             p.setCategoryId(categoryId);
-
-            // tạm hard-code để qua FK (phải tồn tại trong DB)
-            p.setSupplierId("SUP001");
-            p.setStoreId("ST001");
-            p.setUnit("Cái");
-
             return p;
         } catch (Exception e) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Giá/Số lượng không hợp lệ!");
             return null;
         }
     }
 
-    private void showPanel(javax.swing.JPanel panel) {
-        java.awt.Window win = javax.swing.SwingUtilities.getWindowAncestor(this);
-        if (win instanceof javax.swing.JFrame frame) {
-            frame.setContentPane(panel);
-            frame.revalidate();
-            frame.repaint();
-        }
-    }
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">
-
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
-
-        pnForm = new javax.swing.JPanel();
-        ProductName = new javax.swing.JLabel();
-        txtName = new javax.swing.JTextField();
-        price = new javax.swing.JLabel();
-        txtPrice = new javax.swing.JTextField();
-        Quantity = new javax.swing.JLabel();
-        txtQuantity = new javax.swing.JTextField();
-        Category = new javax.swing.JLabel();
-        txtCategory = new javax.swing.JTextField();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        tblProducts = new javax.swing.JTable();
-        pnlButton = new javax.swing.JPanel();
-        btnAdd = new javax.swing.JButton();
-        btnUpdate = new javax.swing.JButton();
-        btnDelete = new javax.swing.JButton();
-        btnClear = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
-        txtSearch = new javax.swing.JTextField();
-        btnSearch = new javax.swing.JButton();
-        btnExportPDF = new javax.swing.JButton();
-
-        setBackground(new java.awt.Color(236, 240, 241));
-        setLayout(new java.awt.BorderLayout());
-
-        pnForm.setBackground(new java.awt.Color(236, 240, 241));
-        pnForm.setPreferredSize(new java.awt.Dimension(280, 0));
-        pnForm.setLayout(new java.awt.GridBagLayout());
-
-        ProductName.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        ProductName.setText("Tên sản phẩm");
-        ProductName.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.ipadx = 182;
-        gridBagConstraints.ipady = 16;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(1, 6, 0, 0);
-        pnForm.add(ProductName, gridBagConstraints);
-
-        txtName.addActionListener(this::txtNameActionPerformed);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.ipadx = 210;
-        gridBagConstraints.ipady = 14;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        pnForm.add(txtName, gridBagConstraints);
-
-        price.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        price.setText("Giá");
-        price.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.ipadx = 252;
-        gridBagConstraints.ipady = 16;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        pnForm.add(price, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.ipadx = 210;
-        gridBagConstraints.ipady = 14;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        pnForm.add(txtPrice, gridBagConstraints);
-
-        Quantity.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        Quantity.setText("Số lượng");
-        Quantity.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.ipadx = 214;
-        gridBagConstraints.ipady = 16;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        pnForm.add(Quantity, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.ipadx = 210;
-        gridBagConstraints.ipady = 14;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        pnForm.add(txtQuantity, gridBagConstraints);
-
-        Category.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        Category.setText("Loại sản phẩm");
-        Category.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.ipadx = 179;
-        gridBagConstraints.ipady = 16;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        pnForm.add(Category, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.ipadx = 210;
-        gridBagConstraints.ipady = 14;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 2, 0);
-        pnForm.add(txtCategory, gridBagConstraints);
-
-        add(pnForm, java.awt.BorderLayout.LINE_START);
-
-        jScrollPane1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-
-        tblProducts.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        tblProducts.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
-            },
-            new String [] {
-                "Mã sản phẩm", "Tên sản phẩm", "Giá", "Số lượng", "Loại sản phẩm"
-            }
-        ));
-        jScrollPane1.setViewportView(tblProducts);
-
-        add(jScrollPane1, java.awt.BorderLayout.CENTER);
-
-        pnlButton.setBackground(new java.awt.Color(236, 240, 241));
-        pnlButton.setPreferredSize(new java.awt.Dimension(0, 60));
-
-        btnAdd.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnAdd.setText("Thêm");
-        btnAdd.addActionListener(this::btnAddActionPerformed);
-        pnlButton.add(btnAdd);
-
-        btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnUpdate.setText("Cập nhật");
-        btnUpdate.addActionListener(this::btnUpdateActionPerformed);
-        pnlButton.add(btnUpdate);
-
-        btnDelete.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnDelete.setText("Xóa");
-        btnDelete.addActionListener(this::btnDeleteActionPerformed);
-        pnlButton.add(btnDelete);
-
-        btnClear.setBackground(new java.awt.Color(255, 255, 204));
-        btnClear.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnClear.setText("Làm mới");
-        btnClear.addActionListener(this::btnClearActionPerformed);
-        pnlButton.add(btnClear);
-
-        add(pnlButton, java.awt.BorderLayout.PAGE_END);
-
-        jPanel1.setBackground(new java.awt.Color(236, 240, 241));
-        jPanel1.setPreferredSize(new java.awt.Dimension(877, 35));
-
-        txtSearch.addActionListener(this::txtSearchActionPerformed);
-
-        btnSearch.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnSearch.setText("Tìm kiếm");
-        btnSearch.addActionListener(this::btnSearchActionPerformed);
-
-        btnExportPDF.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnExportPDF.setText("Xuất Execl");
-        btnExportPDF.addActionListener(this::btnExportPDFActionPerformed);
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap(280, Short.MAX_VALUE)
-                .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 458, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnSearch)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnExportPDF)
-                .addGap(15, 15, 15))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(9, 9, 9)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSearch)
-                    .addComponent(btnExportPDF))
-                .addGap(3, 3, 3))
-        );
-
-        add(jPanel1, java.awt.BorderLayout.PAGE_START);
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
-        if (!validateInput()) {
-            return;
-        }
-
-        Product p = getProductFromForm();
-        if (p == null) {
-            return;
-        }
-
-        // Nếu chưa có productId thì tự sinh
-        if (p.getProductId() == null || p.getProductId().trim().isEmpty()) {
-            p.setProductId("PROD" + (System.currentTimeMillis() % 1000000));
-        }
-
-        // Bắt buộc cho FK (đảm bảo các mã này tồn tại trong DB)
-        if (p.getCategoryId() == null || p.getCategoryId().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Loại sản phẩm (category_id) không được rỗng!");
-            return;
-        }
-
-        if (p.getSupplierId() == null || p.getSupplierId().trim().isEmpty()) {
-            p.setSupplierId("SUP001"); // tạm mặc định
-        }
-
-        if (p.getStoreId() == null || p.getStoreId().trim().isEmpty()) {
-            p.setStoreId("ST001"); // tạm mặc định
-        }
-
-        if (p.getUnit() == null || p.getUnit().trim().isEmpty()) {
-            p.setUnit("Cái");
-        }
-
-        boolean ok = ProductsSql.getInstance().insert(p);
-
-        if (ok) {
-            JOptionPane.showMessageDialog(this, "Thêm thành công!");
-            loadDataToTable();
-            btnClearActionPerformed(null);
-        } else {
-            JOptionPane.showMessageDialog(this,
-                    "Thêm thất bại! Kiểm tra category_id / supplier_id / store_id có tồn tại trong DB.",
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
-    }//GEN-LAST:event_btnAddActionPerformed
-
-    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
-        int row = tblProducts.getSelectedRow();
-        if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Chọn dòng cần sửa!");
-            return;
-        }
-
-        // Lấy ID gốc từ cột 0 để làm điều kiện WHERE
-        String idOld = tblProducts.getValueAt(row, 0).toString().trim();
-        Product p = getProductFromForm();
-        if (p == null) {
-            return;
-        }
-
-        p.setProductId(idOld); // Ép ID cũ vào để SQL tìm đúng dòng
-
-        if (ProductsSql.getInstance().update(p)) {
-            JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
-            loadDataToTable(); // ĐỒNG BỘ LẠI UI
-        } else {
-            JOptionPane.showMessageDialog(this, "Thất bại! Check mã Loại/Giá.");
-        }
-    }//GEN-LAST:event_btnUpdateActionPerformed
-
-    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
-        int row = tblProducts.getSelectedRow();
-        if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Chọn dòng cần xóa!");
-            return;
-        }
-
-        String id = tblProducts.getValueAt(row, 0).toString();
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "Xóa sản phẩm " + id + "?",
-                "Xác nhận",
-                JOptionPane.YES_NO_OPTION);
-
-        if (confirm == JOptionPane.YES_OPTION) {
-            boolean usedInOrders = ProductsSql.getInstance().isUsedInOrders(id);
-            if (ProductsSql.getInstance().delete(id)) {
-                if (usedInOrders) {
-                    JOptionPane.showMessageDialog(this,
-                            "Sản phẩm đã có trong hóa đơn nên hệ thống chỉ ẩn sản phẩm khỏi kho/danh sách bán.",
-                            "Đã ẩn sản phẩm",
-                            JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(this, "Xóa mềm sản phẩm thành công!");
-                }
-                loadDataToTable();
-                btnClearActionPerformed(null);
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "Không thể xóa sản phẩm. Có thể sản phẩm đã bị ẩn hoặc không còn tồn tại.",
-                        "Lỗi",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }//GEN-LAST:event_btnDeleteActionPerformed
-
-    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
-        txtName.setText("");
-        txtPrice.setText("");
-        txtQuantity.setText("");
-        txtCategory.setText("");
-        tblProducts.clearSelection();
-    }//GEN-LAST:event_btnClearActionPerformed
-
-    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
-        String keyword = txtSearch.getText().trim();
-        List<Product> list = ProductsSql.getInstance().searchByName(keyword);
-        fillTable(list);
-    }//GEN-LAST:event_btnSearchActionPerformed
-
-    private void btnExportPDFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportPDFActionPerformed
-        // TODO add your handling code here:
-        try {
-            // 1. Lấy dữ liệu từ bảng
-            List<Map<String, Object>> productList = getAllProductsFromTable();
-
-            if (productList.isEmpty()) {
-                javax.swing.JOptionPane.showMessageDialog(this,
-                        "Không có dữ liệu để xuất!",
-                        "Thông báo",
-                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
-
-            // 2. Chọn nơi lưu file
-            javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
-            fileChooser.setDialogTitle("Lưu file Excel");
-            fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
-            fileChooser.setSelectedFile(new java.io.File("SanPham_" + System.currentTimeMillis() + ".xlsx"));
-
-            int userSelection = fileChooser.showSaveDialog(this);
-            if (userSelection == javax.swing.JFileChooser.APPROVE_OPTION) {
-                String filePath = fileChooser.getSelectedFile().getAbsolutePath();
-
-                // 3. Gọi service xuất Excel
-                common.report.ExcelExporter.exportInventoryFromMap(productList, filePath);
-
-                // 4. Hiển thị thành công
-                javax.swing.JOptionPane.showMessageDialog(this,
-                        "✅ Xuất Excel thành công!\nFile: " + filePath,
-                        "Thành công",
-                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
-            }
-
-        } catch (Exception ex) {
-            javax.swing.JOptionPane.showMessageDialog(this,
-                    "❌ Lỗi xuất Excel: " + ex.getMessage(),
-                    "Lỗi",
-                    javax.swing.JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-        }
-    }//GEN-LAST:event_btnExportPDFActionPerformed
-
-    private void txtNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNameActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtNameActionPerformed
-
-    private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtSearchActionPerformed
-
-    private void tblProductsMouseClicked(java.awt.event.MouseEvent evt) {
-        int row = tblProducts.getSelectedRow();
-        if (row < 0) {
-            return;
-        }
-
-        Object nameObj = tblProducts.getValueAt(row, 1);
-        Object priceObj = tblProducts.getValueAt(row, 2);
-        Object qtyObj = tblProducts.getValueAt(row, 3);
-        Object categoryObj = tblProducts.getValueAt(row, 4);
-
-        txtName.setText(nameObj == null ? "" : nameObj.toString());
-        txtPrice.setText(priceObj == null ? "" : priceObj.toString());
-        txtQuantity.setText(qtyObj == null ? "" : qtyObj.toString());
-        txtCategory.setText(categoryObj == null ? "" : categoryObj.toString());
-    }
-// Helper: lấy tất cả dữ liệu từ JTable
-
-    private List<Map<String, Object>> getAllProductsFromTable() {
-        List<Map<String, Object>> list = new ArrayList<>();
-        int rowCount = tblProducts.getRowCount();
-
-        for (int i = 0; i < rowCount; i++) {
-            Map<String, Object> row = new HashMap<>();
-            row.put("productId", tblProducts.getValueAt(i, 0));
-            row.put("productName", tblProducts.getValueAt(i, 1));
-            row.put("price", tblProducts.getValueAt(i, 2));
-            row.put("quantity", tblProducts.getValueAt(i, 3));
-            list.add(row);
-        }
-        return list;
+    private String getSelectedProductId() {
+        int viewRow = tblProducts.getSelectedRow();
+        if (viewRow < 0) return null;
+        int modelRow = tblProducts.convertRowIndexToModel(viewRow);
+        Object value = tblProducts.getModel().getValueAt(modelRow, 0);
+        return value == null ? null : value.toString().trim();
     }
 
-    public void loadDataToTable() {
-        DefaultTableModel model = (DefaultTableModel) tblProducts.getModel();
+    private void showUnitConfigDialog() {
+        String productId = getSelectedProductId();
+        if (productId == null || productId.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Chọn sản phẩm cần cấu hình đơn vị!");
+            return;
+        }
+
+        DefaultTableModel unitModel = new DefaultTableModel(new Object[]{"Đơn vị", "Tỷ lệ về ĐV gốc", "ĐV gốc"}, 0) {
+            @Override public boolean isCellEditable(int row, int column) { return false; }
+        };
+        loadProductUnits(productId, unitModel);
+
+        JTable unitTable = new JTable(unitModel);
+        JTextField txtUnitName = new JTextField();
+        JTextField txtRate = new JTextField("1");
+        JCheckBox chkBase = new JCheckBox("Đặt làm đơn vị gốc");
+
+        JPanel form = new JPanel(new java.awt.GridLayout(0, 1, 0, 6));
+        form.add(new JLabel("Các đơn vị hiện có"));
+        form.add(new JScrollPane(unitTable));
+        form.add(new JLabel("Tên đơn vị"));
+        form.add(txtUnitName);
+        form.add(new JLabel("Tỷ lệ quy đổi"));
+        form.add(txtRate);
+        form.add(chkBase);
+
+        int result = JOptionPane.showConfirmDialog(this, form, "Cấu hình đơn vị cho " + productId, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                boolean ok = new UnitOfMeasureService().configureProductUnit(productId, txtUnitName.getText().trim(), new BigDecimal(txtRate.getText().trim()), chkBase.isSelected());
+                if (ok) JOptionPane.showMessageDialog(this, "Đã cập nhật đơn vị tính!");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi cập nhật tỷ lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void loadProductUnits(String productId, DefaultTableModel model) {
         model.setRowCount(0);
-
-        try {
-            List<model.product.Product> list
-                    = business.sql.prod_inventory.ProductsSql.getInstance().selectAll();
-
-            for (model.product.Product p : list) {
-                Object[] row = {
-                    p.getProductId(),
-                    p.getProductName(),
-                    p.getBasePrice(),
-                    p.getQuantity(),
-                    p.getCategoryId() // thêm cột Loại SP
-                };
-                model.addRow(row);
-            }
-        } catch (Exception e) {
-            System.out.println("Lỗi load bảng: " + e.getMessage());
-            e.printStackTrace();
+        List<ProductUnit> units = ProductUnitsSql.getInstance().selectByProductId(productId);
+        for (ProductUnit unit : units) {
+            model.addRow(new Object[]{ unit.getUnitId(), unit.getConversionRateToBase(), unit.getIsBaseUnit() == 1 ? "Có" : "" });
         }
     }
-
-    public void refreshTable() {
-        // 1. Sửa tblSanPham -> tblProducts
-        DefaultTableModel model = (DefaultTableModel) tblProducts.getModel();
-        model.setRowCount(0);
-
-        try {
-            // 2. Gọi đúng Instance của ProductsSql để lấy dữ liệu
-            List<model.product.Product> list = business.sql.prod_inventory.ProductsSql.getInstance().selectAll();
-
-            for (model.product.Product p : list) {
-                model.addRow(new Object[]{
-                    p.getProductId(),
-                    p.getProductName(),
-                    p.getBasePrice(),
-                    p.getQuantity(),
-                    p.getCategoryId() // Sửa getCategoryName -> getCategoryId
-                });
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel Category;
-    private javax.swing.JLabel ProductName;
-    private javax.swing.JLabel Quantity;
-    private javax.swing.JButton btnAdd;
-    private javax.swing.JButton btnClear;
-    private javax.swing.JButton btnDelete;
-    private javax.swing.JButton btnExportPDF;
-    private javax.swing.JButton btnSearch;
-    private javax.swing.JButton btnUpdate;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JPanel pnForm;
-    private javax.swing.JPanel pnlButton;
-    private javax.swing.JLabel price;
-    private javax.swing.JTable tblProducts;
-    private javax.swing.JTextField txtCategory;
-    private javax.swing.JTextField txtName;
-    private javax.swing.JTextField txtPrice;
-    private javax.swing.JTextField txtQuantity;
-    private javax.swing.JTextField txtSearch;
-    // End of variables declaration//GEN-END:variables
 }

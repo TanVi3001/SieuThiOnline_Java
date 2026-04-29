@@ -39,7 +39,8 @@ public final class AuthorizationService {
     public static boolean isWarehouseStaff(Account account) {
         if (account == null) return false;
         String role = normalize(account.getRole());
-        return role.equals("rstaffstock") || role.equals("nhanvienkho");
+        // Thêm rstaffviewprod vào nhóm Kho hàng
+        return role.equals("rstaffstock") || role.equals("nhanvienkho") || role.equals("rstaffviewprod");
     }
 
     // =========================================================
