@@ -1,679 +1,284 @@
 package view;
 
-import business.sql.sales_order.CustomersSql;
-import common.utils.Validator;
-import java.awt.Window;
-import java.util.List;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
-import model.order.Customer;
 
-/**
- *
- * @author Admin
- */
-public class CustomerView extends javax.swing.JPanel {
+public class CustomerView extends JPanel {
 
-    /**
-     * Creates new form CustomerView
-     */
+    // --- CẤU HÌNH MÀU SẮC CHUẨN MODERN UI ---
+    private final Color bgLight = new Color(244, 246, 250);
+    private final Color cardWhite = Color.WHITE;
+    private final Color primaryBlue = new Color(67, 97, 238);
+    private final Color textDark = new Color(43, 54, 116);
+    private final Color textGray = new Color(163, 174, 208);
+    private final Color borderGray = new Color(230, 235, 241);
+
+    // --- KHAI BÁO UI COMPONENTS ---
+    private JTextField txtId, txtName, txtPhone, txtEmail, txtAddress, txtSearch;
+    private JTable tblCustomers;
+    private DefaultTableModel tableModel;
+    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch;
+
     public CustomerView() {
-        initComponents();
+        setLayout(new BorderLayout(20, 20));
+        setBackground(bgLight);
+        setBorder(new EmptyBorder(20, 30, 20, 30)); // Padding cho toàn màn hình
 
-        javax.swing.JTextField[] fields = {txtCustomerName, txtPhone, txtEmail, txtAddress};
-        for (javax.swing.JTextField f : fields) {
-            f.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 30));
-            f.setMinimumSize(new java.awt.Dimension(100, 30));
-            f.setPreferredSize(new java.awt.Dimension(250, 30));
-        }
-        txtAddress.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 30));
-        txtAddress.setPreferredSize(new java.awt.Dimension(200, 30));
-
+        initUI();
         initEvents();
-        initTableModel();
-        loadDataToTable();
-        setupModernUI();
-
-        this.revalidate();
-        this.repaint();
-    }
-    
-    private void setupModernUI() {
-        // ── Màu chủ đạo ─────────────────────────────────────────────────────────
-        java.awt.Color navy    = new java.awt.Color(26, 43, 74);
-        java.awt.Color teal    = new java.awt.Color(0, 168, 140);
-        java.awt.Color red     = new java.awt.Color(211, 60, 60);
-        java.awt.Color yellow  = new java.awt.Color(230, 180, 50);
-        java.awt.Color bgField = new java.awt.Color(245, 247, 250);
-        java.awt.Color border  = new java.awt.Color(218, 224, 232);
-
-        // ── Panel TOP – thanh tìm kiếm ──────────────────────────────────────────
-        pnTop.removeAll();
-        pnTop.setLayout(new java.awt.BorderLayout(8, 0));
-        pnTop.setBackground(new java.awt.Color(240, 242, 245));
-        pnTop.setPreferredSize(new java.awt.Dimension(0, 52));
-        pnTop.setBorder(javax.swing.BorderFactory.createCompoundBorder(
-            javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, border),
-            javax.swing.BorderFactory.createEmptyBorder(8, 16, 8, 16)
-        ));
-        jTextField1.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
-        jTextField1.setBackground(java.awt.Color.WHITE);
-        jTextField1.setBorder(javax.swing.BorderFactory.createCompoundBorder(
-            new javax.swing.border.LineBorder(border, 1, true),
-            javax.swing.BorderFactory.createEmptyBorder(5, 12, 5, 12)
-        ));
-        jTextField1.putClientProperty("JTextField.placeholderText", "Tìm kiếm khách hàng...");
-        styleButtonRound(btnSearch, teal, java.awt.Color.WHITE);
-        pnTop.add(jTextField1, java.awt.BorderLayout.CENTER);
-        pnTop.add(btnSearch, java.awt.BorderLayout.EAST);
-        pnTop.revalidate();
-        pnTop.repaint();
-        // ── Panel TRÁI – form nhập liệu ─────────────────────────────────────────
-        pnIn4Customer.setBackground(java.awt.Color.WHITE);
-        pnIn4Customer.setOpaque(true);
-        pnIn4Customer.setPreferredSize(new java.awt.Dimension(260, 0));
-        pnIn4Customer.setBorder(javax.swing.BorderFactory.createCompoundBorder(
-            javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 1, border),
-            javax.swing.BorderFactory.createEmptyBorder(16, 6, 16, 16)
-        ));
-
-        // Label style
-        java.awt.Font labelFont = new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12);
-        for (java.awt.Component c : pnIn4Customer.getComponents()) {
-            if (c instanceof javax.swing.JLabel lbl) {
-                lbl.setFont(labelFont);
-                lbl.setForeground(navy);
-            }
-        }
-
-        // Textfield style – đồng đều nhau
-        javax.swing.JTextField[] inputs = {txtCustomerID, txtCustomerName, txtPhone, txtEmail, txtAddress};
-        for (javax.swing.JTextField f : inputs) {
-            f.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
-            f.setBackground(bgField);
-            f.setForeground(new java.awt.Color(44, 62, 80));
-            f.setPreferredSize(new java.awt.Dimension(220, 34));
-            f.setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 34));
-            f.setMinimumSize(new java.awt.Dimension(100, 34));
-            f.setBorder(javax.swing.BorderFactory.createCompoundBorder(
-                new javax.swing.border.LineBorder(border, 1, true),
-                javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 10)
-            ));
-        }
-
-        // ── Panel BOTTOM – nút bấm ──────────────────────────────────────────────
-        pnButton.setBackground(new java.awt.Color(240, 242, 245));
-        pnButton.setPreferredSize(new java.awt.Dimension(0, 58));
-        pnButton.setBorder(javax.swing.BorderFactory.createCompoundBorder(
-            javax.swing.BorderFactory.createMatteBorder(1, 0, 0, 0, border),
-            javax.swing.BorderFactory.createEmptyBorder(10, 16, 10, 16)
-        ));
-
-        styleButtonRound(btnThem, navy, java.awt.Color.WHITE);
-        styleButtonRound(btnCapNhat, teal, java.awt.Color.WHITE);
-        styleButtonRound(btnXoa, red, java.awt.Color.WHITE);
-        styleButtonRound(btnLamMoi, yellow, navy);
-
-        // ── Bảng jTable1 ────────────────────────────────────────────────────────
-        jTable1.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, 13));
-        jTable1.setRowHeight(34);
-        jTable1.setGridColor(border);
-        jTable1.setSelectionBackground(new java.awt.Color(210, 220, 235));
-        jTable1.setSelectionForeground(navy);
-        jTable1.setShowHorizontalLines(true);
-        jTable1.setShowVerticalLines(false);
-        jTable1.setIntercellSpacing(new java.awt.Dimension(0, 1));
-        jTable1.setFillsViewportHeight(true);
-
-        // Header
-        javax.swing.table.JTableHeader header = jTable1.getTableHeader();
-        header.setPreferredSize(new java.awt.Dimension(header.getWidth(), 38));
-        header.setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
-            @Override
-            public java.awt.Component getTableCellRendererComponent(
-                    javax.swing.JTable table, Object value,
-                    boolean isSelected, boolean hasFocus, int row, int col) {
-                javax.swing.JLabel lbl = (javax.swing.JLabel)
-                    super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-                lbl.setBackground(navy);
-                lbl.setForeground(java.awt.Color.WHITE);
-                lbl.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
-                lbl.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 12, 0, 12));
-                lbl.setOpaque(true);
-                return lbl;
-            }
-        });
-
-        // Alternate row
-        jTable1.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
-            @Override
-            public java.awt.Component getTableCellRendererComponent(
-                    javax.swing.JTable table, Object value,
-                    boolean isSelected, boolean hasFocus, int row, int col) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-                setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 12, 0, 12));
-                if (isSelected) {
-                    setBackground(new java.awt.Color(210, 220, 235));
-                    setForeground(navy);
-                } else {
-                    setBackground(row % 2 == 0 ? java.awt.Color.WHITE : new java.awt.Color(248, 250, 252));
-                    setForeground(new java.awt.Color(44, 62, 80));
-                }
-                return this;
-            }
-        });
-
-        this.revalidate();
-        this.repaint();
+        loadCustomerData(); // Load dữ liệu khách hàng xịn từ Database
     }
 
-    private void styleButtonRound(javax.swing.JButton btn, java.awt.Color bg, java.awt.Color fg) {
-        btn.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
-        btn.setForeground(fg);
-        btn.setFocusPainted(false);
-        btn.setContentAreaFilled(false);
-        btn.setBorderPainted(false);
-        btn.setOpaque(false);
-        btn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btn.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 22, 8, 22));
+    private void initUI() {
+        // ==========================================
+        // 1. HEADER (Tiêu đề + Ô Tìm kiếm)
+        // ==========================================
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
 
-        java.awt.Color hover = bg.darker();
-        btn.setUI(new javax.swing.plaf.basic.BasicButtonUI() {
+        JPanel titlePanel = new JPanel(new GridLayout(2, 1));
+        titlePanel.setOpaque(false);
+        JLabel lblTitle = new JLabel("Khách Hàng");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        lblTitle.setForeground(textDark);
+        JLabel lblSub = new JLabel("Quản lý thông tin liên hệ và địa chỉ khách hàng");
+        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblSub.setForeground(textGray);
+        titlePanel.add(lblTitle);
+        titlePanel.add(lblSub);
+
+        JPanel toolPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        toolPanel.setOpaque(false);
+        txtSearch = createTextField("Nhập tên khách hàng...");
+        txtSearch.setPreferredSize(new Dimension(280, 40));
+        
+        btnSearch = createCustomButton("Tìm kiếm", primaryBlue, Color.WHITE);
+        toolPanel.add(txtSearch);
+        toolPanel.add(btnSearch);
+
+        headerPanel.add(titlePanel, BorderLayout.WEST);
+        headerPanel.add(toolPanel, BorderLayout.EAST);
+        add(headerPanel, BorderLayout.NORTH);
+
+        // ==========================================
+        // 2. CENTER (Thẻ Form trái + Thẻ Bảng phải)
+        // ==========================================
+        JPanel centerPanel = new JPanel(new BorderLayout(20, 0));
+        centerPanel.setOpaque(false);
+
+        // --- LEFT FORM (Thẻ Form trắng bo góc bên trái) ---
+        RoundedPanel formCard = new RoundedPanel(20, cardWhite);
+        formCard.setPreferredSize(new Dimension(350, 0));
+        formCard.setLayout(new GridBagLayout());
+        formCard.setBorder(new EmptyBorder(20, 25, 20, 25));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+        gbc.anchor = GridBagConstraints.WEST;
+
+        txtId = createTextField("Mã tự động...");
+        txtId.setEnabled(false); // Mã khách hàng thường không tự sửa
+        txtName = createTextField("Nhập tên khách hàng...");
+        txtPhone = createTextField("Nhập số điện thoại...");
+        txtEmail = createTextField("Nhập email...");
+        txtAddress = createTextField("Nhập địa chỉ...");
+
+        int y = 0;
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0); formCard.add(createLabel("Mã khách hàng"), gbc);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 15, 0); formCard.add(txtId, gbc);
+
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0); formCard.add(createLabel("Tên khách hàng (*)"), gbc);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 15, 0); formCard.add(txtName, gbc);
+
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0); formCard.add(createLabel("Số điện thoại (*)"), gbc);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 15, 0); formCard.add(txtPhone, gbc);
+
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0); formCard.add(createLabel("Email"), gbc);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 15, 0); formCard.add(txtEmail, gbc);
+
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0); formCard.add(createLabel("Địa chỉ"), gbc);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 30, 0); formCard.add(txtAddress, gbc);
+
+        // GRID CHỨA 4 NÚT CHỨC NĂNG BÊN DƯỚI FORM
+        btnAdd = createCustomButton("Thêm", primaryBlue, Color.WHITE);
+        btnUpdate = createCustomButton("Cập nhật", new Color(255, 153, 0), Color.BLACK); // Màu cam giống ProductView
+        btnDelete = createCustomButton("Xóa", new Color(220, 53, 69), Color.WHITE);
+        btnClear = createCustomButton("Làm mới", new Color(230, 235, 241), textDark);
+
+        JPanel btnGrid = new JPanel(new GridLayout(2, 2, 10, 10));
+        btnGrid.setOpaque(false);
+        btnGrid.add(btnAdd);
+        btnGrid.add(btnUpdate);
+        btnGrid.add(btnDelete);
+        btnGrid.add(btnClear);
+
+        gbc.gridy = y++; formCard.add(btnGrid, gbc);
+        centerPanel.add(formCard, BorderLayout.WEST);
+
+        // --- RIGHT TABLE (Thẻ chứa JTable bo góc bên phải) ---
+        RoundedPanel tableCard = new RoundedPanel(20, cardWhite);
+        tableCard.setLayout(new BorderLayout());
+        tableCard.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        tableModel = new DefaultTableModel(new Object[]{"Mã KH", "Tên khách hàng", "Số điện thoại", "Email", "Địa chỉ"}, 0) {
+            @Override public boolean isCellEditable(int row, int column) { return false; }
+        };
+        tblCustomers = new JTable(tableModel);
+        
+        // Chỉnh style bảng
+        tblCustomers.setRowHeight(35);
+        tblCustomers.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tblCustomers.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        tblCustomers.getTableHeader().setBackground(bgLight);
+        tblCustomers.getTableHeader().setReorderingAllowed(false);
+        tblCustomers.setShowVerticalLines(false);
+        tblCustomers.setSelectionBackground(new Color(237, 242, 255));
+        tblCustomers.setSelectionForeground(textDark);
+
+        JScrollPane scrollPane = new JScrollPane(tblCustomers);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(Color.WHITE);
+        tableCard.add(scrollPane, BorderLayout.CENTER);
+
+        centerPanel.add(tableCard, BorderLayout.CENTER);
+        add(centerPanel, BorderLayout.CENTER);
+    }
+
+    // ==========================================
+    // UI HELPERS
+    // ==========================================
+    private JLabel createLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lbl.setForeground(textDark);
+        return lbl;
+    }
+
+    private JTextField createTextField(String placeholder) {
+        JTextField txt = new JTextField();
+        txt.setPreferredSize(new Dimension(200, 40));
+        txt.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txt.putClientProperty("JTextField.placeholderText", placeholder);
+        txt.setBorder(BorderFactory.createCompoundBorder(
+                new RoundBorder(borderGray, 8), new EmptyBorder(5, 10, 5, 10)
+        ));
+        return txt;
+    }
+
+    private JButton createCustomButton(String text, Color bg, Color fg) {
+        JButton btn = new JButton(text) {
             @Override
-            public void paint(java.awt.Graphics g, javax.swing.JComponent c) {
-                java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
-                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
-                        java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-                java.awt.Color cur = btn.getModel().isRollover() ? hover : bg;
-                g2.setColor(cur);
-                g2.fillRoundRect(0, 0, c.getWidth(), c.getHeight(), 20, 20);
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(bg);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                super.paintComponent(g);
                 g2.dispose();
-                super.paint(g, c);
-            }
-        });
-    }
-
-    // =========================
-    // Khởi tạo model bảng đúng cột (thêm cột địa chỉ)
-    // =========================
-    private void initTableModel() {
-        DefaultTableModel model = new DefaultTableModel(
-                new Object[]{"Mã khách hàng", "Tên khách hàng", "Số điện thoại", "Email", "Địa chỉ"}, 0
-        ) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
             }
         };
-        jTable1.setModel(model);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setForeground(fg);
+        btn.setPreferredSize(new Dimension(100, 38));
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        btn.addMouseListener(new MouseAdapter() {
+            @Override public void mouseEntered(MouseEvent e) { btn.setOpaque(false); }
+        });
+        return btn;
     }
 
-    // =========================
-    // Gắn event cho các nút và bảng
-    // =========================
+    class RoundedPanel extends JPanel {
+        private int radius;
+        private Color bgColor;
+
+        public RoundedPanel(int radius, Color bgColor) {
+            this.radius = radius;
+            this.bgColor = bgColor;
+            setOpaque(false);
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(bgColor);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
+
+    class RoundBorder implements javax.swing.border.Border {
+        private Color color;
+        private int radius;
+
+        public RoundBorder(Color color, int radius) { this.color = color; this.radius = radius; }
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(color);
+            g2.setStroke(new BasicStroke(1.2f));
+            g2.drawRoundRect(x, y, width - 1, height - 1, radius, radius);
+            g2.dispose();
+        }
+        @Override public Insets getBorderInsets(Component c) { return new Insets(1, 1, 1, 1); }
+        @Override public boolean isBorderOpaque() { return false; }
+    }
+
+    // ==========================================
+    // LOGIC & SỰ KIỆN 
+    // ==========================================
     private void initEvents() {
-        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+        // Đổ dữ liệu từ Bảng lên Form khi click
+        tblCustomers.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jTable1MouseClicked(evt);
+            public void mouseClicked(MouseEvent evt) {
+                int row = tblCustomers.getSelectedRow();
+                if (row >= 0) {
+                    txtId.setText(tblCustomers.getValueAt(row, 0).toString());
+                    txtName.setText(tblCustomers.getValueAt(row, 1).toString());
+                    txtPhone.setText(tblCustomers.getValueAt(row, 2).toString());
+                    txtEmail.setText(tblCustomers.getValueAt(row, 3).toString());
+                    txtAddress.setText(tblCustomers.getValueAt(row, 4).toString());
+                }
             }
+        });
+
+        // Xóa form
+        btnClear.addActionListener(e -> {
+            txtId.setText("");
+            txtName.setText("");
+            txtPhone.setText("");
+            txtEmail.setText("");
+            txtAddress.setText("");
+            tblCustomers.clearSelection();
         });
     }
 
-    // =========================
-    // Load toàn bộ dữ liệu từ DB lên bảng
-    // =========================
-    private void loadDataToTable() {
+    private void loadCustomerData() {
+        tableModel.setRowCount(0);
         try {
-            List<Customer> list = CustomersSql.getInstance().selectAll();
-            fillTable(list);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi tải dữ liệu: " + ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            java.util.List<model.order.Customer> list = business.sql.sales_order.CustomersSql.getInstance().getCustomersWithOrders();
+            
+            for (model.order.Customer c : list) {
+                String id = c.getCustomerId() != null ? c.getCustomerId() : "";
+                String name = c.getCustomerName() != null ? c.getCustomerName() : "";
+                String phone = c.getPhone() != null ? c.getPhone() : "";
+                String email = c.getEmail() != null ? c.getEmail() : "";
+                String address = c.getAddress() != null ? c.getAddress() : "";
+
+                tableModel.addRow(new Object[]{ id, name, phone, email, address });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
-
-    // Hàm đổ list vào bảng (dùng chung cho load + search)
-    private void fillTable(List<Customer> list) {
-        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        model.setRowCount(0);
-        for (Customer c : list) {
-            model.addRow(new Object[]{
-                c.getCustomerID(),
-                c.getCustomerName(),
-                c.getPhone(),
-                c.getEmail(),
-                c.getAddress()
-            });
-        }
-    }
-
-    // =========================
-    // Validate input
-    // =========================
-    private boolean validateInput(boolean checkCustomerId) {
-        String customerId = txtCustomerID.getText().trim();
-        String customerName = txtCustomerName.getText().trim();
-        String phone = txtPhone.getText().trim();
-        String email = txtEmail.getText().trim();
-
-        if (checkCustomerId && (customerId.isEmpty() || !Validator.isNotEmpty(customerId))) {
-            JOptionPane.showMessageDialog(this, "Mã khách hàng không được để trống!");
-            txtCustomerID.requestFocus();
-            return false;
-        }
-        if (customerName.isEmpty() || !Validator.isNotEmpty(customerName)) {
-            JOptionPane.showMessageDialog(this, "Tên khách hàng không được để trống!");
-            txtCustomerName.requestFocus();
-            return false;
-        }
-        if (!Validator.isValidPhone(phone)) {
-            JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ!");
-            txtPhone.requestFocus();
-            return false;
-        }
-        if (!Validator.isValidEmail(email)) {
-            JOptionPane.showMessageDialog(this, "Email không hợp lệ!");
-            txtEmail.requestFocus();
-            return false;
-        }
-        return true;
-    }
-
-    // Build object Customer từ form
-    private Customer getCustomerFromForm(String customerId) {
-        Customer c = new Customer();
-        c.setCustomerID(customerId);
-        c.setCustomerName(txtCustomerName.getText().trim());
-        c.setPhone(txtPhone.getText().trim());
-        c.setEmail(txtEmail.getText().trim());
-        c.setAddress(txtAddress.getText().trim());
-        return c;
-    }
-
-    // =========================
-    // MouseClicked jTable1
-    // =========================
-    private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {
-        int row = jTable1.getSelectedRow();
-        if (row < 0) {
-            return;
-        }
-
-        txtCustomerID.setText(String.valueOf(jTable1.getValueAt(row, 0)));
-        txtCustomerName.setText(String.valueOf(jTable1.getValueAt(row, 1)));
-        txtPhone.setText(String.valueOf(jTable1.getValueAt(row, 2)));
-        txtEmail.setText(String.valueOf(jTable1.getValueAt(row, 3)));
-
-        // an toàn nếu model chưa có cột địa chỉ
-        if (jTable1.getColumnCount() > 4) {
-            txtAddress.setText(String.valueOf(jTable1.getValueAt(row, 4)));
-        } else {
-            txtAddress.setText("");
-        }
-    }
-
-    private void showPanel(javax.swing.JPanel panel) {
-        java.awt.Window win = javax.swing.SwingUtilities.getWindowAncestor(this);
-
-        if (win instanceof javax.swing.JFrame frame) {
-            frame.setContentPane(panel);
-            frame.revalidate();
-            frame.repaint();
-        } else if (win instanceof javax.swing.JDialog dialog) {
-            dialog.setContentPane(panel);
-            dialog.revalidate();
-            dialog.repaint();
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">
-
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        pnIn4Customer = new javax.swing.JPanel();
-        CustomerID = new javax.swing.JLabel();
-        txtCustomerID = new javax.swing.JTextField();
-        CustomerName = new javax.swing.JLabel();
-        txtCustomerName = new javax.swing.JTextField();
-        Phone = new javax.swing.JLabel();
-        txtPhone = new javax.swing.JTextField();
-        Email = new javax.swing.JLabel();
-        txtEmail = new javax.swing.JTextField();
-        Address = new javax.swing.JLabel();
-        txtAddress = new javax.swing.JTextField();
-        tbCustomer = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
-        pnButton = new javax.swing.JPanel();
-        btnThem = new javax.swing.JButton();
-        btnCapNhat = new javax.swing.JButton();
-        btnXoa = new javax.swing.JButton();
-        btnLamMoi = new javax.swing.JButton();
-        pnTop = new javax.swing.JPanel();
-        jTextField1 = new javax.swing.JTextField();
-        btnSearch = new javax.swing.JButton();
-
-        setLayout(new java.awt.BorderLayout());
-
-        pnIn4Customer.setBackground(new java.awt.Color(236, 240, 241));
-        pnIn4Customer.setPreferredSize(new java.awt.Dimension(280, 0));
-
-        CustomerID.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        CustomerID.setText("Mã khách hàng");
-
-        txtCustomerID.addActionListener(this::txtCustomerIDActionPerformed);
-
-        CustomerName.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        CustomerName.setText("Tên khách hàng");
-
-        txtCustomerName.setMaximumSize(new java.awt.Dimension(2147483647, 30));
-        txtCustomerName.setPreferredSize(new java.awt.Dimension(250, 30));
-        txtCustomerName.addActionListener(this::txtCustomerNameActionPerformed);
-
-        Phone.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        Phone.setText("Số điện thoại");
-
-        txtPhone.setMaximumSize(new java.awt.Dimension(2147483647, 30));
-        txtPhone.setPreferredSize(new java.awt.Dimension(250, 30));
-        txtPhone.addActionListener(this::txtPhoneActionPerformed);
-
-        Email.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        Email.setText("Email");
-
-        txtEmail.setMaximumSize(new java.awt.Dimension(2147483647, 30));
-        txtEmail.setPreferredSize(new java.awt.Dimension(250, 30));
-        txtEmail.addActionListener(this::txtEmailActionPerformed);
-
-        Address.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        Address.setText("Địa chỉ");
-
-        txtAddress.setMaximumSize(new java.awt.Dimension(2147483647, 30));
-        txtAddress.setPreferredSize(new java.awt.Dimension(200, 30));
-        txtAddress.addActionListener(this::txtAddressActionPerformed);
-
-        javax.swing.GroupLayout pnIn4CustomerLayout = new javax.swing.GroupLayout(pnIn4Customer);
-        pnIn4Customer.setLayout(pnIn4CustomerLayout);
-        pnIn4CustomerLayout.setHorizontalGroup(
-            pnIn4CustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnIn4CustomerLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnIn4CustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(CustomerID, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(pnIn4CustomerLayout.createSequentialGroup()
-                        .addGroup(pnIn4CustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtCustomerID, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(CustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtCustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(Phone, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtPhone, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(Email, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(Address, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        pnIn4CustomerLayout.setVerticalGroup(
-            pnIn4CustomerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnIn4CustomerLayout.createSequentialGroup()
-                .addComponent(CustomerID, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(txtCustomerID, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(CustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(txtCustomerName, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(Phone, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(txtPhone, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(Email, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(Address, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-
-        add(pnIn4Customer, java.awt.BorderLayout.LINE_START);
-
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
-            },
-            new String [] {
-                "Mã khách hàng", "Tên khách hàng", "Số điện thoại", "Email", "Địa chỉ"
-            }
-        ));
-        tbCustomer.setViewportView(jTable1);
-
-        add(tbCustomer, java.awt.BorderLayout.CENTER);
-
-        pnButton.setBackground(new java.awt.Color(236, 240, 241));
-        pnButton.setPreferredSize(new java.awt.Dimension(0, 60));
-
-        btnThem.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnThem.setText("Thêm");
-        btnThem.addActionListener(this::btnThemActionPerformed);
-        pnButton.add(btnThem);
-
-        btnCapNhat.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnCapNhat.setText("Cập nhật");
-        btnCapNhat.addActionListener(this::btnCapNhatActionPerformed);
-        pnButton.add(btnCapNhat);
-
-        btnXoa.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnXoa.setText("Xóa");
-        btnXoa.addActionListener(this::btnXoaActionPerformed);
-        pnButton.add(btnXoa);
-
-        btnLamMoi.setBackground(new java.awt.Color(255, 255, 204));
-        btnLamMoi.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnLamMoi.setText("Làm mới");
-        btnLamMoi.addActionListener(this::btnLamMoiActionPerformed);
-        pnButton.add(btnLamMoi);
-
-        add(pnButton, java.awt.BorderLayout.PAGE_END);
-
-        pnTop.setBackground(new java.awt.Color(236, 240, 241));
-        pnTop.setPreferredSize(new java.awt.Dimension(0, 40));
-
-        jTextField1.addActionListener(this::jTextField1ActionPerformed);
-
-        btnSearch.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnSearch.setText("Tìm kiếm");
-        btnSearch.addActionListener(this::btnSearchActionPerformed);
-
-        javax.swing.GroupLayout pnTopLayout = new javax.swing.GroupLayout(pnTop);
-        pnTop.setLayout(pnTopLayout);
-        pnTopLayout.setHorizontalGroup(
-            pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnTopLayout.createSequentialGroup()
-                .addContainerGap(479, Short.MAX_VALUE)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 401, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(17, 17, 17))
-        );
-        pnTopLayout.setVerticalGroup(
-            pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnTopLayout.createSequentialGroup()
-                .addGap(9, 9, 9)
-                .addGroup(pnTopLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnSearch)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-        );
-
-        add(pnTop, java.awt.BorderLayout.PAGE_START);
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void txtCustomerIDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCustomerIDActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtCustomerIDActionPerformed
-
-    private void btnThemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemActionPerformed
-        // TODO add your handling code here:
-        try {
-            if (!validateInput(true)) {
-                return;
-            }
-
-            Customer customer = getCustomerFromForm(txtCustomerID.getText().trim());
-            int result = CustomersSql.getInstance().insert(customer);
-
-            if (result > 0) {
-                JOptionPane.showMessageDialog(this, "Thêm khách hàng thành công!");
-                loadDataToTable();
-                btnLamMoiActionPerformed(null);
-            } else {
-                JOptionPane.showMessageDialog(this, "Thêm khách hàng thất bại!");
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi thêm khách hàng: " + ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }//GEN-LAST:event_btnThemActionPerformed
-
-    private void btnCapNhatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCapNhatActionPerformed
-        // TODO add your handling code here:
-        try {
-            int row = jTable1.getSelectedRow();
-            if (row < 0) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn khách hàng trên bảng để cập nhật!");
-                return;
-            }
-            String customerId = String.valueOf(jTable1.getValueAt(row, 0));
-
-            if (!validateInput(false)) {
-                return;
-            }
-
-            Customer customer = getCustomerFromForm(customerId);
-            int result = CustomersSql.getInstance().update(customer);
-
-            if (result > 0) {
-                JOptionPane.showMessageDialog(this, "Cập nhật khách hàng thành công!");
-                loadDataToTable();
-            } else {
-                JOptionPane.showMessageDialog(this, "Cập nhật thất bại!");
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi cập nhật khách hàng: " + ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }//GEN-LAST:event_btnCapNhatActionPerformed
-
-    private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaActionPerformed
-        // TODO add your handling code here:
-        try {
-            int row = jTable1.getSelectedRow();
-            if (row < 0) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn khách hàng cần xóa!");
-                return;
-            }
-
-            String customerId = String.valueOf(jTable1.getValueAt(row, 0));
-            int confirm = JOptionPane.showConfirmDialog(
-                    this,
-                    "Bạn có chắc muốn xóa khách hàng mã '" + customerId + "' không?",
-                    "Xác nhận xóa",
-                    JOptionPane.YES_NO_OPTION
-            );
-            if (confirm != JOptionPane.YES_OPTION) {
-                return;
-            }
-
-            int result = CustomersSql.getInstance().delete(customerId);
-            if (result > 0) {
-                JOptionPane.showMessageDialog(this, "Xóa khách hàng thành công!");
-                loadDataToTable();
-                btnXoaActionPerformed(null);
-            } else {
-                JOptionPane.showMessageDialog(this, "Xóa khách hàng thất bại!");
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi xóa khách hàng: " + ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }//GEN-LAST:event_btnXoaActionPerformed
-
-    private void btnLamMoiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLamMoiActionPerformed
-        // TODO add your handling code here:
-        txtCustomerID.setText("");
-        txtCustomerName.setText("");
-        txtPhone.setText("");
-        txtEmail.setText("");
-        txtAddress.setText("");
-        jTextField1.setText("");
-        jTable1.clearSelection();
-        txtCustomerID.requestFocus();
-    }//GEN-LAST:event_btnLamMoiActionPerformed
-
-    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
-        // TODO add your handling code here:
-        try {
-            String keyword = jTextField1.getText().trim();
-            List<Customer> result = CustomersSql.getInstance().search(keyword);
-            fillTable(result);
-            JOptionPane.showMessageDialog(this, "Tìm thấy " + result.size() + " kết quả.");
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi tìm kiếm: " + ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }//GEN-LAST:event_btnSearchActionPerformed
-
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField1ActionPerformed
-
-    private void txtCustomerNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCustomerNameActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtCustomerNameActionPerformed
-
-    private void txtPhoneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtPhoneActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtPhoneActionPerformed
-
-    private void txtEmailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtEmailActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtEmailActionPerformed
-
-    private void txtAddressActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAddressActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtAddressActionPerformed
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel Address;
-    private javax.swing.JLabel CustomerID;
-    private javax.swing.JLabel CustomerName;
-    private javax.swing.JLabel Email;
-    private javax.swing.JLabel Phone;
-    private javax.swing.JButton btnCapNhat;
-    private javax.swing.JButton btnLamMoi;
-    private javax.swing.JButton btnSearch;
-    private javax.swing.JButton btnThem;
-    private javax.swing.JButton btnXoa;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JPanel pnButton;
-    private javax.swing.JPanel pnIn4Customer;
-    private javax.swing.JPanel pnTop;
-    private javax.swing.JScrollPane tbCustomer;
-    private javax.swing.JTextField txtAddress;
-    private javax.swing.JTextField txtCustomerID;
-    private javax.swing.JTextField txtCustomerName;
-    private javax.swing.JTextField txtEmail;
-    private javax.swing.JTextField txtPhone;
-    // End of variables declaration//GEN-END:variables
 }

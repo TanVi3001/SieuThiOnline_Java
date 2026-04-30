@@ -410,4 +410,43 @@ public class CustomersSql implements SqlInterface<Customer> {
         int ar = business.sql.rbac.AuditLogSql.getInstance().insertWithConn(con, log);
         System.out.println("AUDIT CUSTOMER rows=" + ar + ", action=" + actionType + ", entityId=" + entityId);
     }
+    
+    /**
+     * Lấy danh sách Khách hàng ĐÃ TỪNG MUA HÀNG và chưa bị xóa.
+     * Sử dụng EXISTS để tối ưu tốc độ đọc trên Oracle.
+     */
+    public java.util.List<model.order.Customer> getCustomersWithOrders() {
+        java.util.List<model.order.Customer> list = new java.util.ArrayList<>();
+        
+        // SQL CHUẨN THEO SCHEMA:
+        // Lấy khách hàng chưa bị xóa (c.is_deleted = 0)
+        // CÓ TỒN TẠI ít nhất 1 đơn hàng chưa bị xóa (o.is_deleted = 0)
+        String sql = "SELECT customer_id, customer_name, phone, email, address " +
+                     "FROM CUSTOMERS c " +
+                     "WHERE c.is_deleted = 0 " +
+                     "AND EXISTS (" +
+                     "    SELECT 1 FROM ORDERS o " +
+                     "    WHERE o.customer_id = c.customer_id AND o.is_deleted = 0" +
+                     ")";
+
+        try (java.sql.Connection con = common.db.DatabaseConnection.getConnection();
+             java.sql.PreparedStatement ps = con.prepareStatement(sql);
+             java.sql.ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                model.order.Customer c = new model.order.Customer();
+                // Map chính xác tên cột trong schema
+                c.setCustomerId(rs.getString("customer_id"));
+                c.setCustomerName(rs.getString("customer_name"));
+                c.setPhone(rs.getString("phone"));
+                c.setEmail(rs.getString("email"));
+                c.setAddress(rs.getString("address"));
+                
+                list.add(c);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }
