@@ -626,8 +626,8 @@ public class ProductView extends JPanel {
 
                 JOptionPane.showMessageDialog(this, 
                     "Quá trình nhập dữ liệu kết thúc!\n" +
-                    "✅ Thành công: " + successCount + " sản phẩm\n" +
-                    "❌ Thất bại: " + failCount + " (Có thể trùng mã hoặc sai định dạng)",
+                    "Thành công: " + successCount + " sản phẩm\n" +
+                    "Thất bại: " + failCount + " (Có thể trùng mã hoặc sai định dạng)",
                     "Thông báo Import", JOptionPane.INFORMATION_MESSAGE);
                 
                 loadDataToTable(); // Tự động load lại bảng
