@@ -31,7 +31,7 @@ public class WarehouseDashboardView extends JFrame {
         warehouseSidebar.setMenuClickListener(title -> {
             switch (title) {
                 case "Quản lý tồn kho":
-                    // showPanel(new view.InventoryManagementPanel());
+                    showPanel(new view.InventoryView()); 
                     break;
                 case "Quản lý sản phẩm":
                     showPanel(new view.ProductView()); 
@@ -58,9 +58,8 @@ public class WarehouseDashboardView extends JFrame {
         this.getContentPane().add(warehouseSidebar, BorderLayout.WEST); 
         // Content lấp đầy phần GIỮA
         this.getContentPane().add(mainContentPanel, BorderLayout.CENTER); 
-        
-        // Mặc định vô là bật màn hình Sản Phẩm
-        showPanel(new view.ProductView());
+            
+        showPanel(new view.InventoryView());
     }
 
     public void showPanel(JPanel panel) {
