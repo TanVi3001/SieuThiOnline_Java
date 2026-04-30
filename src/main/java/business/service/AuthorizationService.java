@@ -39,7 +39,8 @@ public final class AuthorizationService {
     public static boolean isWarehouseStaff(Account account) {
         if (account == null) return false;
         String role = normalize(account.getRole());
-        return role.equals("rstaffstock") || role.equals("nhanvienkho");
+        // Thêm rstaffviewprod vào nhóm Kho hàng
+        return role.equals("rstaffstock") || role.equals("nhanvienkho") || role.equals("rstaffviewprod");
     }
 
     // =========================================================
@@ -53,7 +54,7 @@ public final class AuthorizationService {
 
     // Màn hình Sản phẩm & Nhập kho: Nhân viên kho, Quản lý, Admin
     public static boolean canAccessProductsAndInventory() {
-        return isWarehouseStaff() || isStoreManager() || isAdmin();
+        return isCashier() || isWarehouseStaff() || isStoreManager() || isAdmin();
     }
 
     // Màn hình Hóa đơn: Thu ngân (để xem/in lại), Quản lý, Admin
