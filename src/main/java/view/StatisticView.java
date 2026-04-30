@@ -5,6 +5,10 @@
 package view;
 
 import business.sql.sales_order.StatisticSql;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +20,7 @@ import javax.swing.table.DefaultTableModel;
  * @author Admin
  */
 public class StatisticView extends javax.swing.JPanel {
+
     private final DecimalFormat moneyFormat = new DecimalFormat("#,##0.##");
 
     /**
@@ -83,6 +88,62 @@ public class StatisticView extends javax.swing.JPanel {
                 moneyFormat.format(row.get("total_revenue"))
             });
         }
+    }
+// 1. Hàm lấy số lượng thẻ cảnh báo (Alert Cards)
+
+    public Map<String, Integer> getDashboardAlerts() throws SQLException {
+        Map<String, Integer> alerts = new java.util.HashMap<>();
+
+        // Đếm số sản phẩm sắp hết hàng (Dưới 10 cái)
+        String sqlLowStock = "SELECT COUNT(*) FROM INVENTORY WHERE quantity < 10 AND is_deleted = 0";
+        // Đếm số đơn hàng đang chờ xử lý
+        String sqlPendingOrder = "SELECT COUNT(*) FROM ORDERS WHERE status = N'Đang xử lý' AND is_deleted = 0";
+        // Đếm khách hàng mới trong tháng
+        String sqlNewCustomer = "SELECT COUNT(*) FROM CUSTOMERS WHERE is_deleted = 0 AND EXTRACT(MONTH FROM SYSDATE) = EXTRACT(MONTH FROM SYSDATE)"; // Giả định điều kiện khách mới
+
+        try (Connection con = common.db.DatabaseConnection.getConnection()) {
+            try (PreparedStatement ps1 = con.prepareStatement(sqlLowStock); ResultSet rs1 = ps1.executeQuery()) {
+                alerts.put("low_stock", rs1.next() ? rs1.getInt(1) : 0);
+            }
+            try (PreparedStatement ps2 = con.prepareStatement(sqlPendingOrder); ResultSet rs2 = ps2.executeQuery()) {
+                alerts.put("pending_orders", rs2.next() ? rs2.getInt(1) : 0);
+            }
+            try (PreparedStatement ps3 = con.prepareStatement(sqlNewCustomer); ResultSet rs3 = ps3.executeQuery()) {
+                alerts.put("new_customers", rs3.next() ? rs3.getInt(1) : 0);
+            }
+        }
+        return alerts;
+    }
+
+    // 2. Hàm lấy danh sách công việc khẩn cấp (Sắp hết hàng + Đơn chờ)
+    public List<Object[]> getPriorityTasks() throws SQLException {
+        List<Object[]> tasks = new java.util.ArrayList<>();
+
+        // Truy vấn 1: Sản phẩm sắp hết hàng
+        String sqlProd = "SELECT 'Hết hàng' AS loai, p.product_id, p.product_name, 'Tồn: ' || i.quantity AS trang_thai "
+                + "FROM PRODUCTS p JOIN INVENTORY i ON p.product_id = i.product_id "
+                + "WHERE i.quantity < 10 AND p.is_deleted = 0 AND i.is_deleted = 0 "
+                + "ORDER BY i.quantity ASC FETCH FIRST 5 ROWS ONLY";
+
+        // Truy vấn 2: Đơn hàng chưa giao
+        String sqlOrder = "SELECT 'Đơn hàng' AS loai, o.order_id, c.customer_name, o.status "
+                + "FROM ORDERS o JOIN CUSTOMERS c ON o.customer_id = c.customer_id "
+                + "WHERE o.status = N'Đang xử lý' AND o.is_deleted = 0 "
+                + "ORDER BY o.order_date ASC FETCH FIRST 5 ROWS ONLY";
+
+        try (Connection con = common.db.DatabaseConnection.getConnection()) {
+            try (PreparedStatement ps = con.prepareStatement(sqlProd); ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    tasks.add(new Object[]{rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4)});
+                }
+            }
+            try (PreparedStatement ps = con.prepareStatement(sqlOrder); ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    tasks.add(new Object[]{rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4)});
+                }
+            }
+        }
+        return tasks;
     }
 
     /**

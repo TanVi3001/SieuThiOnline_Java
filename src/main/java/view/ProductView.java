@@ -379,44 +379,56 @@ public class ProductView extends javax.swing.JPanel {
             return;
         }
 
+        // Lấy dữ liệu từ Form
         Product p = getProductFromForm();
         if (p == null) {
             return;
         }
 
-        // Nếu chưa có productId thì tự sinh
-        if (p.getProductId() == null || p.getProductId().trim().isEmpty()) {
-            p.setProductId("PROD" + (System.currentTimeMillis() % 1000000));
-        }
+        business.sql.prod_inventory.ProductsSql dao = business.sql.prod_inventory.ProductsSql.getInstance();
 
-        // Bắt buộc cho FK (đảm bảo các mã này tồn tại trong DB)
-        if (p.getCategoryId() == null || p.getCategoryId().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Loại sản phẩm (category_id) không được rỗng!");
-            return;
-        }
+        // --- LOGIC 1: KIỂM TRA TRÙNG TÊN SẢN PHẨM ---
+        Product existingProduct = dao.findByExactName(p.getProductName());
 
-        if (p.getSupplierId() == null || p.getSupplierId().trim().isEmpty()) {
-            p.setSupplierId("SUP001"); // tạm mặc định
-        }
+        if (existingProduct != null) {
+            // NẾU ĐÃ TỒN TẠI -> Hiện bảng hỏi xem có muốn cộng dồn không
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Món '" + p.getProductName() + "' đã có trong kho.\nBạn có muốn cộng dồn thêm " + p.getQuantity() + " vào số lượng hiện tại không?",
+                    "Phát hiện trùng lặp", JOptionPane.YES_NO_OPTION);
 
-        if (p.getStoreId() == null || p.getStoreId().trim().isEmpty()) {
-            p.setStoreId("ST001"); // tạm mặc định
-        }
-
-        if (p.getUnit() == null || p.getUnit().trim().isEmpty()) {
-            p.setUnit("Cái");
-        }
-
-        boolean ok = ProductsSql.getInstance().insert(p);
-
-        if (ok) {
-            JOptionPane.showMessageDialog(this, "Thêm thành công!");
-            loadDataToTable();
-            btnClearActionPerformed(null);
+            if (confirm == JOptionPane.YES_OPTION) {
+                // Gọi hàm cộng dồn
+                if (dao.addQuantity(existingProduct.getProductId(), p.getQuantity(), existingProduct.getStoreId())) {
+                    JOptionPane.showMessageDialog(this, "✅ Đã cộng dồn số lượng thành công!");
+                    loadDataToTable();
+                    btnClearActionPerformed(null);
+                } else {
+                    JOptionPane.showMessageDialog(this, "❌ Lỗi khi cộng dồn!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
         } else {
-            JOptionPane.showMessageDialog(this,
-                    "Thêm thất bại! Kiểm tra category_id / supplier_id / store_id có tồn tại trong DB.",
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+            // --- LOGIC 2: SẢN PHẨM HOÀN TOÀN MỚI ---
+            // Gọi hàm sinh mã tự động SP000...
+            p.setProductId(dao.generateNextProductId());
+
+            // Bắt buộc cho FK (tạm mặc định nếu trống)
+            if (p.getSupplierId() == null || p.getSupplierId().trim().isEmpty()) {
+                p.setSupplierId("SUP001");
+            }
+            if (p.getStoreId() == null || p.getStoreId().trim().isEmpty()) {
+                p.setStoreId("ST001");
+            }
+            if (p.getUnit() == null || p.getUnit().trim().isEmpty()) {
+                p.setUnit("Cái");
+            }
+
+            if (dao.insert(p)) {
+                JOptionPane.showMessageDialog(this, "✅ Thêm sản phẩm mới thành công!\nMã tự cấp: " + p.getProductId());
+                loadDataToTable();
+                btnClearActionPerformed(null);
+            } else {
+                JOptionPane.showMessageDialog(this, "❌ Thêm thất bại! Kiểm tra category_id có tồn tại không.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }//GEN-LAST:event_btnAddActionPerformed
 

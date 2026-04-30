@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,8 +71,7 @@ public class StatisticSql {
                 + "ORDER BY total_sold DESC, total_revenue DESC"
                 + ") WHERE ROWNUM <= ?";
 
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement pst = con.prepareStatement(sql)) {
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setInt(1, limit);
             try (ResultSet rs = pst.executeQuery()) {
                 while (rs.next()) {
@@ -84,7 +84,6 @@ public class StatisticSql {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Loi tai StatisticSql.getBestSellingProducts: " + e.getMessage());
             e.printStackTrace();
         }
         return rows;
@@ -101,8 +100,7 @@ public class StatisticSql {
                 + "ORDER BY o.order_date DESC, o.order_id DESC"
                 + ") WHERE ROWNUM <= ?";
 
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement pst = con.prepareStatement(sql)) {
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setInt(1, limit);
             try (ResultSet rs = pst.executeQuery()) {
                 while (rs.next()) {
@@ -116,37 +114,142 @@ public class StatisticSql {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Loi tai StatisticSql.getRecentOrders: " + e.getMessage());
             e.printStackTrace();
         }
         return rows;
     }
 
     private int queryInt(String sql) {
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement pst = con.prepareStatement(sql);
-             ResultSet rs = pst.executeQuery()) {
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql); ResultSet rs = pst.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
-            System.err.println("Loi truy van thong ke: " + e.getMessage());
             e.printStackTrace();
         }
         return 0;
     }
 
     private double queryDouble(String sql) {
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement pst = con.prepareStatement(sql);
-             ResultSet rs = pst.executeQuery()) {
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql); ResultSet rs = pst.executeQuery()) {
             if (rs.next()) {
                 return rs.getDouble(1);
             }
         } catch (SQLException e) {
-            System.err.println("Loi truy van thong ke: " + e.getMessage());
             e.printStackTrace();
         }
         return 0;
+    }
+
+    // =========================================================
+    // CÁC HÀM CHO TRẠM ĐIỀU KHIỂN (TONGQUANPANEL) - DATA THẬT
+    // =========================================================
+    public Map<String, Integer> getDashboardAlerts() throws SQLException {
+        Map<String, Integer> alerts = new HashMap<>();
+        String sqlLowStock = "SELECT COUNT(*) FROM INVENTORY WHERE quantity < 10 AND NVL(is_deleted, 0) = 0";
+        String sqlPendingOrder = "SELECT COUNT(*) FROM ORDERS WHERE status = N'Đang xử lý' AND NVL(is_deleted, 0) = 0";
+        String sqlNewCustomer = "SELECT COUNT(*) FROM CUSTOMERS WHERE NVL(is_deleted, 0) = 0";
+
+        try (Connection con = DatabaseConnection.getConnection()) {
+            try (PreparedStatement ps1 = con.prepareStatement(sqlLowStock); ResultSet rs1 = ps1.executeQuery()) {
+                alerts.put("low_stock", rs1.next() ? rs1.getInt(1) : 0);
+            }
+            try (PreparedStatement ps2 = con.prepareStatement(sqlPendingOrder); ResultSet rs2 = ps2.executeQuery()) {
+                alerts.put("pending_orders", rs2.next() ? rs2.getInt(1) : 0);
+            }
+            try (PreparedStatement ps3 = con.prepareStatement(sqlNewCustomer); ResultSet rs3 = ps3.executeQuery()) {
+                alerts.put("new_customers", rs3.next() ? rs3.getInt(1) : 0);
+            }
+        }
+        return alerts;
+    }
+
+    public List<Object[]> getPriorityTasks() throws SQLException {
+        List<Object[]> tasks = new ArrayList<>();
+        String sqlProd = "SELECT 'Hết hàng' AS loai, p.product_id, p.product_name, 'Tồn: ' || i.quantity AS trang_thai "
+                + "FROM PRODUCTS p JOIN INVENTORY i ON p.product_id = i.product_id "
+                + "WHERE i.quantity < 10 AND NVL(p.is_deleted, 0) = 0 AND NVL(i.is_deleted, 0) = 0 "
+                + "ORDER BY i.quantity ASC FETCH FIRST 5 ROWS ONLY";
+
+        String sqlOrder = "SELECT 'Đơn hàng' AS loai, o.order_id, NVL(c.customer_name, 'Khách vãng lai'), o.status "
+                + "FROM ORDERS o LEFT JOIN CUSTOMERS c ON o.customer_id = c.customer_id "
+                + "WHERE o.status = N'Đang xử lý' AND NVL(o.is_deleted, 0) = 0 "
+                + "ORDER BY o.order_date ASC FETCH FIRST 5 ROWS ONLY";
+
+        try (Connection con = DatabaseConnection.getConnection()) {
+            try (PreparedStatement ps = con.prepareStatement(sqlProd); ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    tasks.add(new Object[]{rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4)});
+                }
+            }
+            try (PreparedStatement ps = con.prepareStatement(sqlOrder); ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    tasks.add(new Object[]{rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4)});
+                }
+            }
+        }
+        return tasks;
+    }
+
+    // 1. Biểu đồ Cột: Doanh thu 5 tháng gần nhất
+    public Map<String, Double> getRevenueByMonth() throws SQLException {
+        Map<String, Double> result = new LinkedHashMap<>();
+        String sql = "SELECT * FROM ( "
+                + "  SELECT TO_CHAR(order_date, 'MM/YYYY') as month_year, MAX(order_date) as max_date, NVL(SUM(total_amount),0) as revenue "
+                + "  FROM ORDERS WHERE NVL(is_deleted, 0) = 0 AND UPPER(NVL(status, '')) <> 'CANCELLED' "
+                + "  GROUP BY TO_CHAR(order_date, 'MM/YYYY') "
+                + "  ORDER BY max_date DESC "
+                + ") WHERE ROWNUM <= 5";
+
+        List<String> keys = new ArrayList<>();
+        List<Double> values = new ArrayList<>();
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                keys.add(rs.getString("month_year"));
+                values.add(rs.getDouble("revenue"));
+            }
+        }
+        // Đảo ngược list để hiển thị từ tháng cũ -> tháng mới
+        for (int i = keys.size() - 1; i >= 0; i--) {
+            result.put(keys.get(i), values.get(i));
+        }
+        return result;
+    }
+
+    // 2. Biểu đồ Đường: Đơn hàng 7 ngày gần nhất
+    public Map<String, Integer> getOrdersByDay() throws SQLException {
+        Map<String, Integer> result = new LinkedHashMap<>();
+        String sql = "SELECT * FROM ( "
+                + "  SELECT TO_CHAR(order_date, 'DD/MM') as order_day, MAX(order_date) as max_date, COUNT(*) as order_count "
+                + "  FROM ORDERS WHERE NVL(is_deleted, 0) = 0 "
+                + "  GROUP BY TO_CHAR(order_date, 'DD/MM') "
+                + "  ORDER BY max_date DESC "
+                + ") WHERE ROWNUM <= 7";
+
+        List<String> keys = new ArrayList<>();
+        List<Integer> values = new ArrayList<>();
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                keys.add(rs.getString("order_day"));
+                values.add(rs.getInt("order_count"));
+            }
+        }
+        for (int i = keys.size() - 1; i >= 0; i--) {
+            result.put(keys.get(i), values.get(i));
+        }
+        return result;
+    }
+
+    // 3. Biểu đồ Tròn: Phân bổ sản phẩm theo Category
+    public Map<String, Integer> getCategoryDistribution() throws SQLException {
+        Map<String, Integer> result = new HashMap<>();
+        String sql = "SELECT NVL(category_id, 'Khác') as cat, COUNT(*) as cnt "
+                + "FROM PRODUCTS WHERE NVL(is_deleted, 0) = 0 GROUP BY category_id";
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                result.put(rs.getString("cat"), rs.getInt("cnt"));
+            }
+        }
+        return result;
     }
 }

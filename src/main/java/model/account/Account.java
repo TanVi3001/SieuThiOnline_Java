@@ -72,4 +72,8 @@ public class Account {
     // TOKEN
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
+
+    public Object getRoleGroupId() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

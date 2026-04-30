@@ -2,6 +2,7 @@ package business.sql.prod_inventory;
 
 import business.sql.rbac.AuditLogSql;
 import common.db.DatabaseConnection;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,15 +25,6 @@ public class ProductsSql {
         return instance;
     }
 
-    /**
-     * Trừ tồn kho trong transaction dùng chung với PaymentService
-     *
-     * @param con
-     * @param productId
-     * @param quantity
-     * @return
-     * @throws java.sql.SQLException
-     */
     public int subtractStockWithConn(Connection con, String productId, int quantity) throws SQLException {
         return subtractStockWithConn(con, productId, quantity, null);
     }
@@ -57,15 +49,6 @@ public class ProductsSql {
         }
     }
 
-    /**
-     * Cộng trả tồn kho trong transaction khi hủy đơn hàng
-     *
-     * @param con
-     * @param productId
-     * @param quantity
-     * @return
-     * @throws java.sql.SQLException
-     */
     public int addStockWithConn(Connection con, String productId, int quantity) throws SQLException {
         return addStockWithConn(con, productId, quantity, null);
     }
@@ -89,11 +72,6 @@ public class ProductsSql {
         }
     }
 
-    /**
-     * Lấy toàn bộ sản phẩm + tồn kho (join inventory)
-     *
-     * @return
-     */
     public List<Product> selectAll() {
         List<Product> list = new ArrayList<>();
 
@@ -115,7 +93,6 @@ public class ProductsSql {
                 p.setCategoryId(rs.getString("category_id"));
                 p.setSupplierId(rs.getString("supplier_id"));
 
-                // Nếu model có các field này thì set, không có thì bỏ 2 dòng dưới
                 try {
                     p.setStoreId(rs.getString("store_id"));
                 } catch (Exception ignored) {
@@ -130,20 +107,11 @@ public class ProductsSql {
                 list.add(p);
             }
         } catch (SQLException e) {
-            System.err.println("Lỗi ProductsSql.selectAll: " + e.getMessage());
             e.printStackTrace();
         }
         return list;
     }
 
-    /**
-     * Thêm mới sản phẩm + khởi tạo tồn kho YÊU CẦU: - category_id tồn tại trong
-     * CATEGORIES - supplier_id tồn tại trong SUPPLIERS - store_id tồn tại trong
-     * STORES
-     *
-     * @param p
-     * @return
-     */
     public boolean insert(Product p) {
         String sqlProduct = "INSERT INTO PRODUCTS "
                 + "(product_id, product_name, base_price, category_id, supplier_id, is_deleted) "
@@ -166,7 +134,6 @@ public class ProductsSql {
                     throw new SQLException("Thiếu dữ liệu bắt buộc khi thêm sản phẩm.");
                 }
 
-                // PRODUCTS
                 psProd.setString(1, p.getProductId());
                 psProd.setString(2, p.getProductName());
                 psProd.setBigDecimal(3, p.getBasePrice());
@@ -174,7 +141,6 @@ public class ProductsSql {
                 psProd.setString(5, p.getSupplierId());
                 int prodRows = psProd.executeUpdate();
 
-                // INVENTORY
                 psInv.setString(1, p.getProductId());
                 psInv.setString(2, safeStoreId(p));
                 psInv.setInt(3, p.getQuantity());
@@ -182,28 +148,18 @@ public class ProductsSql {
                 int invRows = psInv.executeUpdate();
                 ProductUnitsSql.getInstance().ensureBaseUnitWithConn(con, p.getProductId(), safeUnit(p));
 
-                // AUDIT INSERT
                 if (prodRows > 0) {
                     String newValue = joinPairs(
                             pair("product_name", p.getProductName()),
                             pair("base_price", p.getBasePrice()),
                             pair("category_id", p.getCategoryId()),
                             pair("supplier_id", p.getSupplierId()),
-                            pair("is_deleted", 0),
                             pair("store_id", safeStoreId(p)),
                             pair("quantity", p.getQuantity()),
                             pair("unit", safeUnit(p))
                     );
 
-                    logAuditWithConn(
-                            con,
-                            "CREATE_PRODUCT",
-                            "PRODUCT",
-                            p.getProductId(),
-                            null,
-                            newValue,
-                            "Tao moi san pham"
-                    );
+                    logAuditWithConn(con, "CREATE_PRODUCT", "PRODUCT", p.getProductId(), null, newValue, "Tao moi san pham");
                 }
 
                 con.commit();
@@ -211,7 +167,6 @@ public class ProductsSql {
 
             } catch (Exception e) {
                 con.rollback();
-                System.err.println("Lỗi ProductsSql.insert: " + e.getMessage());
                 e.printStackTrace();
                 return false;
             } finally {
@@ -219,18 +174,11 @@ public class ProductsSql {
             }
 
         } catch (SQLException e) {
-            System.err.println("Lỗi kết nối/transaction ProductsSql.insert: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
 
-    /**
-     * Cập nhật thông tin sản phẩm + tồn kho
-     *
-     * @param p
-     * @return
-     */
     public boolean update(Product p) {
         String sqlProduct = "UPDATE PRODUCTS "
                 + "SET product_name = ?, base_price = ?, category_id = ?, supplier_id = ? "
@@ -243,30 +191,37 @@ public class ProductsSql {
         try (Connection con = DatabaseConnection.getConnection()) {
             con.setAutoCommit(false);
 
+            // BƯỚC 1: Lấy giá cũ TRƯỚC KHI cập nhật để ghi Audit Log
+            BigDecimal oldPrice = null;
+            String sqlGetOld = "SELECT base_price FROM PRODUCTS WHERE product_id = ?";
+            try (PreparedStatement psOld = con.prepareStatement(sqlGetOld)) {
+                psOld.setString(1, p.getProductId());
+                try (ResultSet rsOld = psOld.executeQuery()) {
+                    if (rsOld.next()) {
+                        oldPrice = rsOld.getBigDecimal("base_price");
+                    }
+                }
+            }
+
             try (PreparedStatement psProd = con.prepareStatement(sqlProduct); PreparedStatement psInv = con.prepareStatement(sqlInventory)) {
 
-                // 1. UPDATE PRODUCTS (Thêm .trim() để dọn sạch khoảng trắng thừa)
+                // UPDATE PRODUCTS
                 psProd.setString(1, p.getProductName() != null ? p.getProductName().trim() : "");
                 psProd.setBigDecimal(2, p.getBasePrice());
                 psProd.setString(3, p.getCategoryId() != null ? p.getCategoryId().trim() : "");
                 psProd.setString(4, p.getSupplierId() != null ? p.getSupplierId().trim() : "SUP001");
-                psProd.setString(5, p.getProductId().trim()); // Khóa chính cực kỳ quan trọng
-
+                psProd.setString(5, p.getProductId().trim());
                 int prodRows = psProd.executeUpdate();
-                System.out.println("DEBUG UPDATE: prodRows = " + prodRows + ", ID = " + p.getProductId());
 
-                // 2. UPDATE INVENTORY
+                // UPDATE INVENTORY
                 psInv.setInt(1, p.getQuantity());
                 psInv.setString(2, safeUnit(p));
                 psInv.setString(3, p.getProductId().trim());
                 psInv.setString(4, safeStoreId(p));
                 int invRows = psInv.executeUpdate();
 
-                // Nếu inventory chưa có dòng tương ứng thì insert mới
                 if (invRows == 0) {
-                    String insertInv = "INSERT INTO INVENTORY "
-                            + "(product_id, store_id, quantity, unit, last_updated, is_deleted) "
-                            + "VALUES (?, ?, ?, ?, SYSDATE, 0)";
+                    String insertInv = "INSERT INTO INVENTORY (product_id, store_id, quantity, unit, last_updated, is_deleted) VALUES (?, ?, ?, ?, SYSDATE, 0)";
                     try (PreparedStatement psInsInv = con.prepareStatement(insertInv)) {
                         psInsInv.setString(1, p.getProductId().trim());
                         psInsInv.setString(2, safeStoreId(p));
@@ -276,43 +231,16 @@ public class ProductsSql {
                     }
                 }
 
-                // 3. AUDIT LOG (Bọc Try-Catch riêng để lỡ Log có lỗi thì không chết lây Product)
+                // BƯỚC 2: GHI AUDIT LOG GỌN GÀNG
                 if (prodRows > 0) {
                     ProductUnitsSql.getInstance().ensureBaseUnitWithConn(con, p.getProductId(), safeUnit(p));
                     try {
-                        model.account.AuditLog log = new model.account.AuditLog();
-                        log.setAccountId(
-                                business.service.SessionManager.getCurrentUser() != null
-                                ? business.service.SessionManager.getCurrentUser().getAccountId()
-                                : null
-                        );
-                        log.setActionType("UPDATE_PRICE");
-                        log.setEntityType("PRODUCT");
-                        log.setEntityId(p.getProductId());
-                        log.setOldValue("Update Action");
-                        log.setNewValue("Price=" + p.getBasePrice());
-                        log.setReason("Cập nhật thông tin");
-                        log.setIpAddress("local");
-                        log.setDeviceInfo("JavaApp");
-                    model.account.AuditLog log = new model.account.AuditLog();
-                    log.setAccountId(
-                            business.service.SessionManager.getCurrentUser() != null
-                            ? business.service.SessionManager.getCurrentUser().getAccountId()
-                            : null
-                    );
-                    log.setActionType("UPDATE_PRICE");
-                    log.setEntityType("PRODUCT");
-                    log.setEntityId(p.getProductId());
-                    log.setOldValue("price=" + (oldPrice != null ? oldPrice.toPlainString() : "null"));
-                    log.setNewValue("price=" + (p.getBasePrice() != null ? p.getBasePrice().toPlainString() : "null"));
-                    log.setReason("Cap nhat gia san pham");
-                    log.setIpAddress("local");
-                    log.setDeviceInfo(System.getProperty("os.name") + " | Java " + System.getProperty("java.version"));
+                        String oldValStr = "price=" + (oldPrice != null ? oldPrice.toPlainString() : "unknown");
+                        String newValStr = "price=" + (p.getBasePrice() != null ? p.getBasePrice().toPlainString() : "null");
 
-                        int ar = business.sql.rbac.AuditLogSql.getInstance().insertWithConn(con, log);
-                        System.out.println("DEBUG AUDIT: rows = " + ar);
+                        logAuditWithConn(con, "UPDATE_PRICE", "PRODUCT", p.getProductId(), oldValStr, newValStr, "Cập nhật giá/thông tin sản phẩm");
                     } catch (Exception auditEx) {
-                        System.err.println("CẢNH BÁO: Lỗi ghi Audit Log, nhưng vẫn cho phép Update DB: " + auditEx.getMessage());
+                        System.err.println("CẢNH BÁO: Lỗi ghi Audit Log: " + auditEx.getMessage());
                     }
                 }
 
@@ -320,8 +248,7 @@ public class ProductsSql {
                 return prodRows > 0;
 
             } catch (Exception e) {
-                con.rollback(); // Có lỗi thì lùi lại hết
-                System.err.println("❌ LỖI UPDATE SQL: " + e.getMessage());
+                con.rollback();
                 e.printStackTrace();
                 return false;
             } finally {
@@ -329,17 +256,10 @@ public class ProductsSql {
             }
 
         } catch (SQLException e) {
-            System.err.println("Lỗi kết nối/transaction: " + e.getMessage());
             return false;
         }
     }
 
-    /**
-     * Xóa mềm sản phẩm + inventory
-     *
-     * @param productId
-     * @return
-     */
     public boolean delete(String productId) {
         String sqlProduct = "UPDATE PRODUCTS SET is_deleted = 1 WHERE product_id = ? AND is_deleted = 0";
         String sqlInv = "UPDATE INVENTORY SET is_deleted = 1 WHERE product_id = ? AND is_deleted = 0";
@@ -353,28 +273,10 @@ public class ProductsSql {
                 int prodRows = psProd.executeUpdate();
 
                 psInv.setString(1, productId);
-                int invRows = psInv.executeUpdate();
+                psInv.executeUpdate();
 
-                // AUDIT DELETE
                 if (prodRows > 0) {
-                    String oldValue = joinPairs(
-                            pair("product.is_deleted", 0),
-                            pair("inventory.is_deleted", 0)
-                    );
-                    String newValue = joinPairs(
-                            pair("product.is_deleted", 1),
-                            pair("inventory.is_deleted", 1)
-                    );
-
-                    logAuditWithConn(
-                            con,
-                            "DELETE_PRODUCT",
-                            "PRODUCT",
-                            productId,
-                            oldValue,
-                            newValue,
-                            "Xoa mem san pham"
-                    );
+                    logAuditWithConn(con, "DELETE_PRODUCT", "PRODUCT", productId, "is_deleted=0", "is_deleted=1", "Xoa mem san pham");
                 }
 
                 con.commit();
@@ -382,46 +284,30 @@ public class ProductsSql {
 
             } catch (Exception e) {
                 con.rollback();
-                System.err.println("Lỗi ProductsSql.delete: " + e.getMessage());
-                e.printStackTrace();
                 return false;
             } finally {
                 con.setAutoCommit(true);
             }
 
         } catch (SQLException e) {
-            System.err.println("Lỗi kết nối/transaction ProductsSql.delete: " + e.getMessage());
-            e.printStackTrace();
             return false;
         }
     }
 
     public boolean isUsedInOrders(String productId) {
-        String sql = "SELECT COUNT(*) FROM ORDER_DETAILS "
-                + "WHERE product_id = ? AND NVL(is_deleted, 0) = 0";
-
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        String sql = "SELECT COUNT(*) FROM ORDER_DETAILS WHERE product_id = ? AND NVL(is_deleted, 0) = 0";
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, productId);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next() && rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
-            System.err.println("Loi ProductsSql.isUsedInOrders: " + e.getMessage());
-            e.printStackTrace();
             return false;
         }
     }
 
-    /**
-     * Tìm kiếm theo tên
-     *
-     * @param name
-     * @return
-     */
     public List<Product> searchByName(String name) {
         List<Product> list = new ArrayList<>();
-
         String sql = "SELECT p.product_id, p.product_name, p.base_price, "
                 + "       p.category_id, p.supplier_id, "
                 + "       i.store_id, i.quantity, i.unit "
@@ -431,9 +317,7 @@ public class ProductsSql {
                 + "ORDER BY p.product_id";
 
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-
             ps.setString(1, "%" + name + "%");
-
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Product p = new Product();
@@ -442,7 +326,6 @@ public class ProductsSql {
                     p.setBasePrice(rs.getBigDecimal("base_price"));
                     p.setCategoryId(rs.getString("category_id"));
                     p.setSupplierId(rs.getString("supplier_id"));
-
                     try {
                         p.setStoreId(rs.getString("store_id"));
                     } catch (Exception ignored) {
@@ -451,21 +334,111 @@ public class ProductsSql {
                         p.setUnit(rs.getString("unit"));
                     } catch (Exception ignored) {
                     }
-
                     p.setQuantity(rs.getInt("quantity"));
                     p.setIsDeleted(0);
                     list.add(p);
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Lỗi ProductsSql.searchByName: " + e.getMessage());
-            e.printStackTrace();
         }
-
         return list;
     }
 
-    // ===== helper =====
+    public List<String> getSearchSuggestions(String keyword) {
+        List<String> list = new ArrayList<>();
+        String sql;
+        if (keyword == null || keyword.trim().isEmpty()) {
+            sql = "SELECT DISTINCT product_name FROM PRODUCTS WHERE is_deleted = 0 AND ROWNUM <= 15";
+        } else {
+            sql = "SELECT DISTINCT product_name FROM PRODUCTS WHERE is_deleted = 0 AND LOWER(product_name) LIKE LOWER(?) AND ROWNUM <= 15";
+        }
+
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                ps.setString(1, "%" + keyword.trim() + "%");
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getString("product_name"));
+                }
+            }
+        } catch (Exception e) {
+        }
+        return list;
+    }
+
+    // ==========================================
+    // 3 HÀM BỔ SUNG CHO GIAO DIỆN PRODUCTVIEW
+    // ==========================================
+    public Product findByExactName(String name) {
+        String sql = "SELECT p.product_id, p.product_name, p.base_price, p.category_id, p.supplier_id, i.store_id, i.quantity, i.unit "
+                + "FROM PRODUCTS p LEFT JOIN INVENTORY i ON p.product_id = i.product_id AND i.is_deleted = 0 "
+                + "WHERE p.is_deleted = 0 AND LOWER(p.product_name) = LOWER(?) FETCH FIRST 1 ROWS ONLY";
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, name.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Product p = new Product();
+                    p.setProductId(rs.getString("product_id"));
+                    p.setProductName(rs.getString("product_name"));
+                    p.setBasePrice(rs.getBigDecimal("base_price"));
+                    p.setCategoryId(rs.getString("category_id"));
+                    p.setSupplierId(rs.getString("supplier_id"));
+                    try {
+                        p.setStoreId(rs.getString("store_id"));
+                    } catch (Exception e) {
+                    }
+                    p.setQuantity(rs.getInt("quantity"));
+                    try {
+                        p.setUnit(rs.getString("unit"));
+                    } catch (Exception e) {
+                    }
+                    return p;
+                }
+            }
+        } catch (SQLException e) {
+        }
+        return null;
+    }
+
+    public boolean addQuantity(String productId, int addedQuantity, String storeId) {
+        if (storeId == null || storeId.trim().isEmpty()) {
+            storeId = "ST001";
+        }
+        String sqlUpdate = "UPDATE INVENTORY SET quantity = quantity + ?, last_updated = SYSDATE WHERE product_id = ? AND store_id = ? AND is_deleted = 0";
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement psUpdate = con.prepareStatement(sqlUpdate)) {
+            psUpdate.setInt(1, addedQuantity);
+            psUpdate.setString(2, productId);
+            psUpdate.setString(3, storeId);
+            int rows = psUpdate.executeUpdate();
+            if (rows == 0) {
+                String sqlInsert = "INSERT INTO INVENTORY (product_id, store_id, quantity, unit, last_updated, is_deleted) VALUES (?, ?, ?, 'Cái', SYSDATE, 0)";
+                try (PreparedStatement psInsert = con.prepareStatement(sqlInsert)) {
+                    psInsert.setString(1, productId);
+                    psInsert.setString(2, storeId);
+                    psInsert.setInt(3, addedQuantity);
+                    rows = psInsert.executeUpdate();
+                }
+            }
+            return rows > 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public String generateNextProductId() {
+        String sql = "SELECT MAX(product_id) FROM PRODUCTS WHERE product_id LIKE 'SP%'";
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next() && rs.getString(1) != null) {
+                int num = Integer.parseInt(rs.getString(1).substring(2));
+                return String.format("SP%07d", num + 1);
+            }
+        } catch (Exception e) {
+        }
+        return "SP0000001";
+    }
+
+    // ===== helpers =====
     private boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
     }
@@ -473,7 +446,7 @@ public class ProductsSql {
     private String safeStoreId(Product p) {
         try {
             String s = p.getStoreId();
-            return (s == null || s.isBlank()) ? "ST001" : s.trim(); // default test
+            return (s == null || s.isBlank()) ? "ST001" : s.trim();
         } catch (Exception e) {
             return "ST001";
         }
@@ -510,11 +483,7 @@ public class ProductsSql {
     private void logAuditWithConn(Connection con, String actionType, String entityType, String entityId,
             String oldValue, String newValue, String reason) throws SQLException {
         model.account.AuditLog log = new model.account.AuditLog();
-        log.setAccountId(
-                business.service.SessionManager.getCurrentUser() != null
-                ? business.service.SessionManager.getCurrentUser().getAccountId()
-                : null
-        );
+        log.setAccountId(business.service.SessionManager.getCurrentUser() != null ? business.service.SessionManager.getCurrentUser().getAccountId() : null);
         log.setActionType(actionType);
         log.setEntityType(entityType);
         log.setEntityId(entityId);
@@ -523,38 +492,6 @@ public class ProductsSql {
         log.setReason(reason);
         log.setIpAddress("local");
         log.setDeviceInfo(System.getProperty("os.name") + " | Java " + System.getProperty("java.version"));
-
-        int ar = AuditLogSql.getInstance().insertWithConn(con, log);
-        System.out.println("AUDIT PRODUCT rows=" + ar + ", action=" + actionType + ", entityId=" + entityId);
-    }
-
-    public List<String> getSearchSuggestions(String keyword) {
-        List<String> list = new ArrayList<>();
-        String sql;
-
-        // Nếu không gõ gì (Click vào) -> Lấy 15 món ngẫu nhiên/mới nhất
-        if (keyword == null || keyword.trim().isEmpty()) {
-            sql = "SELECT DISTINCT product_name FROM PRODUCTS WHERE is_deleted = 0 AND ROWNUM <= 15";
-        } else {
-            // Nếu có gõ -> Lọc theo từ khóa
-            sql = "SELECT DISTINCT product_name FROM PRODUCTS "
-                    + "WHERE is_deleted = 0 AND LOWER(product_name) LIKE LOWER(?) AND ROWNUM <= 15";
-        }
-
-        try (Connection con = common.db.DatabaseConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-
-            if (keyword != null && !keyword.trim().isEmpty()) {
-                ps.setString(1, "%" + keyword.trim() + "%");
-            }
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(rs.getString("product_name"));
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
+        AuditLogSql.getInstance().insertWithConn(con, log);
     }
 }
