@@ -504,7 +504,7 @@ topCardsPanel.add(createSummaryCard(
 
             // 3. TỒN KHO
             statsPanel.removeAll();
-            statsPanel.add(createBoxTitle("THỐNG KÊ TỒN KHO", "supermarket (2).png"));
+            statsPanel.add(createBoxTitle("THỐNG KÊ TỒN KHO", "storage .png"));
             statsPanel.add(Box.createRigidArea(new Dimension(0, 12)));
 
             String sqlStock = "SELECT p.product_name, NVL(i.quantity, 0) as qty "
