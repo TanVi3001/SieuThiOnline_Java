@@ -3,12 +3,8 @@ package view.components;
 import business.sql.sales_order.StatisticSql;
 import common.db.DatabaseConnection;
 import java.awt.*;
-import java.awt.geom.RoundRectangle2D;
-import java.io.File;
-import java.net.URL;
 import java.sql.*;
 import java.text.DecimalFormat;
-import java.util.List;
 import java.util.Map;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -28,36 +24,23 @@ import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
+/**
+ * TongQuanPanel — Dashboard tổng quan.
+ */
 public class TongQuanPanel extends JPanel {
 
     // =============================================
-    // INNER CLASS: IconHelper (dùng nội bộ panel)
+    // MÀU CHỦ ĐẠO
     // =============================================
-    private static ImageIcon loadIcon(String fileName, int size) {
-        try {
-            // Cách 1: load qua classpath (khi build JAR)
-            URL url = TongQuanPanel.class.getClassLoader()
-                    .getResource("view/image/" + fileName);
-
-            // Cách 2: load trực tiếp từ file khi chạy trong NetBeans
-            if (url == null) {
-                File f = new File("src/main/resources/view/image/" + fileName);
-                if (f.exists()) url = f.toURI().toURL();
-            }
-
-            if (url == null) {
-                System.out.println("[IconHelper] Không tìm thấy: " + fileName);
-                return null;
-            }
-
-            Image scaled = new ImageIcon(url).getImage()
-                    .getScaledInstance(size, size, Image.SCALE_SMOOTH);
-            return new ImageIcon(scaled);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+    private static final Color COLOR_BG        = new Color(243, 245, 250);
+    private static final Color COLOR_PURPLE    = new Color(99, 102, 241);
+    private static final Color COLOR_BLUE      = new Color(14, 165, 233);
+    private static final Color COLOR_ORANGE    = new Color(249, 115, 22);
+    private static final Color COLOR_GREEN     = new Color(34, 197, 94);
+    private static final Color COLOR_WHITE     = Color.WHITE;
+    private static final Color COLOR_BORDER    = new Color(226, 232, 240);
+    private static final Color COLOR_TEXT_DARK = new Color(30, 41, 59);
+    private static final Color COLOR_TEXT_GRAY = new Color(100, 116, 139);
 
     // =============================================
     // FIELDS
@@ -68,18 +51,10 @@ public class TongQuanPanel extends JPanel {
 
     private DefaultCategoryDataset barDataset;
     private DefaultCategoryDataset lineDataset;
-    private DefaultPieDataset pieDataset;
+    private DefaultPieDataset      pieDataset;
 
-    private JPanel statsPanel;
+    private JPanel        statsPanel;
     private DefaultTableModel tableModel;
-
-    // Màu chủ đạo
-    private static final Color COLOR_BG      = new Color(245, 247, 252);
-    private static final Color COLOR_PURPLE  = new Color(84, 92, 200);
-    private static final Color COLOR_BLUE    = new Color(46, 125, 185);
-    private static final Color COLOR_ORANGE  = new Color(242, 98, 5);
-    private static final Color COLOR_WHITE   = Color.WHITE;
-    private static final Color COLOR_BORDER  = new Color(220, 220, 220);
 
     // =============================================
     // CONSTRUCTOR
@@ -88,7 +63,6 @@ public class TongQuanPanel extends JPanel {
         barDataset  = new DefaultCategoryDataset();
         lineDataset = new DefaultCategoryDataset();
         pieDataset  = new DefaultPieDataset();
-
         initComponents();
         loadRealData();
     }
@@ -99,138 +73,139 @@ public class TongQuanPanel extends JPanel {
     private void initComponents() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(COLOR_BG);
-        setBorder(new EmptyBorder(20, 20, 20, 20));
+        setBorder(new EmptyBorder(24, 24, 24, 24));
 
         // ------------------------------------------
         // DÒNG 1: 3 THẺ TỔNG QUAN
         // ------------------------------------------
-        JPanel topCardsPanel = new JPanel(new GridLayout(1, 3, 16, 0));
-        topCardsPanel.setBackground(COLOR_BG);
-        topCardsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 110));
-        topCardsPanel.setPreferredSize(new Dimension(1000, 110));
-
         lblRevenue   = new JLabel("0");
         lblCustomers = new JLabel("0");
         lblOrders    = new JLabel("0");
 
-        topCardsPanel.add(createSummaryCard(
-            "Hôm nay", "DOANH THU", lblRevenue,
-            new Color(84, 92, 200), "money-Photoroom.png"
-        ));
-topCardsPanel.add(createSummaryCard(
-    "Hôm nay", "KHÁCH HÀNG", lblCustomers,
-    new Color(46, 125, 185), "multiple-users-silhouette-Photoroom.png"
-));
-topCardsPanel.add(createSummaryCard(
-    "Hôm nay", "ĐƠN HÀNG", lblOrders,
-    new Color(242, 98, 5), "trolley-Photoroom.png"
-));
+        JPanel topCardsPanel = new JPanel(new GridLayout(1, 3, 16, 0));
+        topCardsPanel.setOpaque(false);
+        topCardsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
+        topCardsPanel.setPreferredSize(new Dimension(1000, 120));
+
+        // Dòng 1: 3 THẺ TỔNG QUAN
+        // Thêm IconHelper vào cuối mỗi dòng
+        topCardsPanel.add(createSummaryCard("Hôm nay", "DOANH THU", lblRevenue, COLOR_PURPLE, IconHelper.revenue(24))); 
+        topCardsPanel.add(createSummaryCard("Hôm nay", "KHÁCH HÀNG", lblCustomers, COLOR_BLUE, IconHelper.customer(24)));
+        topCardsPanel.add(createSummaryCard("Hôm nay", "ĐƠN HÀNG", lblOrders, COLOR_ORANGE, IconHelper.order(24)));
 
         add(topCardsPanel);
-        add(Box.createRigidArea(new Dimension(0, 16)));
+        add(Box.createRigidArea(new Dimension(0, 20)));
 
         // ------------------------------------------
         // DÒNG 2: 3 BIỂU ĐỒ
         // ------------------------------------------
         JPanel middleChartsPanel = new JPanel(new GridLayout(1, 3, 16, 0));
-        middleChartsPanel.setBackground(COLOR_BG);
-        middleChartsPanel.setPreferredSize(new Dimension(1000, 280));
-        middleChartsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 280));
+        middleChartsPanel.setOpaque(false);
+        middleChartsPanel.setPreferredSize(new Dimension(1000, 290));
+        middleChartsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 290));
 
-        middleChartsPanel.add(wrapChart(createBarChartPanel(),  "DOANH THU 5 THÁNG QUA", "graph.png"));
-        middleChartsPanel.add(wrapChart(createLineChartPanel(), "LƯỢT KHÁCH TRONG TUẦN",  "chart.png"));
-        middleChartsPanel.add(wrapChart(createPieChartPanel(),  "TỶ TRỌNG NGÀNH HÀNG",   "public-service.png"));
+        middleChartsPanel.add(wrapChart(createBarChartPanel(),  "DOANH THU 5 THÁNG QUA", IconHelper.barChart(16)));
+        middleChartsPanel.add(wrapChart(createLineChartPanel(), "LƯỢT KHÁCH TRONG TUẦN",  IconHelper.lineChart(16)));
+        middleChartsPanel.add(wrapChart(createPieChartPanel(),  "TỶ TRỌNG NGÀNH HÀNG",   IconHelper.pieChart(16)));
 
         add(middleChartsPanel);
-        add(Box.createRigidArea(new Dimension(0, 16)));
+        add(Box.createRigidArea(new Dimension(0, 20)));
 
         // ------------------------------------------
         // DÒNG 3: TỒN KHO + BẢNG ĐƠN HÀNG
         // ------------------------------------------
         JPanel bottomPanel = new JPanel(new GridLayout(1, 2, 16, 0));
-        bottomPanel.setBackground(COLOR_BG);
-        bottomPanel.setPreferredSize(new Dimension(1000, 230));
-        bottomPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 230));
+        bottomPanel.setOpaque(false);
+        bottomPanel.setPreferredSize(new Dimension(1000, 240));
+        bottomPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 240));
 
-        // Trái: Thống kê tồn kho
         statsPanel = new JPanel();
         statsPanel.setLayout(new BoxLayout(statsPanel, BoxLayout.Y_AXIS));
         statsPanel.setBackground(COLOR_WHITE);
         statsPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(COLOR_BORDER),
-                new EmptyBorder(14, 14, 14, 14)
+                BorderFactory.createLineBorder(COLOR_BORDER, 1, true),
+                new EmptyBorder(16, 16, 16, 16)
         ));
+
         bottomPanel.add(statsPanel);
-
-        // Phải: Bảng đơn hàng mới nhất
         bottomPanel.add(createOrderTablePanel());
-
         add(bottomPanel);
     }
 
     // =============================================
-    // SUMMARY CARD — Bo góc + Icon + Đơn vị
+    // SUMMARY CARD — Bo góc, vòng tròn trang trí
     // =============================================
-    private JPanel createSummaryCard(String subtitle, String title, JLabel valueLabel, Color bgColor, String iconFile) {
-        JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(bgColor);
-        card.setBorder(new EmptyBorder(15, 20, 15, 20));
+    private JPanel createSummaryCard(String subtitle, String title, JLabel valueLabel, Color bgColor, ImageIcon icon) {
+    JPanel card = new JPanel(new BorderLayout()) {
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(bgColor);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10); // Bo góc nhẹ theo ảnh mẫu
+            g2.dispose();
+        }
+    };
+    card.setOpaque(false);
+    card.setBorder(new EmptyBorder(10, 15, 10, 15));
 
-        // TRÁI: icon nhỏ + tiêu đề xếp dọc
-        JPanel leftPanel = new JPanel();
-        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-        leftPanel.setOpaque(false);
+    // --- CỘM BÊN TRÁI (Subtitle + Title có Icon) ---
+    JPanel leftPanel = new JPanel();
+    leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+    leftPanel.setOpaque(false);
 
-        JLabel lblSub = new JLabel(subtitle);
-        lblSub.setForeground(new Color(255, 255, 255, 180));
-        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+    JLabel lblSub = new JLabel(subtitle);
+    lblSub.setForeground(new Color(255, 255, 255, 200));
+    lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
 
-        // Icon + tiêu đề cùng 1 hàng ngang
-        JPanel titleRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-        titleRow.setOpaque(false);
-        JLabel iconLabel = new JLabel(loadIcon(iconFile, 22)); // icon nhỏ 22px
-        JLabel lblTitle = new JLabel(title);
-        lblTitle.setForeground(Color.WHITE);
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        titleRow.add(iconLabel);
-        titleRow.add(lblTitle);
+    // Title kèm Icon
+    JLabel lblTitle = new JLabel(title);
+    lblTitle.setIcon(icon); // Gắn icon vào label
+    lblTitle.setIconTextGap(10); // Khoảng cách giữa icon và chữ
+    lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+    lblTitle.setForeground(Color.WHITE);
 
-        leftPanel.add(lblSub);
-        leftPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-        leftPanel.add(titleRow); // ← icon + chữ cùng hàng
+    leftPanel.add(lblSub);
+    leftPanel.add(Box.createRigidArea(new Dimension(0, 5))); // Khoảng cách dòng
+    leftPanel.add(lblTitle);
 
-        // PHẢI: số lớn
-        valueLabel.setForeground(Color.WHITE);
-        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 36));
+    // --- CỘM BÊN PHẢI (Số hiển thị) ---
+    valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 36));
+    valueLabel.setForeground(Color.WHITE);
+    valueLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 
-        card.add(leftPanel, BorderLayout.WEST);
-        card.add(valueLabel, BorderLayout.EAST); // ← số bên phải
-        return card;
-    }
+    card.add(leftPanel, BorderLayout.WEST);
+    card.add(valueLabel, BorderLayout.EAST);
+
+    return card;
+}
+      
 
     // =============================================
-    // WRAP CHART — Thêm tiêu đề + icon phía trên
+    // WRAP CHART — Card trắng, bo góc, header gọn
     // =============================================
-    private JPanel wrapChart(JPanel chartPanel, String title, String iconFile) {
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBackground(COLOR_WHITE);
-        wrapper.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(COLOR_BORDER),
-                new EmptyBorder(0, 0, 0, 0)
-        ));
+    private JPanel wrapChart(JPanel chartPanel, String title, ImageIcon icon) {
+        JPanel wrapper = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(COLOR_WHITE);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 14, 14);
+                g2.dispose();
+            }
+        };
+        wrapper.setOpaque(false);
 
-        // Header của chart box
-        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
-        header.setBackground(COLOR_WHITE);
+        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
+        header.setOpaque(false);
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, COLOR_BORDER));
 
-        ImageIcon icon = loadIcon(iconFile, 18);
-        JLabel lblIcon  = new JLabel(icon);
+        header.add(new JLabel(icon));
+
         JLabel lblTitle = new JLabel(title);
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        lblTitle.setForeground(new Color(80, 80, 80));
-
-        header.add(lblIcon);
+        lblTitle.setForeground(COLOR_TEXT_DARK);
         header.add(lblTitle);
 
         wrapper.add(header, BorderLayout.NORTH);
@@ -241,45 +216,54 @@ topCardsPanel.add(createSummaryCard(
     // =============================================
     // TIÊU ĐỀ BOX (có icon)
     // =============================================
-    private JLabel createBoxTitle(String titleStr, String iconFile) {
-        ImageIcon icon = loadIcon(iconFile, 16);
+    private JLabel createBoxTitle(String titleStr, ImageIcon icon) {
         JLabel title = new JLabel("  " + titleStr, icon, JLabel.LEFT);
         title.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        title.setForeground(new Color(70, 70, 70));
+        title.setForeground(COLOR_TEXT_DARK);
         title.setAlignmentX(Component.LEFT_ALIGNMENT);
         return title;
     }
 
     // =============================================
-    // PROGRESS ROW — Tồn kho
+    // PROGRESS ROW — Thanh tròn hiện đại (vẽ tay)
     // =============================================
     private JPanel createProgressRow(String name, int percent, String displayValue, Color color) {
-        JPanel row = new JPanel(new BorderLayout(8, 0));
+        JPanel row = new JPanel(new BorderLayout(10, 0));
         row.setOpaque(false);
-        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
 
         JLabel lblName = new JLabel(name);
-        lblName.setPreferredSize(new Dimension(140, 20));
+        lblName.setPreferredSize(new Dimension(145, 20));
         lblName.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lblName.setForeground(new Color(60, 60, 60));
+        lblName.setForeground(COLOR_TEXT_DARK);
 
-        JProgressBar progress = new JProgressBar(0, 100);
-        progress.setValue(percent);
-        progress.setForeground(color);
-        progress.setBackground(new Color(235, 235, 235));
-        progress.setStringPainted(false);
-        progress.setPreferredSize(new Dimension(100, 8));
-        progress.setBorderPainted(false);
+        // Progress bar vẽ tay — bo tròn
+        JPanel progressTrack = new JPanel(null) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                int h = 8, y = (getHeight() - h) / 2;
+                g2.setColor(new Color(226, 232, 240));
+                g2.fillRoundRect(0, y, getWidth(), h, h, h);
+                int fillW = (int) (getWidth() * percent / 100.0);
+                g2.setColor(color);
+                g2.fillRoundRect(0, y, Math.max(fillW, h), h, h, h);
+                g2.dispose();
+            }
+        };
+        progressTrack.setOpaque(false);
+        progressTrack.setPreferredSize(new Dimension(100, 20));
 
         JLabel lblVal = new JLabel(displayValue);
         lblVal.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lblVal.setForeground(color);
-        lblVal.setPreferredSize(new Dimension(60, 20));
+        lblVal.setPreferredSize(new Dimension(65, 20));
         lblVal.setHorizontalAlignment(JLabel.RIGHT);
 
-        row.add(lblName,    BorderLayout.WEST);
-        row.add(progress,   BorderLayout.CENTER);
-        row.add(lblVal,     BorderLayout.EAST);
+        row.add(lblName,       BorderLayout.WEST);
+        row.add(progressTrack, BorderLayout.CENTER);
+        row.add(lblVal,        BorderLayout.EAST);
         return row;
     }
 
@@ -287,19 +271,26 @@ topCardsPanel.add(createSummaryCard(
     // BẢNG ĐƠN HÀNG MỚI NHẤT
     // =============================================
     private JPanel createOrderTablePanel() {
-        JPanel tableContainer = new JPanel(new BorderLayout());
-        tableContainer.setBackground(COLOR_WHITE);
-        tableContainer.setBorder(BorderFactory.createLineBorder(COLOR_BORDER));
+        JPanel tableContainer = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(COLOR_WHITE);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 14, 14);
+                g2.dispose();
+            }
+        };
+        tableContainer.setOpaque(false);
 
-        // Header bảng có icon
-        JPanel tableHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
-        tableHeader.setBackground(COLOR_WHITE);
+        // Header bảng
+        JPanel tableHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
+        tableHeader.setOpaque(false);
         tableHeader.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, COLOR_BORDER));
-        ImageIcon billIcon = loadIcon("bill.png", 18);
-        tableHeader.add(new JLabel(billIcon));
+        tableHeader.add(new JLabel(IconHelper.bill(16)));
         JLabel tblTitle = new JLabel("ĐƠN HÀNG MỚI NHẤT");
         tblTitle.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        tblTitle.setForeground(new Color(80, 80, 80));
+        tblTitle.setForeground(COLOR_TEXT_DARK);
         tableHeader.add(tblTitle);
         tableContainer.add(tableHeader, BorderLayout.NORTH);
 
@@ -308,32 +299,31 @@ topCardsPanel.add(createSummaryCard(
                 new Object[][]{},
                 new String[]{"STT", "MÃ ĐƠN", "TRẠNG THÁI", "TIẾN ĐỘ"}
         ) {
-            @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            @Override public boolean isCellEditable(int r, int c) { return false; }
         };
 
         JTable table = new JTable(tableModel);
-        table.setRowHeight(32);
+        table.setRowHeight(34);
         table.setShowVerticalLines(false);
         table.setShowHorizontalLines(true);
-        table.setGridColor(new Color(240, 240, 240));
+        table.setGridColor(new Color(241, 245, 249));
         table.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        table.setSelectionBackground(new Color(227, 242, 253));
-        table.setSelectionForeground(Color.BLACK);
+        table.setSelectionBackground(new Color(239, 246, 255));
+        table.setSelectionForeground(COLOR_TEXT_DARK);
         table.setBackground(COLOR_WHITE);
+        table.setIntercellSpacing(new Dimension(0, 0));
 
-        // Header style
+        // Header style — xám nhạt hiện đại
         DefaultTableCellRenderer headerRenderer = new DefaultTableCellRenderer();
-        headerRenderer.setBackground(COLOR_PURPLE);
-        headerRenderer.setForeground(Color.WHITE);
-        headerRenderer.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        headerRenderer.setBackground(new Color(248, 250, 252));
+        headerRenderer.setForeground(COLOR_TEXT_GRAY);
+        headerRenderer.setFont(new Font("Segoe UI", Font.BOLD, 11));
         headerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        headerRenderer.setBorder(new EmptyBorder(6, 6, 6, 6));
-        for (int i = 0; i < table.getColumnModel().getColumnCount(); i++) {
+        headerRenderer.setBorder(new EmptyBorder(8, 8, 8, 8));
+        for (int i = 0; i < table.getColumnModel().getColumnCount(); i++)
             table.getColumnModel().getColumn(i).setHeaderRenderer(headerRenderer);
-        }
 
-        // Cell căn giữa + màu xen kẽ
+        // Cell renderer
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object val,
@@ -341,21 +331,21 @@ topCardsPanel.add(createSummaryCard(
                 super.getTableCellRendererComponent(t, val, sel, foc, row, col);
                 setHorizontalAlignment(JLabel.CENTER);
                 setFont(new Font("Segoe UI", Font.PLAIN, 12));
+                setBorder(new EmptyBorder(0, 8, 0, 8));
                 if (!sel) {
-                    setBackground(row % 2 == 0 ? COLOR_WHITE : new Color(248, 249, 255));
-                    setForeground(Color.DARK_GRAY);
+                    setBackground(row % 2 == 0 ? COLOR_WHITE : new Color(250, 252, 255));
+                    setForeground(COLOR_TEXT_DARK);
                 }
-                // Tô màu cột TRẠNG THÁI
                 if (col == 2 && val != null) {
                     String s = val.toString();
                     if (s.equalsIgnoreCase("COMPLETED") || s.equalsIgnoreCase("Hoàn thành")) {
-                        setForeground(new Color(46, 160, 67));
+                        setForeground(new Color(22, 163, 74));
                         setFont(new Font("Segoe UI", Font.BOLD, 12));
                     } else if (s.equalsIgnoreCase("PROCESSING") || s.equalsIgnoreCase("Đang xử lý")) {
-                        setForeground(new Color(230, 120, 0));
+                        setForeground(new Color(217, 119, 6));
                         setFont(new Font("Segoe UI", Font.BOLD, 12));
                     } else {
-                        setForeground(new Color(180, 50, 50));
+                        setForeground(new Color(220, 38, 38));
                     }
                 }
                 return this;
@@ -370,7 +360,7 @@ topCardsPanel.add(createSummaryCard(
     }
 
     // =============================================
-    // BIỂU ĐỒ — Đẹp hơn, có màu tùy chỉnh
+    // BIỂU ĐỒ
     // =============================================
     private JPanel createBarChartPanel() {
         JFreeChart chart = ChartFactory.createBarChart(
@@ -382,25 +372,28 @@ topCardsPanel.add(createSummaryCard(
         CategoryPlot plot = chart.getCategoryPlot();
         plot.setBackgroundPaint(COLOR_WHITE);
         plot.setOutlineVisible(false);
-        plot.setRangeGridlinePaint(new Color(230, 230, 230));
+        plot.setRangeGridlinePaint(new Color(241, 245, 249));
         plot.setDomainGridlinesVisible(false);
 
         BarRenderer renderer = (BarRenderer) plot.getRenderer();
         renderer.setSeriesPaint(0, COLOR_PURPLE);
         renderer.setDrawBarOutline(false);
         renderer.setShadowVisible(false);
-        renderer.setMaximumBarWidth(0.4);
+        renderer.setMaximumBarWidth(0.35);
 
         CategoryAxis domainAxis = plot.getDomainAxis();
         domainAxis.setTickLabelFont(new Font("Segoe UI", Font.PLAIN, 10));
         domainAxis.setAxisLineVisible(false);
+        domainAxis.setTickMarksVisible(false);
 
         NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
         rangeAxis.setTickLabelFont(new Font("Segoe UI", Font.PLAIN, 10));
         rangeAxis.setAxisLineVisible(false);
+        rangeAxis.setTickMarksVisible(false);
 
         ChartPanel panel = new ChartPanel(chart);
         panel.setPopupMenu(null);
+        panel.setBackground(COLOR_WHITE);
         return panel;
     }
 
@@ -414,19 +407,22 @@ topCardsPanel.add(createSummaryCard(
         CategoryPlot plot = chart.getCategoryPlot();
         plot.setBackgroundPaint(COLOR_WHITE);
         plot.setOutlineVisible(false);
-        plot.setRangeGridlinePaint(new Color(230, 230, 230));
+        plot.setRangeGridlinePaint(new Color(241, 245, 249));
         plot.setDomainGridlinesVisible(false);
 
         LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
         renderer.setSeriesPaint(0, COLOR_BLUE);
-        renderer.setSeriesStroke(0, new BasicStroke(2.5f));
+        renderer.setSeriesStroke(0, new BasicStroke(2.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         renderer.setSeriesShapesVisible(0, true);
 
         plot.getDomainAxis().setTickLabelFont(new Font("Segoe UI", Font.PLAIN, 10));
+        plot.getDomainAxis().setAxisLineVisible(false);
         plot.getRangeAxis().setTickLabelFont(new Font("Segoe UI", Font.PLAIN, 10));
+        plot.getRangeAxis().setAxisLineVisible(false);
 
         ChartPanel panel = new ChartPanel(chart);
         panel.setPopupMenu(null);
+        panel.setBackground(COLOR_WHITE);
         return panel;
     }
 
@@ -441,19 +437,13 @@ topCardsPanel.add(createSummaryCard(
         plot.setOutlineVisible(false);
         plot.setShadowPaint(null);
         plot.setLabelFont(new Font("Segoe UI", Font.PLAIN, 10));
-
-        // Màu cho các phần pie
-        Color[] pieColors = {
-            COLOR_PURPLE,
-            COLOR_BLUE,
-            COLOR_ORANGE,
-            new Color(46, 175, 80),
-            new Color(255, 193, 7)
-        };
-        // Gán màu động khi có dữ liệu (sẽ áp dụng khi load data)
+        plot.setLabelBackgroundPaint(new Color(255, 255, 255, 200));
+        plot.setLabelOutlinePaint(null);
+        plot.setLabelShadowPaint(null);
 
         ChartPanel panel = new ChartPanel(chart);
         panel.setPopupMenu(null);
+        panel.setBackground(COLOR_WHITE);
         return panel;
     }
 
@@ -464,7 +454,7 @@ topCardsPanel.add(createSummaryCard(
         try (Connection con = DatabaseConnection.getConnection()) {
             DecimalFormat df = new DecimalFormat("#,###");
 
-            // 1. 3 THẺ TỔNG QUAN
+            // 1. THẺ TỔNG QUAN
             String sqlRev = "SELECT NVL(SUM(total_amount), 0) FROM ORDERS "
                     + "WHERE NVL(is_deleted, 0) = 0 "
                     + "AND UPPER(NVL(status, '')) <> 'CANCELLED' "
@@ -504,20 +494,15 @@ topCardsPanel.add(createSummaryCard(
 
             // 3. TỒN KHO
             statsPanel.removeAll();
-            statsPanel.add(createBoxTitle("THỐNG KÊ TỒN KHO", "storage .png"));
-            statsPanel.add(Box.createRigidArea(new Dimension(0, 12)));
+            statsPanel.add(createBoxTitle("THỐNG KÊ TỒN KHO", IconHelper.stock(16)));
+            statsPanel.add(Box.createRigidArea(new Dimension(0, 14)));
 
             String sqlStock = "SELECT p.product_name, NVL(i.quantity, 0) as qty "
                     + "FROM PRODUCTS p JOIN INVENTORY i ON p.product_id = i.product_id "
                     + "WHERE p.is_deleted = 0 AND i.is_deleted = 0 "
                     + "ORDER BY i.quantity DESC FETCH FIRST 4 ROWS ONLY";
 
-            Color[] colors = {
-                new Color(84, 92, 200),
-                new Color(46, 125, 185),
-                new Color(242, 98, 5),
-                new Color(46, 160, 67)
-            };
+            Color[] colors = { COLOR_PURPLE, COLOR_BLUE, COLOR_ORANGE, COLOR_GREEN };
             int idx = 0;
             try (PreparedStatement ps = con.prepareStatement(sqlStock);
                  ResultSet rs = ps.executeQuery()) {
@@ -525,7 +510,7 @@ topCardsPanel.add(createSummaryCard(
                     String name = rs.getString("product_name");
                     int qty = rs.getInt("qty");
                     statsPanel.add(createProgressRow(name, Math.min(qty, 100), qty + " cái", colors[idx % 4]));
-                    statsPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                    statsPanel.add(Box.createRigidArea(new Dimension(0, 10)));
                     idx++;
                 }
             }
