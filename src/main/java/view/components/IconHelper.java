@@ -67,4 +67,9 @@ public class IconHelper {
     public static ImageIcon pieChart(int size) { return load("public-service.png", size); }
     public static ImageIcon stock(int size)    { return load("in-stock.png", size); }
     public static ImageIcon bill(int size)     { return load("bill.png", size); }
+    public static ImageIcon add(int size)  { return load("add.png", size); }
+    public static ImageIcon delete(int size)  { return load("delete.png", size); }
+    public static ImageIcon refresh(int size)  { return load("refresh.png", size); }
+    public static ImageIcon edit(int size)  { return load("edit.png", size); }
+    public static ImageIcon search(int size)  { return load("search.png", size); }
 }
