@@ -361,11 +361,11 @@ public class AutoCompleteComboBox<T> extends JPanel {
         selectedItem = null;  // Xoá lựa chọn khi gõ lại
         filterAndShowPopup();
     }
-
+ 
     private void filterAndShowPopup() {
         String keyword = textField.getText().trim().toLowerCase();
         filteredItems.clear();
-        listModel.clear();
+        listModel.clear(); 
 
         for (T item : allItems) {
             String display = displayMapper.apply(item).toLowerCase();
