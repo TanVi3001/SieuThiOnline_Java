@@ -13,7 +13,7 @@ public class Employee {
     private String roleId;
     private String shiftId;
     private int isDeleted;
-
+    private String accountStatus;
     // ===== thêm field để khớp form EmployeeView =====
     private String phone;
     private String email;
@@ -142,5 +142,15 @@ public class Employee {
 
     public void setGender(String gender) {
         this.gender = gender;
+    }
+    
+
+
+    public String getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void setAccountStatus(String accountStatus) {
+        this.accountStatus = accountStatus;
     }
 }
