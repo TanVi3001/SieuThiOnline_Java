@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package view;
 
 /**
@@ -13,13 +9,11 @@ public class LoginView extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger
             .getLogger(LoginView.class.getName());
 
-    /**
-     * Creates new form LoginView
-     */
     public LoginView() {
         initComponents();
         this.setLocationRelativeTo(null);
-        // Bắt sự kiện bàn phím cho ô Mật khẩu (Manual KeyListener)
+        
+        // Bắt sự kiện bàn phím cho ô Mật khẩu (Nhấn Enter để đăng nhập)
         txtPassword.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -35,10 +29,8 @@ public class LoginView extends javax.swing.JFrame {
     private void setupModernUI() {
         // ── 1. Dọn dẹp & set layout tổng ────────────────────────────────────────
         this.getContentPane().removeAll();
-        
         this.getContentPane().setLayout(null);
         this.getContentPane().invalidate();
-    
         this.getContentPane().setLayout(new java.awt.BorderLayout());
 
         // ── 2. PANEL TRÁI – minh họa siêu thị tối ───────────────────────────────
@@ -47,10 +39,8 @@ public class LoginView extends javax.swing.JFrame {
             protected void paintComponent(java.awt.Graphics g) {
                 super.paintComponent(g);
                 java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
-                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
-                        java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING,
-                        java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING, java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
                 int w = getWidth(), h = getHeight();
 
@@ -92,68 +82,45 @@ public class LoginView extends javax.swing.JFrame {
                 g2.dispose();
             }
 
-            // ── Vẽ vòng tròn glow ─────────────────────────────────────────────
-            private void paintGlowCircle(java.awt.Graphics2D g2,
-                    int cx, int cy, int r, java.awt.Color c, float alpha) {
-                g2.setColor(new java.awt.Color(c.getRed(), c.getGreen(), c.getBlue(),
-                        (int) (alpha * 255)));
+            private void paintGlowCircle(java.awt.Graphics2D g2, int cx, int cy, int r, java.awt.Color c, float alpha) {
+                g2.setColor(new java.awt.Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (alpha * 255)));
                 g2.fillOval(cx - r, cy - r, r * 2, r * 2);
             }
 
-            // ── Vẽ text căn giữa ──────────────────────────────────────────────
             private void drawCentered(java.awt.Graphics2D g2, String text, int w, int y) {
                 java.awt.FontMetrics fm = g2.getFontMetrics();
                 g2.drawString(text, (w - fm.stringWidth(text)) / 2, y);
             }
 
-            // ── Minh họa siêu thị ─────────────────────────────────────────────
             private void paintIllustration(java.awt.Graphics2D g2, int w, int h) {
-                // Vùng vẽ chiếm ~62% chiều cao phần trên
                 int areaH = (int) (h * 0.62);
                 float s = Math.min(w / 380f, areaH / 230f);
                 int ox = (int) (w / 2 - 155 * s);
                 int oy = (int) (h * 0.15);
 
-                // 3 kệ hàng
                 paintShelf(g2, ox + (int)(0*s),   oy + (int)(15*s), (int)(78*s), (int)(155*s), s);
                 paintShelf(g2, ox + (int)(100*s),  oy + (int)(25*s), (int)(78*s), (int)(143*s), s);
                 paintShelf(g2, ox + (int)(232*s),  oy + (int)(15*s), (int)(78*s), (int)(155*s), s);
 
-                // Xe đẩy thông minh 
                 paintCart(g2, ox + (int)(148*s), oy + (int)(143*s), s);
-
-                // Điện thoại QR
                 paintPhone(g2, ox + (int)(195*s), oy + (int)(75*s), s);
-
-                // Sóng WiFi
                 paintWifi(g2, ox + (int)(170*s), oy + (int)(25*s), s);
 
-                // Scan beam
                 g2.setColor(new java.awt.Color(0, 201, 167, 35));
-                g2.fillRect(ox + (int)(133*s), oy + (int)(143*s),
-                        (int)(70*s), (int)(40*s));
+                g2.fillRect(ox + (int)(133*s), oy + (int)(143*s), (int)(70*s), (int)(40*s));
                 g2.setColor(new java.awt.Color(0, 201, 167, 180));
-                g2.fillRect(ox + (int)(133*s), oy + (int)(142*s),
-                        (int)(70*s), (int)(2*s + 1));
+                g2.fillRect(ox + (int)(133*s), oy + (int)(142*s), (int)(70*s), (int)(2*s + 1));
 
-                // Badge tags
-                paintBadge(g2, ox + (int)(-5*s),  oy + (int) (-25*s), "Thanh toán thông minh",
-                        new java.awt.Color(255, 107, 53), s);
-                paintBadge(g2, ox + (int)(210*s), oy + (int)(-15*s), "Tiết kiệm thời gian",
-                        new java.awt.Color(0, 201, 167), s);
+                paintBadge(g2, ox + (int)(-5*s),  oy + (int) (-25*s), "Thanh toán thông minh", new java.awt.Color(255, 107, 53), s);
+                paintBadge(g2, ox + (int)(210*s), oy + (int)(-15*s), "Tiết kiệm thời gian", new java.awt.Color(0, 201, 167), s);
             }
 
-            private void paintShelf(java.awt.Graphics2D g2,
-                int x, int y, int w, int h, float s) {
+            private void paintShelf(java.awt.Graphics2D g2, int x, int y, int w, int h, float s) {
                 g2.setColor(new java.awt.Color(36, 51, 82));
                 g2.fillRoundRect(x, y, w, h, 8, 8);
-
-                // Thanh ngăn
                 g2.setColor(new java.awt.Color(255, 255, 255, 18));
-                for (int r = 1; r <= 3; r++)
-                    g2.fillRect(x, y + r * h / 4, w, 2);
+                for (int r = 1; r <= 3; r++) g2.fillRect(x, y + r * h / 4, w, 2);
 
-                // Sản phẩm
                 java.awt.Color[][] cols = {
                     {new java.awt.Color(255,107,53), new java.awt.Color(0,201,167), new java.awt.Color(255,209,102)},
                     {new java.awt.Color(255,209,102), new java.awt.Color(255,107,53), new java.awt.Color(167,139,250)},
@@ -179,20 +146,16 @@ public class LoginView extends javax.swing.JFrame {
                 g2.setStroke(new java.awt.BasicStroke(1.5f));
                 g2.drawRoundRect(x, y, cw, ch, 8, 8);
 
-                // Màn hình
                 g2.setColor(new java.awt.Color(0, 201, 167, 55));
                 g2.fillRoundRect(x+4, y+4, cw-8, (int)(ch*0.55), 3, 3);
 
-                // Checkmark
                 g2.setColor(new java.awt.Color(0, 201, 167));
-                g2.setStroke(new java.awt.BasicStroke(2f,
-                        java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+                g2.setStroke(new java.awt.BasicStroke(2f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
                 int mx = x + cw/2 - 6, my = y + ch/4;
                 g2.drawLine(mx, my+5, mx+4, my+9);
                 g2.drawLine(mx+4, my+9, mx+10, my+2);
                 g2.setStroke(new java.awt.BasicStroke(1f));
 
-                // Bánh xe
                 int wr = (int)(5*s);
                 for (int wx : new int[]{x+5, x+cw-5-wr*2}) {
                     g2.setColor(new java.awt.Color(36, 51, 82));
@@ -200,7 +163,6 @@ public class LoginView extends javax.swing.JFrame {
                     g2.setColor(new java.awt.Color(0,201,167,130));
                     g2.drawOval(wx, y+ch, wr*2, wr*2);
                 }
-                // Tay cầm
                 g2.setColor(new java.awt.Color(36,51,82));
                 g2.fillRoundRect(x+cw, y+3, (int)(8*s), (int)(18*s), 4, 4);
                 g2.setColor(new java.awt.Color(0,201,167,100));
@@ -214,7 +176,6 @@ public class LoginView extends javax.swing.JFrame {
                 g2.setColor(new java.awt.Color(255,255,255,28));
                 g2.fillRoundRect(x+3, y+4, pw-6, ph-8, 4, 4);
 
-                // QR blocks
                 int b = (int)(4*s);
                 g2.setColor(new java.awt.Color(255,255,255,200));
                 g2.fillRoundRect(x+4, y+7, b, b, 1, 1);
@@ -225,22 +186,19 @@ public class LoginView extends javax.swing.JFrame {
                 g2.fillRoundRect(x+4+b+2+s2+2, y+7+b+2, s2, s2, 1, 1);
                 g2.fillRoundRect(x+4+b+2, y+7+b+2+s2+2, b, s2, 1, 1);
 
-                // Nút home
                 g2.setColor(new java.awt.Color(255,255,255,150));
                 int br = (int)(3*s);
                 g2.fillOval(x+pw/2-br, y+ph-br*2-4, br*2, br*2);
             }
 
             private void paintWifi(java.awt.Graphics2D g2, int cx, int y, float s) {
-                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
-                        java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
                 int[] radii = {(int)(23*s), (int)(15*s), (int)(10*s)};
                 float[] alphas = {0.3f, 0.55f, 0.95f};
                 for (int i = 0; i < 3; i++) {
                     int r = radii[i];
                     g2.setColor(new java.awt.Color(0, 201, 167, (int)(alphas[i]*200)));
-                    g2.setStroke(new java.awt.BasicStroke(2f,
-                            java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+                    g2.setStroke(new java.awt.BasicStroke(2f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
                     g2.drawArc(cx-r, y - r, r*2, r*2, 25, 130);
                 }
                 g2.setStroke(new java.awt.BasicStroke(1f));
@@ -249,10 +207,8 @@ public class LoginView extends javax.swing.JFrame {
                 g2.fillOval(cx-dr, y - dr, dr*2, dr*2);
             }
 
-            private void paintBadge(java.awt.Graphics2D g2,
-                    int x, int y, String text, java.awt.Color color, float s) {
-                java.awt.Font f = new java.awt.Font("Segoe UI", java.awt.Font.BOLD,
-                        Math.max(9, (int)(10*s)));
+            private void paintBadge(java.awt.Graphics2D g2, int x, int y, String text, java.awt.Color color, float s) {
+                java.awt.Font f = new java.awt.Font("Segoe UI", java.awt.Font.BOLD, Math.max(9, (int)(10*s)));
                 g2.setFont(f);
                 java.awt.FontMetrics fm = g2.getFontMetrics();
                 int bw = fm.stringWidth(text) + 18, bh = 20;
@@ -263,8 +219,7 @@ public class LoginView extends javax.swing.JFrame {
             }
 
             private void paintPills(java.awt.Graphics2D g2, int w, int h) {
-                String[] labels = {"Quét mã tự động", "Thanh toán nhanh", 
-                                   "Quản lý kho thực tế", "AI gợi ý sản phẩm"};
+                String[] labels = {"Quét mã tự động", "Thanh toán nhanh", "Quản lý kho thực tế", "AI gợi ý sản phẩm"};
                 java.awt.Color[] dots = {
                     new java.awt.Color(0,201,167), new java.awt.Color(255,107,53), 
                     new java.awt.Color(255,209,102), new java.awt.Color(167,139,250)
@@ -283,7 +238,6 @@ public class LoginView extends javax.swing.JFrame {
                 
                 int gap = 10; 
                 totalW += gap * (labels.length - 1); 
-                
                 int pillH = 28; 
                 int baseY = h - 14 - pillH; 
 
@@ -308,21 +262,14 @@ public class LoginView extends javax.swing.JFrame {
             }
 
             private void drawPill(java.awt.Graphics2D g2, int x, int y, int w, int h, String text, java.awt.Color dotColor) {
-                // Màu nền của nút
                 g2.setColor(new java.awt.Color(255,255,255,20)); 
                 g2.fillRoundRect(x, y, w, h, h, h);
-                
-                // Viền của nút
                 g2.setColor(new java.awt.Color(255,255,255,40));
                 g2.setStroke(new java.awt.BasicStroke(1.2f)); 
                 g2.drawRoundRect(x, y, w, h, h, h);
-                
-                // Chấm tròn màu
                 int dr = 6; 
                 g2.setColor(dotColor);
                 g2.fillOval(x + 12, y + (h - dr) / 2, dr, dr); 
-                
-                // Chữ
                 g2.setColor(java.awt.Color.WHITE);
                 java.awt.FontMetrics fm = g2.getFontMetrics();
                 g2.drawString(text, x + 24, y + (h + fm.getAscent() - fm.getDescent()) / 2 - 1); 
@@ -354,7 +301,6 @@ public class LoginView extends javax.swing.JFrame {
                 int w = getWidth(), h = getHeight();
                 if (w == 0 || h == 0) return;
 
-                // Lưu bounds gốc 1 lần duy nhất khi size còn là 400x480
                 if (originalBounds == null) {
                     originalBounds = new java.util.HashMap<>();
                     for (java.awt.Component c : getComponents())
@@ -392,8 +338,7 @@ public class LoginView extends javax.swing.JFrame {
             @Override
             protected void paintComponent(java.awt.Graphics g) {
                 java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
-                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
-                        java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setStroke(new java.awt.BasicStroke(3));
                 g2.setColor(new java.awt.Color(255, 69, 0));
                 g2.drawOval(2, 2, 16, 16);
@@ -492,8 +437,7 @@ public class LoginView extends javax.swing.JFrame {
             @Override
             protected void paintComponent(java.awt.Graphics g) {
                 java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
-                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
-                        java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
                 java.awt.Color c1 = hovered ? new java.awt.Color(255,107,53) : new java.awt.Color(26,43,74);
                 java.awt.Color c2 = hovered ? new java.awt.Color(255,140,90) : new java.awt.Color(36,51,82);
                 g2.setPaint(new java.awt.GradientPaint(0, 0, c1, getWidth(), 0, c2));
@@ -536,31 +480,17 @@ public class LoginView extends javax.swing.JFrame {
         lblTeam.setBounds(75, 415, 250, 14); 
         card.add(lblTeam);
 
-        // ── Gắn vào layout ────────────────────────────────────────────────────
-        /*java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.anchor = java.awt.GridBagConstraints.CENTER;
-        gbc.fill = java.awt.GridBagConstraints.NONE;*/
         rightOuter.add(card);
 
         this.getContentPane().add(leftPanel,  java.awt.BorderLayout.WEST);
         this.getContentPane().add(rightOuter, java.awt.BorderLayout.CENTER);
 
-        this.pack(); // reset lại pack cũ
+        this.pack();
         this.setSize(960, 620);
-        //this.setMinimumSize(new java.awt.Dimension(960, 620));
         this.setLocationRelativeTo(null);
         this.revalidate();
         this.repaint();
     }
-
-    // ============================================================
-    // THÊM CLASS NỘI BỘ NÀY vào cuối file LoginView.java
-    // (đặt bên ngoài class LoginView, cùng package view)
-    // ============================================================
 
     class RoundBorder implements javax.swing.border.Border {
         private final java.awt.Color color;
@@ -575,27 +505,18 @@ public class LoginView extends javax.swing.JFrame {
         public void paintBorder(java.awt.Component c, java.awt.Graphics g,
                                     int x, int y, int width, int height) {
             java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
-            g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
-                    java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(color);
             g2.setStroke(new java.awt.BasicStroke(1.5f));
             g2.drawRoundRect(x, y, width-1, height-1, radius, radius);
             g2.dispose();
         }
 
-        @Override public java.awt.Insets getBorderInsets(java.awt.Component c) {
-            return new java.awt.Insets(1, 1, 1, 1);
-        }
+        @Override public java.awt.Insets getBorderInsets(java.awt.Component c) { return new java.awt.Insets(1, 1, 1, 1); }
         @Override public boolean isBorderOpaque() { return false; }
     }
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+
+    @SuppressWarnings("unchecked")                        
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -623,7 +544,7 @@ public class LoginView extends javax.swing.JFrame {
         LoginView.setLayout(new java.awt.GridBagLayout());
 
         Login.setBackground(new java.awt.Color(0, 0, 0));
-        Login.setFont(new java.awt.Font("Segoe UI", 1, 20)); // NOI18N
+        Login.setFont(new java.awt.Font("Segoe UI", 1, 20)); 
         Login.setText("ĐĂNG NHẬP");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -634,7 +555,7 @@ public class LoginView extends javax.swing.JFrame {
         LoginView.add(Login, gridBagConstraints);
 
         Username.setBackground(new java.awt.Color(0, 0, 0));
-        Username.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
+        Username.setFont(new java.awt.Font("Segoe UI", 1, 15)); 
         Username.setText("TÀI KHOẢN");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -646,7 +567,7 @@ public class LoginView extends javax.swing.JFrame {
         LoginView.add(Username, gridBagConstraints);
 
         Password.setBackground(new java.awt.Color(0, 0, 0));
-        Password.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
+        Password.setFont(new java.awt.Font("Segoe UI", 1, 15)); 
         Password.setText("MẬT KHẨU");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -668,7 +589,7 @@ public class LoginView extends javax.swing.JFrame {
         LoginView.add(txtUsername, gridBagConstraints);
 
         btnLogin.setBackground(new java.awt.Color(44, 62, 80));
-        btnLogin.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnLogin.setFont(new java.awt.Font("Segoe UI", 1, 14)); 
         btnLogin.setForeground(new java.awt.Color(255, 255, 255));
         btnLogin.setText("Đăng nhập");
         btnLogin.addActionListener(this::btnLoginActionPerformed);
@@ -702,7 +623,7 @@ public class LoginView extends javax.swing.JFrame {
         HomePanel.setForeground(new java.awt.Color(255, 255, 255));
         HomePanel.setLayout(new java.awt.GridBagLayout());
 
-        SystemName.setFont(new java.awt.Font("Segoe UI", 1, 17)); // NOI18N
+        SystemName.setFont(new java.awt.Font("Segoe UI", 1, 17)); 
         SystemName.setForeground(new java.awt.Color(44, 62, 80));
         SystemName.setText("HỆ THỐNG QUẢN LÝ SIÊU THỊ ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -724,7 +645,7 @@ public class LoginView extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(18, 88, 0, 0);
         HomePanel.add(Separator, gridBagConstraints);
 
-        Greeting.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        Greeting.setFont(new java.awt.Font("Segoe UI", 1, 12)); 
         Greeting.setForeground(new java.awt.Color(44, 62, 80));
         Greeting.setText("Chào mừng đến với hệ thống!");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -735,9 +656,9 @@ public class LoginView extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(12, 16, 0, 0);
         HomePanel.add(Greeting, gridBagConstraints);
 
-        ClassName.setFont(new java.awt.Font("Segoe UI", 1, 11)); // NOI18N
+        ClassName.setFont(new java.awt.Font("Segoe UI", 1, 11)); 
         ClassName.setForeground(new java.awt.Color(44, 62, 80));
-        ClassName.setText("Nhóm - IS216.Q22");
+        ClassName.setText("Nhóm 12 - IS216.Q22");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -745,7 +666,9 @@ public class LoginView extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(6, 44, 108, 0);
         HomePanel.add(ClassName, gridBagConstraints);
 
-        IconMarket.setIcon(new javax.swing.ImageIcon(getClass().getResource("/view/image/supermarket (2).png"))); // NOI18N
+        // Đã xóa (comment) dòng IconMarket gọi file ảnh cũ bị lỗi
+        // IconMarket.setIcon(new javax.swing.ImageIcon(getClass().getResource("/view/image/supermarket (2).png"))); 
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -762,14 +685,12 @@ public class LoginView extends javax.swing.JFrame {
         getContentPane().add(HomePanel, gridBagConstraints);
 
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+    }                      
 
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {                                         
-        // 1. Lấy dữ liệu
         String user = txtUsername.getText().trim();
         String pass = new String(txtPassword.getPassword());
 
-        // 2. Kiểm tra nhanh (Validation)
         if (user.isEmpty() || pass.isEmpty()) {
             javax.swing.JOptionPane.showMessageDialog(this,
                     "Vui lòng nhập đầy đủ Tài khoản và Mật khẩu!",
@@ -779,37 +700,27 @@ public class LoginView extends javax.swing.JFrame {
         }
 
         try {
-            // 3. Authenticate: Lấy thông tin Account kèm RoleID
             model.account.Account acc = business.service.LoginService.authenticate(user, pass);
 
             if (acc != null) {
-                // --- ĐĂNG NHẬP THÀNH CÔNG ---
-                // 4. Điều hướng Dashboard dựa trên Role
                 java.awt.EventQueue.invokeLater(() -> {
                     if (business.service.AuthorizationService.isAdmin(acc)) {
-                        // Nếu là Admin tổng -> Mở Portal đen
                         AdminDashboardView adminScreen = new AdminDashboardView();
                         adminScreen.setVisible(true);
                         adminScreen.setLocationRelativeTo(null);
-                        System.out.println("DEBUG: Mở Admin Dashboard cho " + user);
                     } 
                     else if (business.service.AuthorizationService.isWarehouseStaff(acc)) {
                         WarehouseDashboardView warehouseScreen = new WarehouseDashboardView();
                         warehouseScreen.setVisible(true);
                         warehouseScreen.setLocationRelativeTo(null);
                     } else {
-                        // Nếu là Manager hoặc Staff -> Mở Dashboard nghiệp vụ cửa hàng
                         DashboardView mainScreen = new DashboardView();
                         mainScreen.setVisible(true);
                         mainScreen.setLocationRelativeTo(null);
-                        System.out.println("DEBUG: Mở Store Dashboard cho " + user);
                     }
                 });
-
-                // 5. Đóng màn hình Login
                 this.dispose();
             } else {
-                // --- ĐĂNG NHẬP THẤT BẠI ---
                 javax.swing.JOptionPane.showMessageDialog(this,
                         "Tài khoản hoặc mật khẩu không chính xác!",
                         "Lỗi đăng nhập",
@@ -829,24 +740,18 @@ public class LoginView extends javax.swing.JFrame {
         }
     }
 
-    private void txtUsernameActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_txtUsernameActionPerformed
-        txtPassword.requestFocus(); // Nhấn Enter ở đây thì nhảy xuống ô dưới
-        btnLoginActionPerformed(evt); // Gọi trực tiếp hàm xử lý của nút Đăng nhập
+    private void txtUsernameActionPerformed(java.awt.event.ActionEvent evt) {
+        txtPassword.requestFocus(); 
+        btnLoginActionPerformed(evt); 
     }
 
-    private void txtPasswordActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_txtPasswordActionPerformed
-        // TODO add your handling code here:
-    }// GEN-LAST:event_txtPasswordActionPerformed
+    private void txtPasswordActionPerformed(java.awt.event.ActionEvent evt) {
+    }
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String args[]) {
-        // Dọn token hết hạn ngay khi app start
         int deletedNow = business.sql.rbac.TokenSql.getInstance().deleteExpiredTokens();
         System.out.println("STARTUP CLEANUP deleted = " + deletedNow);
 
-        // Bật dọn định kỳ
         business.service.TokenCleanupService.start();
 
         java.awt.EventQueue.invokeLater(() -> {
@@ -856,7 +761,6 @@ public class LoginView extends javax.swing.JFrame {
         });
     }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel ClassName;
     private javax.swing.JLabel Greeting;
     private javax.swing.JPanel HomePanel;
@@ -870,6 +774,4 @@ public class LoginView extends javax.swing.JFrame {
     private javax.swing.JButton btnLogin;
     private javax.swing.JPasswordField txtPassword;
     private javax.swing.JTextField txtUsername;
-    // End of variables declaration//GEN-END:variables
 }
-

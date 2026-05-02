@@ -369,7 +369,7 @@ public class EmployeeView extends JPanel {
     }
 
     // =================================================================================
-    // LOGIC & SỰ KIỆN (GIỮ NGUYÊN LOGIC BẢO MẬT CỦA VĨ)
+    // LOGIC & SỰ KIỆN (GIỮ NGUYÊN LOGIC BẢO MẬT CỦA VĨ + THÊM GỬI MAIL CỦA TÙNG)
     // =================================================================================
     private void initEvents() {
         tblEmployees.addMouseListener(new MouseAdapter() {
@@ -421,14 +421,30 @@ public class EmployeeView extends JPanel {
             emp.setEmployeeId("EMP" + System.currentTimeMillis());
 
             if (employeeSql.insert(emp) > 0) {
-                JOptionPane.showMessageDialog(this, "Tạo hồ sơ nhân viên thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                // 1. CHẠY NGẦM VIỆC GỬI EMAIL TỰ ĐỘNG BẰNG LUỒNG MỚI (Tránh giật lag UI)
+                new Thread(() -> {
+                    boolean mailSent = business.service.EmailService.sendActivationEmail(
+                            emp.getEmail(), 
+                            emp.getEmployeeName(), 
+                            emp.getEmployeeId()
+                    );
+                    if (!mailSent) {
+                        System.err.println("Cảnh báo: Không thể gửi mail kích hoạt đến " + emp.getEmail());
+                    }
+                }).start();
+
+                // 2. SHOW THÔNG BÁO CHO QUẢN LÝ
+                JOptionPane.showMessageDialog(this, 
+                        "Tạo hồ sơ nhân viên thành công!\nHệ thống đã tự động gửi Mã Kích Hoạt đến email: " + emp.getEmail(), 
+                        "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                
                 if (!employeeNameList.contains(emp.getEmployeeName())) {
                     employeeNameList.add(emp.getEmployeeName());
                 }
                 loadDataToTable();
                 clearForm();
             } else {
-                JOptionPane.showMessageDialog(this, "Thêm thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Thêm hồ sơ thất bại! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -516,6 +532,14 @@ public class EmployeeView extends JPanel {
             JOptionPane.showMessageDialog(this,
                     "Phân quyền không hợp lệ!\nQuản lý chỉ được phép cấp quyền:\n- R_STAFF_SALE\n- R_STAFF_VIEW_PROD",
                     "Cảnh báo bảo mật", JOptionPane.WARNING_MESSAGE);
+            return null;
+        }
+        
+        // CHECK ĐỊNH DẠNG EMAIL THEO YÊU CẦU CỦA TÙNG
+        if (!email.endsWith("@gmail.com") && !email.endsWith("@gm.uit.edu.vn")) {
+            JOptionPane.showMessageDialog(this, 
+                "Email không hợp lệ!\nHệ thống chỉ chấp nhận đuôi @gmail.com hoặc @gm.uit.edu.vn", 
+                "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
             return null;
         }
 

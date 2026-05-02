@@ -19,12 +19,10 @@ public class AdminSidebar extends JPanel {
 
         setLayout(new BorderLayout());
         
-        // --- CHÌA KHÓA FIX LỖI Ở ĐÂY ---
         // Khóa chết chiều rộng ở 260px, không cho phép Layout bóp méo khi thu nhỏ cửa sổ
         setPreferredSize(new Dimension(260, 0));
         setMinimumSize(new Dimension(260, 0));
         setMaximumSize(new Dimension(260, Integer.MAX_VALUE));
-        // -------------------------------
         
         setBackground(Color.WHITE); 
         setBorder(new MatteBorder(0, 0, 0, 1, new Color(230, 230, 230))); 
@@ -48,14 +46,12 @@ public class AdminSidebar extends JPanel {
         brandingPanel.add(Box.createRigidArea(new Dimension(0, 4)));
         brandingPanel.add(subtitle);
 
-        // 2. Panel chứa các mục Menu
+        // 2. Panel chứa các mục Menu (Đã xóa "Tạo tài khoản")
         menuPanel = new JPanel();
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
         menuPanel.setBackground(Color.WHITE);
         menuPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
-        // THÊM CÁC MỤC MENU TIẾNG VIỆT (KÈM ICON VỪA THÊM)
-        addMenuItem("Tạo tài khoản", IconHelper.add(20));
         addMenuItem("Quản lý tài khoản", IconHelper.employee(20)); 
         addMenuItem("Quản lý phân quyền", IconHelper.customer(20));
         addMenuItem("Nhật ký hệ thống", IconHelper.barChart(20));
@@ -71,7 +67,6 @@ public class AdminSidebar extends JPanel {
         bottomPanel.setBackground(Color.WHITE);
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
 
-        // NÚT ĐĂNG XUẤT CÓ ICON
         MenuItem logoutItem = new MenuItem("Đăng xuất", IconHelper.logout(20), () -> {
             if (listener != null) {
                 listener.onMenuClick("Đăng xuất");
@@ -119,7 +114,7 @@ public class AdminSidebar extends JPanel {
     // =========================================================
     class MenuItem extends JPanel {
         private String title;
-        private ImageIcon icon; // Thêm thuộc tính Icon
+        private ImageIcon icon; 
         private boolean isActive = false;
         private boolean isHovered = false;
         private boolean isFramed = false; 
@@ -142,16 +137,13 @@ public class AdminSidebar extends JPanel {
             this.icon = icon;
             setLayout(new BorderLayout());
             
-            // --- KHÓA KÍCH THƯỚC CỦA TỪNG THẺ MENU ---
             setPreferredSize(new Dimension(260, 45));
             setMinimumSize(new Dimension(260, 45));
             setMaximumSize(new Dimension(260, 45));
-            // -----------------------------------------
             
             setOpaque(false); 
             setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-            // Bắt sự kiện chuột
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseEntered(MouseEvent e) {
@@ -199,7 +191,6 @@ public class AdminSidebar extends JPanel {
                 g2.setFont(new Font("Segoe UI", Font.BOLD, 14));
                 FontMetrics fm = g2.getFontMetrics();
                 
-                // Tính toán để căn giữa cả Icon + Chữ
                 int iconWidth = (icon != null) ? icon.getIconWidth() + 10 : 0;
                 int totalWidth = iconWidth + fm.stringWidth(title);
                 int startX = (w - totalWidth) / 2;
@@ -231,12 +222,10 @@ public class AdminSidebar extends JPanel {
                     g2.setFont(new Font("Segoe UI", Font.PLAIN, 14));
                 }
 
-                // Tọa độ vẽ Icon và Chữ
-                int iconX = 25; // Icon cách lề trái 25px
-                int textX = 60; // Chữ cách lề trái 60px (chừa khoảng trống cho icon)
+                int iconX = 25; 
+                int textX = 60; 
                 
                 if (icon != null) {
-                    // Vẽ Icon căn giữa theo chiều dọc
                     icon.paintIcon(this, g2, iconX, (h - icon.getIconHeight()) / 2);
                 }
 

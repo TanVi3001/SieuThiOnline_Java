@@ -18,9 +18,9 @@ public class EmployeeSql implements SqlInterface<Employee> {
 
     @Override
     public int insert(Employee t) {
-        // ĐÃ THÊM LẠI ROLE_ID VÀO LỆNH INSERT
-        String sql = "INSERT INTO EMPLOYEES (employee_id, employee_name, phone, email, role_id, gender, is_deleted) "
-                + "VALUES (?, ?, ?, ?, ?, ?, 0)";
+        // FIX LỖI: Thêm hire_date (SYSDATE) và salary_coefficient (1.0)
+        String sql = "INSERT INTO EMPLOYEES (employee_id, employee_name, phone, email, role_id, gender, hire_date, salary_coefficient, is_deleted) "
+                + "VALUES (?, ?, ?, ?, ?, ?, SYSDATE, 1.0, 0)";
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             con.setAutoCommit(false);
             try {
@@ -45,19 +45,23 @@ public class EmployeeSql implements SqlInterface<Employee> {
                 con.commit();
                 return rows;
             } catch (Exception e) {
+                // Bật còi báo động lỗi
+                System.err.println("=== LỖI KHI THÊM NHÂN VIÊN ===");
+                e.printStackTrace();
                 con.rollback();
                 return 0;
             } finally {
                 con.setAutoCommit(true);
             }
         } catch (SQLException e) {
+            System.err.println("=== LỖI KẾT NỐI KHI THÊM NHÂN VIÊN ===");
+            e.printStackTrace();
             return 0;
         }
     }
 
     @Override
     public int update(Employee t) {
-        // ĐÃ THÊM LẠI ROLE_ID VÀO LỆNH UPDATE
         String sql = "UPDATE EMPLOYEES SET employee_name = ?, phone = ?, email = ?, role_id = ?, gender = ? WHERE employee_id = ? AND is_deleted = 0";
         String sqlOld = "SELECT employee_name, phone, email, role_id, gender FROM EMPLOYEES WHERE employee_id = ? AND is_deleted = 0";
 
@@ -110,12 +114,15 @@ public class EmployeeSql implements SqlInterface<Employee> {
                 con.commit();
                 return rows;
             } catch (Exception e) {
+                System.err.println("=== LỖI KHI CẬP NHẬT NHÂN VIÊN ===");
+                e.printStackTrace();
                 con.rollback();
                 return 0;
             } finally {
                 con.setAutoCommit(true);
             }
         } catch (SQLException e) {
+            e.printStackTrace();
             return 0;
         }
     }
@@ -134,12 +141,15 @@ public class EmployeeSql implements SqlInterface<Employee> {
                 con.commit();
                 return rows;
             } catch (Exception e) {
+                System.err.println("=== LỖI KHI XÓA NHÂN VIÊN ===");
+                e.printStackTrace();
                 con.rollback();
                 return 0;
             } finally {
                 con.setAutoCommit(true);
             }
         } catch (SQLException e) {
+            e.printStackTrace();
             return 0;
         }
     }
@@ -155,6 +165,7 @@ public class EmployeeSql implements SqlInterface<Employee> {
                 }
             }
         } catch (SQLException e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -222,6 +233,7 @@ public class EmployeeSql implements SqlInterface<Employee> {
             pst.setString(2, employeeId);
             return pst.executeUpdate();
         } catch (SQLException e) {
+            e.printStackTrace();
             return 0;
         }
     }
@@ -242,6 +254,7 @@ public class EmployeeSql implements SqlInterface<Employee> {
                 list.add(emp);
             }
         } catch (SQLException e) {
+            e.printStackTrace();
         }
         return list;
     }
@@ -252,33 +265,26 @@ public class EmployeeSql implements SqlInterface<Employee> {
         e.setEmployeeName(rs.getString("employee_name"));
         try {
             e.setHireDate(rs.getDate("hire_date"));
-        } catch (SQLException ignored) {
-        }
+        } catch (SQLException ignored) {}
         try {
             e.setSalaryCoefficient(rs.getBigDecimal("salary_coefficient"));
-        } catch (SQLException ignored) {
-        }
+        } catch (SQLException ignored) {}
         try {
             e.setTotalCompletedOrders(rs.getInt("total_completed_orders"));
-        } catch (SQLException ignored) {
-        }
+        } catch (SQLException ignored) {}
         try {
             e.setShiftId(rs.getString("shift_id"));
-        } catch (SQLException ignored) {
-        }
+        } catch (SQLException ignored) {}
         e.setIsDeleted(rs.getInt("is_deleted"));
         try {
             e.setPhone(rs.getString("phone"));
-        } catch (SQLException ignored) {
-        }
+        } catch (SQLException ignored) {}
         try {
             e.setEmail(rs.getString("email"));
-        } catch (SQLException ignored) {
-        }
+        } catch (SQLException ignored) {}
         try {
             e.setGender(rs.getString("gender"));
-        } catch (SQLException ignored) {
-        }
+        } catch (SQLException ignored) {}
         return e;
     }
 
