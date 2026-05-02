@@ -10,6 +10,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import view.components.IconHelper; // IMPORT THÊM ICON HELPER
 
 public class CustomerView extends JPanel {
 
@@ -23,7 +24,7 @@ public class CustomerView extends JPanel {
 
     // --- KHAI BÁO UI COMPONENTS ---
     private JTextField txtId, txtName, txtPhone, txtEmail, txtAddress;
-    private JComboBox<String> cbSearch; // Thay txtSearch bằng ComboBox
+    private JComboBox<String> cbSearch;
     private JTable tblCustomers;
     private DefaultTableModel tableModel;
     private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch;
@@ -34,15 +35,14 @@ public class CustomerView extends JPanel {
     public CustomerView() {
         setLayout(new BorderLayout(20, 20));
         setBackground(bgLight);
-        setBorder(new EmptyBorder(20, 30, 20, 30)); // Padding cho toàn màn hình
+        setBorder(new EmptyBorder(20, 30, 20, 30));
 
-        loadAutoCompleteData(); // Load danh sách gợi ý trước
+        loadAutoCompleteData();
         initUI();
         initEvents();
-        loadCustomerData(); // Load dữ liệu lên bảng
+        loadCustomerData();
     }
 
-    // Load dữ liệu Tên và SĐT khách hàng vào danh sách gợi ý
     private void loadAutoCompleteData() {
         customerSearchList.clear();
         try {
@@ -59,9 +59,6 @@ public class CustomerView extends JPanel {
     }
 
     private void initUI() {
-        // ==========================================
-        // 1. HEADER (Tiêu đề + Ô Tìm kiếm)
-        // ==========================================
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
 
@@ -79,26 +76,35 @@ public class CustomerView extends JPanel {
         JPanel toolPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         toolPanel.setOpaque(false);
 
-        // --- CẤU HÌNH COMBOBOX TÌM KIẾM AUTO-COMPLETE ---
         cbSearch = new JComboBox<>();
-        styleComboBox(cbSearch, "Nhập tên hoặc SĐT...");
+        styleSearchBox(cbSearch, "Nhập tên hoặc SĐT..."); // Xài hàm mới
         setupAutoComplete(cbSearch, customerSearchList);
 
-        btnSearch = createCustomButton("Tìm kiếm", primaryBlue, Color.WHITE);
-        toolPanel.add(cbSearch);
+        // KHUNG BO TRÒN CHO Ô TÌM KIẾM
+        JPanel searchFieldWrapper = new JPanel(new BorderLayout(5, 0));
+        searchFieldWrapper.setBackground(Color.WHITE);
+        searchFieldWrapper.setPreferredSize(new Dimension(300, 45));
+        searchFieldWrapper.setBorder(BorderFactory.createCompoundBorder(
+                new RoundBorder(borderGray, 25), // Bo góc 25
+                new EmptyBorder(0, 15, 0, 15)
+        ));
+        JLabel searchIconLabel = new JLabel(IconHelper.search(16)); // Kính lúp bên trái
+        searchFieldWrapper.add(searchIconLabel, BorderLayout.WEST);
+        searchFieldWrapper.add(cbSearch, BorderLayout.CENTER);
+
+        // CÁC NÚT TREN TOOLBAR
+        btnSearch = createCustomButton("Tìm kiếm", primaryBlue, Color.WHITE, null);
+
+        toolPanel.add(searchFieldWrapper);
         toolPanel.add(btnSearch);
 
         headerPanel.add(titlePanel, BorderLayout.WEST);
         headerPanel.add(toolPanel, BorderLayout.EAST);
         add(headerPanel, BorderLayout.NORTH);
 
-        // ==========================================
-        // 2. CENTER (Thẻ Form trái + Thẻ Bảng phải)
-        // ==========================================
         JPanel centerPanel = new JPanel(new BorderLayout(20, 0));
         centerPanel.setOpaque(false);
 
-        // --- LEFT FORM (Thẻ Form trắng bo góc bên trái) ---
         RoundedPanel formCard = new RoundedPanel(20, cardWhite);
         formCard.setPreferredSize(new Dimension(350, 0));
         formCard.setLayout(new GridBagLayout());
@@ -110,55 +116,46 @@ public class CustomerView extends JPanel {
         gbc.anchor = GridBagConstraints.WEST;
 
         txtId = createTextField("Mã tự động...");
-        txtId.setEnabled(false); // Mã khách hàng thường không tự sửa
+        txtId.setEnabled(false);
         txtName = createTextField("Nhập tên khách hàng...");
         txtPhone = createTextField("Nhập số điện thoại...");
         txtEmail = createTextField("Nhập email...");
         txtAddress = createTextField("Nhập địa chỉ...");
 
         int y = 0;
-        gbc.gridy = y++;
-        gbc.insets = new Insets(0, 0, 5, 0);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0);
         formCard.add(createLabel("Mã khách hàng"), gbc);
-        gbc.gridy = y++;
-        gbc.insets = new Insets(0, 0, 15, 0);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 15, 0);
         formCard.add(txtId, gbc);
 
-        gbc.gridy = y++;
-        gbc.insets = new Insets(0, 0, 5, 0);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0);
         formCard.add(createLabel("Tên khách hàng (*)"), gbc);
-        gbc.gridy = y++;
-        gbc.insets = new Insets(0, 0, 15, 0);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 15, 0);
         formCard.add(txtName, gbc);
 
-        gbc.gridy = y++;
-        gbc.insets = new Insets(0, 0, 5, 0);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0);
         formCard.add(createLabel("Số điện thoại (*)"), gbc);
-        gbc.gridy = y++;
-        gbc.insets = new Insets(0, 0, 15, 0);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 15, 0);
         formCard.add(txtPhone, gbc);
 
-        gbc.gridy = y++;
-        gbc.insets = new Insets(0, 0, 5, 0);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0);
         formCard.add(createLabel("Email"), gbc);
-        gbc.gridy = y++;
-        gbc.insets = new Insets(0, 0, 15, 0);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 15, 0);
         formCard.add(txtEmail, gbc);
 
-        gbc.gridy = y++;
-        gbc.insets = new Insets(0, 0, 5, 0);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0);
         formCard.add(createLabel("Địa chỉ"), gbc);
-        gbc.gridy = y++;
-        gbc.insets = new Insets(0, 0, 30, 0);
+        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 30, 0);
         formCard.add(txtAddress, gbc);
 
-        // GRID CHỨA 4 NÚT CHỨC NĂNG BÊN DƯỚI FORM
-        btnAdd = createCustomButton("Thêm", primaryBlue, Color.WHITE);
-        btnUpdate = createCustomButton("Cập nhật", new Color(255, 153, 0), Color.BLACK);
-        btnDelete = createCustomButton("Xóa", new Color(220, 53, 69), Color.WHITE);
-        btnClear = createCustomButton("Làm mới", new Color(230, 235, 241), textDark);
+        // --- UPDATE CÁC NÚT VỚI ICON ---
+        btnAdd = createCustomButton("Thêm", primaryBlue, Color.WHITE, IconHelper.add(20));
+        btnUpdate = createCustomButton("Cập nhật", new Color(255, 153, 0), Color.BLACK, IconHelper.edit(20));
+        btnDelete = createCustomButton("Xóa", new Color(220, 53, 69), Color.WHITE, IconHelper.delete(20));
+        btnClear = createCustomButton("Làm mới", new Color(165, 177, 194), Color.WHITE, IconHelper.refresh(20));
 
-        JPanel btnGrid = new JPanel(new GridLayout(2, 2, 10, 10));
+        // NỚI RỘNG KHOẢNG CÁCH (12, 12)
+        JPanel btnGrid = new JPanel(new GridLayout(2, 2, 12, 12));
         btnGrid.setOpaque(false);
         btnGrid.add(btnAdd);
         btnGrid.add(btnUpdate);
@@ -169,7 +166,6 @@ public class CustomerView extends JPanel {
         formCard.add(btnGrid, gbc);
         centerPanel.add(formCard, BorderLayout.WEST);
 
-        // --- RIGHT TABLE (Thẻ chứa JTable bo góc bên phải) ---
         RoundedPanel tableCard = new RoundedPanel(20, cardWhite);
         tableCard.setLayout(new BorderLayout());
         tableCard.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -182,7 +178,6 @@ public class CustomerView extends JPanel {
         };
         tblCustomers = new JTable(tableModel);
 
-        // Chỉnh style bảng
         tblCustomers.setRowHeight(35);
         tblCustomers.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         tblCustomers.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -201,9 +196,6 @@ public class CustomerView extends JPanel {
         add(centerPanel, BorderLayout.CENTER);
     }
 
-    // ==========================================
-    // LOGIC AUTO-COMPLETE COMBOBOX
-    // ==========================================
     private void styleComboBox(JComboBox<String> cb, String placeholder) {
         cb.setPreferredSize(new Dimension(280, 40));
         cb.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -245,7 +237,6 @@ public class CustomerView extends JPanel {
                     } else {
                         boolean hasSuggestion = false;
                         for (String item : originalItems) {
-                            // Tìm kiếm không phân biệt hoa thường
                             if (item.toLowerCase().contains(text.toLowerCase())) {
                                 comboBox.addItem(item);
                                 hasSuggestion = true;
@@ -257,15 +248,12 @@ public class CustomerView extends JPanel {
                             comboBox.hidePopup();
                         }
                     }
-                    editor.setText(text); // Giữ lại chữ đang gõ
+                    editor.setText(text);
                 });
             }
         });
     }
 
-    // ==========================================
-    // UI HELPERS
-    // ==========================================
     private JLabel createLabel(String text) {
         JLabel lbl = new JLabel(text);
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -284,29 +272,30 @@ public class CustomerView extends JPanel {
         return txt;
     }
 
-    private JButton createCustomButton(String text, Color bg, Color fg) {
-        JButton btn = new JButton(text) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(bg);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
-                super.paintComponent(g);
-                g2.dispose();
-            }
-        };
+    private JButton createCustomButton(String text, Color bg, Color fg, ImageIcon icon) {
+        JButton btn = new JButton(text);
+        if (icon != null) {
+            btn.setIcon(new ImageIcon(icon.getImage().getScaledInstance(18, 18, Image.SCALE_SMOOTH)));
+            btn.setIconTextGap(8);
+        }
         btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btn.setForeground(fg);
-        btn.setPreferredSize(new Dimension(100, 38));
-        btn.setContentAreaFilled(false);
-        btn.setBorderPainted(false);
+        btn.setBackground(bg);
+        btn.setPreferredSize(new Dimension(130, 45));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(false);
 
-        btn.addMouseListener(new MouseAdapter() {
+        btn.setUI(new javax.swing.plaf.basic.BasicButtonUI() {
             @Override
-            public void mouseEntered(MouseEvent e) {
-                btn.setOpaque(false);
+            public void paint(Graphics g, JComponent c) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(c.getBackground());
+                g2.fillRoundRect(0, 0, c.getWidth(), c.getHeight(), 25, 25);
+                super.paint(g2, c);
+                g2.dispose();
             }
         });
         return btn;
@@ -365,11 +354,7 @@ public class CustomerView extends JPanel {
         }
     }
 
-    // ==========================================
-    // LOGIC & SỰ KIỆN 
-    // ==========================================
     private void initEvents() {
-        // Đổ dữ liệu từ Bảng lên Form khi click
         tblCustomers.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent evt) {
@@ -384,33 +369,28 @@ public class CustomerView extends JPanel {
             }
         });
 
-        // Xóa form và reset bảng
         btnClear.addActionListener(e -> {
             txtId.setText("");
             txtName.setText("");
             txtPhone.setText("");
             txtEmail.setText("");
             txtAddress.setText("");
-            ((JTextField) cbSearch.getEditor().getEditorComponent()).setText(""); // Xóa trắng ô tìm kiếm
+            ((JTextField) cbSearch.getEditor().getEditorComponent()).setText("");
             tblCustomers.clearSelection();
-            loadCustomerData(); // Load lại toàn bộ dữ liệu
+            loadCustomerData();
         });
 
-        // Xử lý Tìm kiếm
         btnSearch.addActionListener(e -> {
             JTextField editor = (JTextField) cbSearch.getEditor().getEditorComponent();
             String keyword = editor.getText().trim().toLowerCase();
 
-            // Xử lý chuỗi nếu người dùng chọn từ danh sách gợi ý (bỏ phần SĐT)
             if (keyword.contains(" - ")) {
                 keyword = keyword.split(" - ")[0].trim();
             }
-
             searchAndFilterTable(keyword);
         });
     }
 
-    // Hàm lọc dữ liệu trên bảng theo Tên hoặc SĐT
     private void searchAndFilterTable(String keyword) {
         tableModel.setRowCount(0);
         try {
@@ -419,7 +399,6 @@ public class CustomerView extends JPanel {
                 String name = c.getCustomerName() != null ? c.getCustomerName().toLowerCase() : "";
                 String phone = c.getPhone() != null ? c.getPhone() : "";
 
-                // Nếu từ khóa rỗng hoặc khớp tên hoặc khớp SĐT thì đưa vào bảng
                 if (keyword.isEmpty() || name.contains(keyword) || phone.contains(keyword)) {
                     String id = c.getCustomerId() != null ? c.getCustomerId() : "";
                     String cName = c.getCustomerName() != null ? c.getCustomerName() : "";
@@ -451,5 +430,15 @@ public class CustomerView extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    // Hàm bốc hơi cái mũi tên dropdown và viền để biến ComboBox thành ô Search phẳng
+    private void styleSearchBox(JComboBox<String> cb, String placeholder) {
+        cb.setEditable(true);
+        cb.setBorder(null);
+        cb.setBackground(Color.WHITE);
+        JTextField editor = (JTextField) cb.getEditor().getEditorComponent();
+        editor.putClientProperty("JTextField.placeholderText", placeholder);
+        editor.setBorder(new EmptyBorder(0, 5, 0, 5));
     }
 }
