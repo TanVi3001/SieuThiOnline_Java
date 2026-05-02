@@ -20,7 +20,8 @@ public class AuditLogSql implements SqlInterface<AuditLog> {
     // HÀM QUAN TRỌNG NHẤT: GHI LOG NẰM TRONG CÙNG 1 TRANSACTION CỦA TÁC VỤ CHÍNH
     // =========================================================================
     public int insertWithConn(Connection con, AuditLog t) throws SQLException {
-        String sql = "INSERT INTO AUDIT_LOGS (log_id, account_id, action_type, entity_type, entity_id, "
+        // ĐÃ SỬA: Bỏ chữ S trong AUDIT_LOGS -> AUDIT_LOG
+        String sql = "INSERT INTO AUDIT_LOG (log_id, account_id, action_type, entity_type, entity_id, "
                 + "old_value, new_value, reason, ip_address, device_info, is_deleted) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
 
@@ -64,7 +65,8 @@ public class AuditLogSql implements SqlInterface<AuditLog> {
     public int update(AuditLog t) {
         // LƯU Ý NGHIỆP VỤ: Audit Log là lịch sử, KHÔNG NÊN CHO PHÉP UPDATE. 
         // Nhưng vẫn viết hàm để implement Interface
-        String sql = "UPDATE AUDIT_LOGS SET reason = ?, is_deleted = ? WHERE log_id = ?";
+        // ĐÃ SỬA: AUDIT_LOGS -> AUDIT_LOG
+        String sql = "UPDATE AUDIT_LOG SET reason = ?, is_deleted = ? WHERE log_id = ?";
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1, t.getReason());
             pst.setInt(2, t.getIsDeleted());
@@ -80,7 +82,8 @@ public class AuditLogSql implements SqlInterface<AuditLog> {
     @Override
     public int delete(String id) {
         // Soft delete
-        String sql = "UPDATE AUDIT_LOGS SET is_deleted = 1 WHERE log_id = ?";
+        // ĐÃ SỬA: AUDIT_LOGS -> AUDIT_LOG
+        String sql = "UPDATE AUDIT_LOG SET is_deleted = 1 WHERE log_id = ?";
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1, id);
             return pst.executeUpdate();
@@ -93,7 +96,8 @@ public class AuditLogSql implements SqlInterface<AuditLog> {
 
     @Override
     public AuditLog selectById(String id) {
-        String sql = "SELECT * FROM AUDIT_LOGS WHERE log_id = ? AND is_deleted = 0";
+        // ĐÃ SỬA: AUDIT_LOGS -> AUDIT_LOG
+        String sql = "SELECT * FROM AUDIT_LOG WHERE log_id = ? AND is_deleted = 0";
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1, id);
             try (ResultSet rs = pst.executeQuery()) {
@@ -112,7 +116,8 @@ public class AuditLogSql implements SqlInterface<AuditLog> {
     public ArrayList<AuditLog> selectAll() {
         ArrayList<AuditLog> list = new ArrayList<>();
         // Lấy danh sách log và sắp xếp mới nhất lên đầu
-        String sql = "SELECT * FROM AUDIT_LOGS WHERE is_deleted = 0 ORDER BY created_at DESC";
+        // ĐÃ SỬA: AUDIT_LOGS -> AUDIT_LOG
+        String sql = "SELECT * FROM AUDIT_LOG WHERE is_deleted = 0 ORDER BY created_at DESC";
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql); ResultSet rs = pst.executeQuery()) {
 
             while (rs.next()) {
@@ -128,7 +133,8 @@ public class AuditLogSql implements SqlInterface<AuditLog> {
     @Override
     public List<AuditLog> selectByCondition(String condition) {
         ArrayList<AuditLog> list = new ArrayList<>();
-        String sql = "SELECT * FROM AUDIT_LOGS WHERE is_deleted = 0 " + (condition == null ? "" : condition) + " ORDER BY created_at DESC";
+        // ĐÃ SỬA: AUDIT_LOGS -> AUDIT_LOG
+        String sql = "SELECT * FROM AUDIT_LOG WHERE is_deleted = 0 " + (condition == null ? "" : condition) + " ORDER BY created_at DESC";
         try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql); ResultSet rs = pst.executeQuery()) {
 
             while (rs.next()) {
@@ -146,7 +152,8 @@ public class AuditLogSql implements SqlInterface<AuditLog> {
     // =========================================================================
     public ArrayList<AuditLog> search(String keyword) {
         ArrayList<AuditLog> list = new ArrayList<>();
-        String sql = "SELECT * FROM AUDIT_LOGS WHERE is_deleted = 0 AND "
+        // ĐÃ SỬA: AUDIT_LOGS -> AUDIT_LOG
+        String sql = "SELECT * FROM AUDIT_LOG WHERE is_deleted = 0 AND "
                 + "(LOWER(action_type) LIKE ? OR LOWER(entity_type) LIKE ? OR LOWER(entity_id) LIKE ? OR LOWER(account_id) LIKE ?) "
                 + "ORDER BY created_at DESC";
 

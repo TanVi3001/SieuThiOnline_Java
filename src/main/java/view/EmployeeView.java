@@ -26,7 +26,7 @@ public class EmployeeView extends JPanel {
 
     // --- KHAI BÁO UI COMPONENTS ---
     private JTextField txtId, txtName, txtPhone, txtEmail;
-    private JComboBox<String> cbSearch;
+    private JComboBox<String> cbRole, cbSearch; // ĐÃ TRẢ LẠI cbRole
 
     private JRadioButton rdoMale, rdoFemale;
     private ButtonGroup btngGender;
@@ -35,7 +35,10 @@ public class EmployeeView extends JPanel {
     private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch;
 
     private final EmployeeSql employeeSql = new EmployeeSql();
+
+    // Auto-complete lists
     private List<String> employeeNameList = new ArrayList<>();
+    private List<String> roleList = new ArrayList<>(); // List chứa 2 quyền staff
 
     public EmployeeView() {
         if (!business.service.AuthorizationService.canAccessEmployeeManagement()) {
@@ -54,6 +57,12 @@ public class EmployeeView extends JPanel {
     }
 
     private void loadAutoCompleteData() {
+        // 1. Chỉ cho phép Manager gán 2 quyền này (Cho vào Auto-complete)
+        roleList.clear();
+        roleList.add("R_STAFF_SALE");
+        roleList.add("R_STAFF_VIEW_PROD");
+
+        // 2. Load tên nhân viên cho thanh search
         employeeNameList.clear();
         try {
             List<Employee> list = employeeSql.selectAll();
@@ -85,7 +94,7 @@ public class EmployeeView extends JPanel {
         JLabel lblTitle = new JLabel("Hồ Sơ Nhân Viên");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 26));
         lblTitle.setForeground(textDark);
-        JLabel lblSub = new JLabel("Cập nhật thông tin lý lịch cá nhân (Việc phân quyền do Admin quản lý)");
+        JLabel lblSub = new JLabel("Quản lý thông tin và chức vụ nhân sự");
         lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lblSub.setForeground(textGray);
         titlePanel.add(lblTitle);
@@ -126,6 +135,11 @@ public class EmployeeView extends JPanel {
         txtPhone = createTextField("Nhập số điện thoại...");
         txtEmail = createTextField("Nhập email...");
 
+        // KHỞI TẠO COMBOBOX CHỨC VỤ BẰNG AUTO-COMPLETE
+        cbRole = new JComboBox<>();
+        styleComboBox(cbRole, "Nhập phân quyền...");
+        setupAutoComplete(cbRole, roleList);
+
         rdoMale = new JRadioButton("Nam");
         rdoFemale = new JRadioButton("Nữ");
         rdoMale.setOpaque(false);
@@ -141,20 +155,49 @@ public class EmployeeView extends JPanel {
         genderPanel.add(rdoFemale);
 
         int y = 0;
-        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0); formCard.add(createLabel("Mã nhân viên"), gbc);
-        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 15, 0); formCard.add(txtId, gbc);
-        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0); formCard.add(createLabel("Tên nhân viên (*)"), gbc);
-        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 15, 0); formCard.add(txtName, gbc);
-        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0); formCard.add(createLabel("Số điện thoại (*)"), gbc);
-        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 15, 0); formCard.add(txtPhone, gbc);
-        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0); formCard.add(createLabel("Email (*)"), gbc);
-        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 15, 0); formCard.add(txtEmail, gbc);
-        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 5, 0); formCard.add(createLabel("Giới tính (*)"), gbc);
-        gbc.gridy = y++; gbc.insets = new Insets(0, 0, 30, 0); formCard.add(genderPanel, gbc);
+        gbc.gridy = y++;
+        gbc.insets = new Insets(0, 0, 5, 0);
+        formCard.add(createLabel("Mã nhân viên"), gbc);
+        gbc.gridy = y++;
+        gbc.insets = new Insets(0, 0, 15, 0);
+        formCard.add(txtId, gbc);
+        gbc.gridy = y++;
+        gbc.insets = new Insets(0, 0, 5, 0);
+        formCard.add(createLabel("Tên nhân viên (*)"), gbc);
+        gbc.gridy = y++;
+        gbc.insets = new Insets(0, 0, 15, 0);
+        formCard.add(txtName, gbc);
+        gbc.gridy = y++;
+        gbc.insets = new Insets(0, 0, 5, 0);
+        formCard.add(createLabel("Số điện thoại (*)"), gbc);
+        gbc.gridy = y++;
+        gbc.insets = new Insets(0, 0, 15, 0);
+        formCard.add(txtPhone, gbc);
+        gbc.gridy = y++;
+        gbc.insets = new Insets(0, 0, 5, 0);
+        formCard.add(createLabel("Email (*)"), gbc);
+        gbc.gridy = y++;
+        gbc.insets = new Insets(0, 0, 15, 0);
+        formCard.add(txtEmail, gbc);
 
-        btnAdd = createCustomButton("Thêm HS", primaryBlue, Color.WHITE);
+        // ADD COMBOBOX ROLE VÀO FORM
+        gbc.gridy = y++;
+        gbc.insets = new Insets(0, 0, 5, 0);
+        formCard.add(createLabel("Chức vụ (Role ID) (*)"), gbc);
+        gbc.gridy = y++;
+        gbc.insets = new Insets(0, 0, 15, 0);
+        formCard.add(cbRole, gbc);
+
+        gbc.gridy = y++;
+        gbc.insets = new Insets(0, 0, 5, 0);
+        formCard.add(createLabel("Giới tính (*)"), gbc);
+        gbc.gridy = y++;
+        gbc.insets = new Insets(0, 0, 30, 0);
+        formCard.add(genderPanel, gbc);
+
+        btnAdd = createCustomButton("Thêm", primaryBlue, Color.WHITE);
         btnUpdate = createCustomButton("Cập nhật", new Color(0, 168, 140), Color.WHITE);
-        btnDelete = createCustomButton("Xóa HS", new Color(220, 53, 69), Color.WHITE);
+        btnDelete = createCustomButton("Xóa", new Color(220, 53, 69), Color.WHITE);
         btnClear = createCustomButton("Làm mới", new Color(230, 180, 50), textDark);
 
         JPanel btnGrid = new JPanel(new GridLayout(2, 2, 10, 10));
@@ -168,12 +211,11 @@ public class EmployeeView extends JPanel {
         formCard.add(btnGrid, gbc);
         centerPanel.add(formCard, BorderLayout.WEST);
 
-        // --- RIGHT TABLE CẬP NHẬT 7 CỘT ---
+        // --- RIGHT TABLE VẪN 7 CỘT ---
         RoundedPanel tableCard = new RoundedPanel(20, cardWhite);
         tableCard.setLayout(new BorderLayout());
         tableCard.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // Thêm cột "Cấp tài khoản" vào vị trí số 4 (Index 4)
         tableModel = new DefaultTableModel(new Object[]{"Mã NV", "Tên nhân viên", "Số ĐT", "Email", "Cấp tài khoản", "Chức vụ", "Giới tính"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -193,7 +235,7 @@ public class EmployeeView extends JPanel {
     }
 
     private void styleComboBox(JComboBox<String> cb, String placeholder) {
-        cb.setPreferredSize(new Dimension(280, 40));
+        cb.setPreferredSize(new Dimension(280, 38));
         cb.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cb.setBackground(Color.WHITE);
         cb.setEditable(true);
@@ -224,7 +266,9 @@ public class EmployeeView extends JPanel {
                     String text = editor.getText();
                     comboBox.removeAllItems();
                     if (text.isEmpty()) {
-                        for (String item : originalItems) comboBox.addItem(item);
+                        for (String item : originalItems) {
+                            comboBox.addItem(item);
+                        }
                         comboBox.hidePopup();
                     } else {
                         boolean hasSuggestion = false;
@@ -234,8 +278,11 @@ public class EmployeeView extends JPanel {
                                 hasSuggestion = true;
                             }
                         }
-                        if (hasSuggestion) comboBox.showPopup();
-                        else comboBox.hidePopup();
+                        if (hasSuggestion) {
+                            comboBox.showPopup();
+                        } else {
+                            comboBox.hidePopup();
+                        }
                     }
                     editor.setText(text);
                 });
@@ -307,18 +354,16 @@ public class EmployeeView extends JPanel {
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 setHorizontalAlignment(JLabel.CENTER);
 
-                // Lấy Cấp tài khoản ở Index 4, Chức vụ ở Index 5
                 String accStatus = String.valueOf(table.getModel().getValueAt(table.convertRowIndexToModel(row), 4));
                 String role = String.valueOf(table.getModel().getValueAt(table.convertRowIndexToModel(row), 5));
 
-                // 1. TÔ MÀU NỀN THEO QUYỀN LỰC
                 if ("R_ADMIN_ALL".equals(role) || "Quản trị viên".equals(role)) {
                     setBackground(isSelected ? new Color(248, 215, 218) : new Color(255, 235, 238));
                     setForeground(new Color(220, 53, 69));
                     setFont(new Font("Segoe UI", Font.BOLD, 14));
                 } else if ("R_STORE_MNG".equals(role) || "Quản lý cửa hàng".equals(role)) {
                     setBackground(isSelected ? new Color(212, 237, 218) : new Color(230, 245, 233));
-                    setForeground(new Color(25, 135, 84)); 
+                    setForeground(new Color(25, 135, 84));
                     setFont(new Font("Segoe UI", Font.BOLD, 14));
                 } else {
                     setBackground(isSelected ? new Color(237, 242, 255) : Color.WHITE);
@@ -326,17 +371,15 @@ public class EmployeeView extends JPanel {
                     setFont(new Font("Segoe UI", Font.PLAIN, 14));
                 }
 
-                // 2. TÔ MÀU CHỮ RIÊNG CHO CỘT "CẤP TÀI KHOẢN" (Index 4)
                 if (column == 4) {
                     if ("Chưa cấp".equals(accStatus)) {
-                        setForeground(new Color(220, 53, 69)); // Đỏ cảnh báo
+                        setForeground(new Color(220, 53, 69));
                         setFont(new Font("Segoe UI", Font.BOLD, 14));
                     } else if ("Đã cấp".equals(accStatus)) {
-                        setForeground(new Color(25, 135, 84)); // Xanh lá oki
+                        setForeground(new Color(25, 135, 84));
                         setFont(new Font("Segoe UI", Font.BOLD, 14));
                     }
                 }
-
                 return c;
             }
         };
@@ -347,13 +390,16 @@ public class EmployeeView extends JPanel {
     }
 
     class RoundedPanel extends JPanel {
+
         private int radius;
         private Color bgColor;
+
         public RoundedPanel(int radius, Color bgColor) {
             this.radius = radius;
             this.bgColor = bgColor;
             setOpaque(false);
         }
+
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
@@ -366,12 +412,15 @@ public class EmployeeView extends JPanel {
     }
 
     class RoundBorder implements javax.swing.border.Border {
+
         private Color color;
         private int radius;
+
         public RoundBorder(Color color, int radius) {
             this.color = color;
             this.radius = radius;
         }
+
         @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             Graphics2D g2 = (Graphics2D) g.create();
@@ -381,15 +430,25 @@ public class EmployeeView extends JPanel {
             g2.drawRoundRect(x, y, width - 1, height - 1, radius, radius);
             g2.dispose();
         }
+
         @Override
-        public Insets getBorderInsets(Component c) { return new Insets(1, 1, 1, 1); }
+        public Insets getBorderInsets(Component c) {
+            return new Insets(1, 1, 1, 1);
+        }
+
         @Override
-        public boolean isBorderOpaque() { return false; }
+        public boolean isBorderOpaque() {
+            return false;
+        }
     }
 
     private int getRoleRank(String role) {
-        if ("R_ADMIN_ALL".equals(role) || "Quản trị viên".equals(role)) return 1;
-        if ("R_STORE_MNG".equals(role) || "Quản lý cửa hàng".equals(role)) return 2;
+        if ("R_ADMIN_ALL".equals(role) || "Quản trị viên".equals(role)) {
+            return 1;
+        }
+        if ("R_STORE_MNG".equals(role) || "Quản lý cửa hàng".equals(role)) {
+            return 2;
+        }
         return 3;
     }
 
@@ -399,9 +458,10 @@ public class EmployeeView extends JPanel {
             public void mouseClicked(MouseEvent evt) {
                 int row = tblEmployees.getSelectedRow();
                 if (row >= 0) {
-                    // Index 5 giờ là Chức vụ
+                    // Index 5 là Chức vụ
                     String role = String.valueOf(tblEmployees.getValueAt(row, 5));
 
+                    // NẾU LÀ ADMIN HOẶC MANAGER THÌ CẤM ĐỤNG VÀO (CHẶN TỪ LÚC CLICK)
                     if ("R_ADMIN_ALL".equals(role) || "Quản trị viên".equals(role)) {
                         JOptionPane.showMessageDialog(EmployeeView.this,
                                 "⚠️ Đây là tài khoản Quản trị viên cấp cao (Admin).\nBạn không có quyền xem hay thao tác trên hồ sơ này!",
@@ -423,7 +483,10 @@ public class EmployeeView extends JPanel {
                     txtPhone.setText(String.valueOf(tblEmployees.getValueAt(row, 2)));
                     txtEmail.setText(String.valueOf(tblEmployees.getValueAt(row, 3)));
 
-                    // Giới tính lùi xuống Index 6
+                    // Lấy Role fill vào Combobox
+                    JTextField roleEditor = (JTextField) cbRole.getEditor().getEditorComponent();
+                    roleEditor.setText(role);
+
                     String gender = String.valueOf(tblEmployees.getValueAt(row, 6));
                     rdoMale.setSelected("Nam".equalsIgnoreCase(gender));
                     rdoFemale.setSelected("Nữ".equalsIgnoreCase(gender));
@@ -433,12 +496,14 @@ public class EmployeeView extends JPanel {
 
         btnAdd.addActionListener(e -> {
             Employee emp = getEmployeeFromForm();
-            if (emp == null) return;
-            
-            emp.setEmployeeId("USR" + System.currentTimeMillis());
+            if (emp == null) {
+                return;
+            }
+
+            emp.setEmployeeId("EMP" + System.currentTimeMillis());
 
             if (employeeSql.insert(emp) > 0) {
-                JOptionPane.showMessageDialog(this, "Tạo hồ sơ nhân viên thành công!\nVui lòng liên hệ Admin để cấp tài khoản đăng nhập.", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Tạo hồ sơ nhân viên thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                 if (!employeeNameList.contains(emp.getEmployeeName())) {
                     employeeNameList.add(emp.getEmployeeName());
                 }
@@ -456,8 +521,10 @@ public class EmployeeView extends JPanel {
                 return;
             }
             Employee emp = getEmployeeFromForm();
-            if (emp == null) return;
-            
+            if (emp == null) {
+                return;
+            }
+
             emp.setEmployeeId(id);
 
             if (employeeSql.update(emp) > 0) {
@@ -503,7 +570,7 @@ public class EmployeeView extends JPanel {
 
             for (Employee emp : list) {
                 tableModel.addRow(new Object[]{
-                    emp.getEmployeeId(), emp.getEmployeeName(), emp.getPhone(), 
+                    emp.getEmployeeId(), emp.getEmployeeName(), emp.getPhone(),
                     emp.getEmail(), emp.getAccountStatus(), emp.getRole(), emp.getGender()
                 });
             }
@@ -522,7 +589,7 @@ public class EmployeeView extends JPanel {
 
         for (Employee emp : list) {
             tableModel.addRow(new Object[]{
-                emp.getEmployeeId(), emp.getEmployeeName(), emp.getPhone(), 
+                emp.getEmployeeId(), emp.getEmployeeName(), emp.getPhone(),
                 emp.getEmail(), emp.getAccountStatus(), emp.getRole(), emp.getGender()
             });
         }
@@ -534,8 +601,20 @@ public class EmployeeView extends JPanel {
         String email = txtEmail.getText().trim();
         String gender = rdoMale.isSelected() ? "Nam" : (rdoFemale.isSelected() ? "Nữ" : "");
 
-        if (name.isEmpty() || phone.isEmpty() || email.isEmpty() || gender.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng điền đầy đủ các thông tin cá nhân (*)");
+        // Đọc giá trị từ Combobox
+        JTextField roleEditor = (JTextField) cbRole.getEditor().getEditorComponent();
+        String role = roleEditor.getText().trim().toUpperCase();
+
+        if (name.isEmpty() || phone.isEmpty() || email.isEmpty() || gender.isEmpty() || role.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng điền đầy đủ các thông tin cá nhân và chức vụ (*)");
+            return null;
+        }
+
+        // BẢO MẬT: CHỈ CHO PHÉP NHẬP 2 QUYỀN NÀY, NHẬP BẬY LÀ BÁO LỖI
+        if (!role.equals("R_STAFF_SALE") && !role.equals("R_STAFF_VIEW_PROD")) {
+            JOptionPane.showMessageDialog(this,
+                    "Phân quyền không hợp lệ!\nQuản lý chỉ được phép cấp quyền:\n- R_STAFF_SALE\n- R_STAFF_VIEW_PROD",
+                    "Cảnh báo bảo mật", JOptionPane.WARNING_MESSAGE);
             return null;
         }
 
@@ -544,6 +623,9 @@ public class EmployeeView extends JPanel {
         e.setPhone(phone);
         e.setEmail(email);
         e.setGender(gender);
+        e.setRole(role);
+        e.setRoleId(role);
+
         return e;
     }
 
@@ -554,6 +636,7 @@ public class EmployeeView extends JPanel {
         txtEmail.setText("");
 
         ((JTextField) cbSearch.getEditor().getEditorComponent()).setText("");
+        ((JTextField) cbRole.getEditor().getEditorComponent()).setText("");
 
         btngGender.clearSelection();
         tblEmployees.clearSelection();

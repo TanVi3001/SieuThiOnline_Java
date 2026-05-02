@@ -422,7 +422,7 @@ public class LoginView extends javax.swing.JFrame {
         card.add(lblSub);
 
         // ── Label username ────────────────────────────────────────────────────
-        javax.swing.JLabel lblUser = new javax.swing.JLabel("Email hoặc Tên đăng nhập");
+        javax.swing.JLabel lblUser = new javax.swing.JLabel("Tên đăng nhập");
         lblUser.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
         lblUser.setForeground(new java.awt.Color(26,43,74));
         lblUser.setBounds(75, 152, 250, 16);
@@ -435,7 +435,7 @@ public class LoginView extends javax.swing.JFrame {
                 new RoundBorder(new java.awt.Color(221,227,234), 12),
                 javax.swing.BorderFactory.createEmptyBorder(0, 12, 0, 12)));
         txtUsername.setBackground(new java.awt.Color(248,250,252));
-        txtUsername.putClientProperty("JTextField.placeholderText", "Nhập email hoặc username");
+        txtUsername.putClientProperty("JTextField.placeholderText", "Nhập username");
         card.add(txtUsername);
 
         // ── Label password ────────────────────────────────────────────────────

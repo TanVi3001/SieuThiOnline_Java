@@ -39,13 +39,12 @@ public class ProductView extends JPanel {
 
     // --- KHAI BÁO UI COMPONENTS ---
     private JTextField txtName, txtPrice, txtQuantity;
-    private JComboBox<String> cbCategory, cbSearch; // Thay bằng JComboBox cho Auto-complete
+    private JComboBox<String> cbCategory, cbSearch;
 
     private JTable tblProducts;
     private DefaultTableModel tableModel;
     private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch, btnExportPDF, btnUnitConfig, btnImport;
 
-    // Danh sách lưu dữ liệu gốc để Auto-complete
     private List<String> categoryList = new ArrayList<>();
     private List<String> productNameList = new ArrayList<>();
 
@@ -54,14 +53,11 @@ public class ProductView extends JPanel {
         setBackground(bgLight);
         setBorder(new EmptyBorder(20, 30, 20, 30));
 
-        // Load danh sách gợi ý từ DB trước khi khởi tạo UI
         loadAutoCompleteData();
-
         initUI();
         initEvents();
         loadDataToTable();
 
-        // KIỂM TRA QUYỀN (AUTHORIZATION)
         if (AuthorizationService.isCashier()) {
             btnAdd.setVisible(false);
             btnUpdate.setVisible(false);
@@ -71,20 +67,21 @@ public class ProductView extends JPanel {
         }
     }
 
-    // Lấy dữ liệu từ DB để đưa vào gợi ý (Bạn có thể điều chỉnh lại gọi DAO của bạn)
     private void loadAutoCompleteData() {
-        // Tạm thời add cứng, bạn hãy dùng CategoriesSql.getInstance().getAll() để lấy từ DB nhé
+        categoryList.clear();
         categoryList.add("CAT001 - Nước giải khát");
         categoryList.add("CAT002 - Bánh kẹo");
         categoryList.add("CAT003 - Gia vị");
         categoryList.add("CAT004 - Đồ gia dụng");
         categoryList.add("CAT005 - Hóa mỹ phẩm");
 
-        // Lấy danh sách tên sản phẩm để gợi ý tìm kiếm
+        productNameList.clear();
         try {
             List<Product> list = ProductsSql.getInstance().selectAll();
             for (Product p : list) {
-                productNameList.add(p.getProductName());
+                if (p.getProductName() != null && !p.getProductName().isBlank()) {
+                    productNameList.add(p.getProductName().trim());
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -92,7 +89,6 @@ public class ProductView extends JPanel {
     }
 
     private void initUI() {
-        // --- HEADER ---
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
 
@@ -110,7 +106,6 @@ public class ProductView extends JPanel {
         JPanel toolPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         toolPanel.setOpaque(false);
 
-        // CẤU HÌNH COMBOBOX TÌM KIẾM AUTO-COMPLETE
         cbSearch = new JComboBox<>();
         styleComboBox(cbSearch, "Nhập tên sản phẩm để tìm...");
         setupAutoComplete(cbSearch, productNameList);
@@ -128,11 +123,9 @@ public class ProductView extends JPanel {
         headerPanel.add(toolPanel, BorderLayout.EAST);
         add(headerPanel, BorderLayout.NORTH);
 
-        // --- CENTER ---
         JPanel centerPanel = new JPanel(new BorderLayout(20, 0));
         centerPanel.setOpaque(false);
 
-        // 1. LEFT FORM
         RoundedPanel formCard = new RoundedPanel(20, cardWhite);
         formCard.setPreferredSize(new Dimension(350, 0));
         formCard.setLayout(new GridBagLayout());
@@ -147,7 +140,6 @@ public class ProductView extends JPanel {
         txtPrice = createTextField("Nhập giá (VNĐ)...");
         txtQuantity = createTextField("Nhập số lượng...");
 
-        // CẤU HÌNH COMBOBOX LOẠI SẢN PHẨM AUTO-COMPLETE
         cbCategory = new JComboBox<>();
         styleComboBox(cbCategory, "Chọn hoặc nhập mã/tên loại...");
         setupAutoComplete(cbCategory, categoryList);
@@ -199,7 +191,6 @@ public class ProductView extends JPanel {
         formCard.add(btnGrid, gbc);
         centerPanel.add(formCard, BorderLayout.WEST);
 
-        // 2. RIGHT TABLE
         RoundedPanel tableCard = new RoundedPanel(20, cardWhite);
         tableCard.setLayout(new BorderLayout());
         tableCard.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -229,16 +220,12 @@ public class ProductView extends JPanel {
         add(centerPanel, BorderLayout.CENTER);
     }
 
-    // ==========================================
-    // LOGIC AUTO-COMPLETE COMBOBOX
-    // ==========================================
     private void styleComboBox(JComboBox<String> cb, String placeholder) {
         cb.setPreferredSize(new Dimension(280, 40));
         cb.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cb.setBackground(Color.WHITE);
-        cb.setEditable(true); // Bắt buộc true để gõ được
+        cb.setEditable(true);
 
-        // Thêm Placeholder cho JTextField bên trong ComboBox (Tính năng của FlatLaf)
         JTextField editor = (JTextField) cb.getEditor().getEditorComponent();
         editor.putClientProperty("JTextField.placeholderText", placeholder);
         editor.setBorder(BorderFactory.createCompoundBorder(
@@ -249,7 +236,6 @@ public class ProductView extends JPanel {
     private void setupAutoComplete(JComboBox<String> comboBox, List<String> originalItems) {
         JTextField editor = (JTextField) comboBox.getEditor().getEditorComponent();
 
-        // Nạp data lần đầu
         for (String item : originalItems) {
             comboBox.addItem(item);
         }
@@ -258,12 +244,10 @@ public class ProductView extends JPanel {
         editor.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                // Bỏ qua các phím điều hướng và Enter
                 if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN
                         || e.getKeyCode() == KeyEvent.VK_ENTER || e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     return;
                 }
-
                 SwingUtilities.invokeLater(() -> {
                     String text = editor.getText();
                     comboBox.removeAllItems();
@@ -276,7 +260,6 @@ public class ProductView extends JPanel {
                     } else {
                         boolean hasSuggestion = false;
                         for (String item : originalItems) {
-                            // Chuyển về chữ thường để so sánh không phân biệt hoa thường
                             if (item.toLowerCase().contains(text.toLowerCase())) {
                                 comboBox.addItem(item);
                                 hasSuggestion = true;
@@ -288,15 +271,12 @@ public class ProductView extends JPanel {
                             comboBox.hidePopup();
                         }
                     }
-                    editor.setText(text); // Giữ lại chữ người dùng đang gõ
+                    editor.setText(text);
                 });
             }
         });
     }
 
-    // ==========================================
-    // CÁC HÀM UI HELPERS KHÁC (Giữ nguyên)
-    // ==========================================
     private JLabel createLabel(String text) {
         JLabel lbl = new JLabel(text);
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -396,9 +376,6 @@ public class ProductView extends JPanel {
         }
     }
 
-    // ==========================================
-    // LOGIC & SỰ KIỆN 
-    // ==========================================
     private void initEvents() {
         tblProducts.addMouseListener(new MouseAdapter() {
             @Override
@@ -420,18 +397,18 @@ public class ProductView extends JPanel {
         if (!validateInput()) {
             return;
         }
+
         Product p = getProductFromForm();
         if (p == null) {
             return;
         }
 
         business.sql.prod_inventory.ProductsSql dao = business.sql.prod_inventory.ProductsSql.getInstance();
-
         Product existingProduct = dao.findByExactName(p.getProductName());
 
         if (existingProduct != null) {
             int confirm = JOptionPane.showConfirmDialog(this,
-                    "Món '" + p.getProductName() + "' đã có trong kho.\nBạn có muốn cộng dồn thêm " + p.getQuantity() + " vào số lượng hiện tại không?",
+                    "Sản phẩm '" + p.getProductName() + "' đã có trong kho.\nBạn có muốn cộng dồn thêm " + p.getQuantity() + " vào số lượng hiện tại không?",
                     "Phát hiện trùng lặp", JOptionPane.YES_NO_OPTION);
 
             if (confirm == JOptionPane.YES_OPTION) {
@@ -445,7 +422,6 @@ public class ProductView extends JPanel {
             }
         } else {
             p.setProductId(dao.generateNextProductId());
-
             if (p.getSupplierId() == null || p.getSupplierId().trim().isEmpty()) {
                 p.setSupplierId("SUP001");
             }
@@ -459,13 +435,12 @@ public class ProductView extends JPanel {
             if (dao.insert(p)) {
                 JOptionPane.showMessageDialog(this, "✅ Thêm sản phẩm mới thành công!\nMã tự cấp: " + p.getProductId());
                 loadDataToTable();
-
-                // Thêm vào list AutoComplete ngay lập tức
-                productNameList.add(p.getProductName());
-
+                if (!productNameList.contains(p.getProductName())) {
+                    productNameList.add(p.getProductName());
+                }
                 btnClearActionPerformed();
             } else {
-                JOptionPane.showMessageDialog(this, "❌ Thêm thất bại! Kiểm tra mã Loại có tồn tại không.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "❌ Thêm thất bại! Vui lòng kiểm tra dữ liệu đầu vào.", "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -473,10 +448,11 @@ public class ProductView extends JPanel {
     private void btnUpdateActionPerformed() {
         int row = tblProducts.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Chọn dòng cần sửa!");
+            JOptionPane.showMessageDialog(this, "⚠️ Vui lòng chọn một sản phẩm trong bảng để cập nhật!", "Chưa chọn dòng", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
+        // ĐÃ THÊM TRIM() ĐỂ CHỐNG LỖI KHOẢNG TRẮNG
         String idOld = tblProducts.getValueAt(row, 0).toString().trim();
         Product p = getProductFromForm();
         if (p == null) {
@@ -486,35 +462,40 @@ public class ProductView extends JPanel {
         p.setProductId(idOld);
 
         if (ProductsSql.getInstance().update(p)) {
-            JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+            JOptionPane.showMessageDialog(this, "✅ Cập nhật sản phẩm thành công!");
             loadDataToTable();
+            btnClearActionPerformed();
         } else {
-            JOptionPane.showMessageDialog(this, "Thất bại! Check mã Loại/Giá.");
+            JOptionPane.showMessageDialog(this, "❌ Cập nhật thất bại! Vui lòng kiểm tra Database.", "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void btnDeleteActionPerformed() {
         int row = tblProducts.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Chọn dòng cần xóa!");
+            JOptionPane.showMessageDialog(this, "⚠️ Vui lòng chọn một sản phẩm trong bảng để xóa!", "Chưa chọn dòng", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        String id = tblProducts.getValueAt(row, 0).toString();
-        int confirm = JOptionPane.showConfirmDialog(this, "Xóa sản phẩm " + id + "?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+        // ĐÃ THÊM TRIM() - ĐÂY LÀ CHÌA KHÓA FIX BUG CỦA ÔNG
+        String id = tblProducts.getValueAt(row, 0).toString().trim();
+        String name = tblProducts.getValueAt(row, 1).toString().trim();
+
+        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn ngừng kinh doanh và xóa sản phẩm: " + name + " (" + id + ")?", "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
         if (confirm == JOptionPane.YES_OPTION) {
             boolean usedInOrders = ProductsSql.getInstance().isUsedInOrders(id);
+
             if (ProductsSql.getInstance().delete(id)) {
                 if (usedInOrders) {
-                    JOptionPane.showMessageDialog(this, "Sản phẩm đã có trong hóa đơn nên hệ thống chỉ ẩn sản phẩm khỏi kho/danh sách bán.", "Đã ẩn sản phẩm", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Sản phẩm [" + name + "] đã từng được bán/nhập kho.\nHệ thống đã chuyển sang trạng thái ẨN (Ngừng kinh doanh) thay vì xóa mất dữ liệu.", "Đã ẩn sản phẩm an toàn", JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(this, "Xóa mềm sản phẩm thành công!");
+                    JOptionPane.showMessageDialog(this, "✅ Xóa sản phẩm [" + name + "] thành công!");
                 }
                 loadDataToTable();
                 btnClearActionPerformed();
             } else {
-                JOptionPane.showMessageDialog(this, "Không thể xóa sản phẩm.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "❌ Không thể xóa sản phẩm.\nVui lòng kiểm tra cửa sổ Output Console để xem lỗi chi tiết!", "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -524,7 +505,6 @@ public class ProductView extends JPanel {
         txtPrice.setText("");
         txtQuantity.setText("");
 
-        // Reset ComboBox
         ((JTextField) cbCategory.getEditor().getEditorComponent()).setText("");
         ((JTextField) cbSearch.getEditor().getEditorComponent()).setText("");
 
@@ -532,7 +512,6 @@ public class ProductView extends JPanel {
     }
 
     private void btnSearchActionPerformed() {
-        // Lấy chữ đang gõ trong ComboBox
         JTextField editor = (JTextField) cbSearch.getEditor().getEditorComponent();
         String keyword = editor.getText().trim();
 
@@ -560,7 +539,6 @@ public class ProductView extends JPanel {
                 common.report.ExcelExporter.exportInventoryFromMap(productList, filePath);
                 JOptionPane.showMessageDialog(this, "✅ Xuất Excel thành công!\nFile: " + filePath, "Thành công", JOptionPane.INFORMATION_MESSAGE);
             }
-
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "❌ Lỗi xuất Excel: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
@@ -578,13 +556,12 @@ public class ProductView extends JPanel {
         Object qtyObj = tblProducts.getValueAt(row, 3);
         Object categoryObj = tblProducts.getValueAt(row, 4);
 
-        txtName.setText(nameObj == null ? "" : nameObj.toString());
-        txtPrice.setText(priceObj == null ? "" : priceObj.toString());
-        txtQuantity.setText(qtyObj == null ? "" : qtyObj.toString());
+        txtName.setText(nameObj == null ? "" : nameObj.toString().trim());
+        txtPrice.setText(priceObj == null ? "" : priceObj.toString().trim());
+        txtQuantity.setText(qtyObj == null ? "" : qtyObj.toString().trim());
 
-        // Đẩy giá trị lên Combobox Category
         JTextField editor = (JTextField) cbCategory.getEditor().getEditorComponent();
-        editor.setText(categoryObj == null ? "" : categoryObj.toString());
+        editor.setText(categoryObj == null ? "" : categoryObj.toString().trim());
     }
 
     private List<Map<String, Object>> getAllProductsFromTable() {
@@ -635,9 +612,9 @@ public class ProductView extends JPanel {
             return false;
         }
         try {
-            new BigDecimal(txtPrice.getText());
+            new BigDecimal(txtPrice.getText().trim());
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Giá không hợp lệ!");
+            JOptionPane.showMessageDialog(this, "Giá không hợp lệ! Vui lòng chỉ nhập số.");
             return false;
         }
         return true;
@@ -649,11 +626,9 @@ public class ProductView extends JPanel {
         String priceText = txtPrice.getText().trim();
         String qtyText = txtQuantity.getText().trim();
 
-        // Lấy Text từ ComboBox Loại sản phẩm
         JTextField editor = (JTextField) cbCategory.getEditor().getEditorComponent();
         String categoryId = editor.getText().trim();
 
-        // Cắt lấy Mã danh mục (Ví dụ: "CAT001 - Bánh kẹo" -> Lấy "CAT001")
         if (categoryId.contains(" - ")) {
             categoryId = categoryId.split(" - ")[0].trim();
         }
@@ -681,7 +656,7 @@ public class ProductView extends JPanel {
         }
         int modelRow = tblProducts.convertRowIndexToModel(viewRow);
         Object value = tblProducts.getModel().getValueAt(modelRow, 0);
-        return value == null ? null : value.toString().trim();
+        return value == null ? null : value.toString().trim(); // Đã thêm trim() ở đây
     }
 
     private void showUnitConfigDialog() {

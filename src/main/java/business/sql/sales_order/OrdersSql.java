@@ -11,6 +11,7 @@ import java.util.List;
 import model.order.Order;
 
 public class OrdersSql implements SqlInterface<Order> {
+
     private static OrdersSql instance;
 
     private OrdersSql() {
@@ -56,8 +57,7 @@ public class OrdersSql implements SqlInterface<Order> {
                 + "SET customer_id = ?, employee_id = ?, order_date = ?, total_amount = ?, status = ? "
                 + "WHERE order_id = ? AND NVL(is_deleted, 0) = 0";
 
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement pst = con.prepareStatement(sql)) {
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1, t.getCustomerId());
             pst.setString(2, t.getEmployeeId());
             pst.setDate(3, t.getOrderDate());
@@ -75,8 +75,7 @@ public class OrdersSql implements SqlInterface<Order> {
     public int updateStatus(String orderId, String status) {
         String sql = "UPDATE ORDERS SET status = ? WHERE order_id = ? AND NVL(is_deleted, 0) = 0";
 
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement pst = con.prepareStatement(sql)) {
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1, status);
             pst.setString(2, orderId);
             return pst.executeUpdate();
@@ -100,8 +99,7 @@ public class OrdersSql implements SqlInterface<Order> {
     public int delete(String id) {
         String sql = "UPDATE ORDERS SET is_deleted = 1 WHERE order_id = ?";
 
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement pst = con.prepareStatement(sql)) {
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1, id);
             return pst.executeUpdate();
         } catch (SQLException e) {
@@ -115,8 +113,7 @@ public class OrdersSql implements SqlInterface<Order> {
     public Order selectById(String id) {
         String sql = "SELECT * FROM ORDERS WHERE order_id = ? AND NVL(is_deleted, 0) = 0";
 
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement pst = con.prepareStatement(sql)) {
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1, id);
             try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
@@ -144,8 +141,7 @@ public class OrdersSql implements SqlInterface<Order> {
                 + "WHERE NVL(is_deleted, 0) = 0 AND UPPER(status) = UPPER(?) "
                 + "ORDER BY order_date DESC";
 
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement pst = con.prepareStatement(sql)) {
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1, condition);
             try (ResultSet rs = pst.executeQuery()) {
                 while (rs.next()) {
@@ -164,9 +160,7 @@ public class OrdersSql implements SqlInterface<Order> {
         ArrayList<Order> list = new ArrayList<>();
         String sql = "SELECT * FROM ORDERS WHERE NVL(is_deleted, 0) = 0 ORDER BY order_date DESC";
 
-        try (Connection con = DatabaseConnection.getConnection();
-             PreparedStatement pst = con.prepareStatement(sql);
-             ResultSet rs = pst.executeQuery()) {
+        try (Connection con = DatabaseConnection.getConnection(); PreparedStatement pst = con.prepareStatement(sql); ResultSet rs = pst.executeQuery()) {
             while (rs.next()) {
                 list.add(mapOrder(rs));
             }
@@ -186,5 +180,41 @@ public class OrdersSql implements SqlInterface<Order> {
         String status = rs.getString("status");
         boolean deleted = rs.getInt("is_deleted") == 1;
         return new Order(id, customerId, employeeId, date, amount, status, deleted);
+    }
+
+    // =========================================================================
+    // LẤY DANH SÁCH CHI TIẾT CỦA 1 HÓA ĐƠN DỰA VÀO MÃ ĐƠN (ORDER_ID)
+    // =========================================================================
+    public List<Object[]> getOrderDetailsByOrderId(String orderId) {
+        List<Object[]> list = new ArrayList<>();
+
+        // Query móc nối 2 bảng để lấy Tên sản phẩm và tính Thành tiền
+        String sql = "SELECT od.product_id, p.product_name, od.quantity, od.unit_price, "
+                + "(od.quantity * od.unit_price) AS total_price "
+                + "FROM ORDER_DETAILS od "
+                + "JOIN PRODUCTS p ON od.product_id = p.product_id "
+                + "WHERE od.order_id = ?";
+
+        try (java.sql.Connection con = common.db.DatabaseConnection.getConnection(); java.sql.PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, orderId);
+
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Object[] row = new Object[5];
+                    row[0] = rs.getString("product_id");
+                    row[1] = rs.getString("product_name");
+                    row[2] = rs.getInt("quantity");
+                    row[3] = rs.getBigDecimal("unit_price"); // Hoặc getDouble tùy data type của ông
+                    row[4] = rs.getBigDecimal("total_price");
+
+                    list.add(row);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi Load Chi tiết hóa đơn: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
     }
 }

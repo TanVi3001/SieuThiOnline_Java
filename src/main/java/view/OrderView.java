@@ -18,12 +18,15 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import model.order.Order;
+import java.awt.Font;
+import java.awt.Dimension;
 
 /**
  *
  * @author Admin
  */
 public class OrderView extends javax.swing.JPanel {
+
     private static final String STATUS_ALL = "Tat ca";
     private final DecimalFormat moneyFormat = new DecimalFormat("#,##0.##");
 
@@ -32,12 +35,12 @@ public class OrderView extends javax.swing.JPanel {
      */
     public OrderView() {
         initComponents();
-        
+
         // Khởi tạo bổ sung theo style thống nhất
         initTableModel();
         initStatusFilter();
         loadDataToTable();
-        
+
         this.revalidate();
         this.repaint();
     }
@@ -47,7 +50,7 @@ public class OrderView extends javax.swing.JPanel {
     // ==========================================
     private void initTableModel() {
         DefaultTableModel model = new DefaultTableModel(
-            new Object [] { "Mã đơn", "Khách hàng", "Ngày", "Tổng tiền", "Trạng thái" }, 0
+                new Object[]{"Mã đơn", "Khách hàng", "Ngày", "Tổng tiền", "Trạng thái"}, 0
         ) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -111,8 +114,15 @@ public class OrderView extends javax.swing.JPanel {
 
     private void showOrderDetailsDialog(String orderId) {
         List<Map<String, Object>> details = OrderDetailsSql.getInstance().selectDetailRowsByOrderId(orderId);
+
+        // Chặn đầu tiên: Lỡ câu SQL chạy ra rỗng thì báo luôn cho dễ debug
+        if (details == null || details.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy chi tiết cho hóa đơn này!\n(Vui lòng kiểm tra lại câu query lấy Order Details)", "Trống", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         DefaultTableModel detailModel = new DefaultTableModel(
-                new Object[]{"Ma SP", "Ten san pham", "So luong", "Don gia", "Thanh tien"}, 0
+                new Object[]{"Mã SP", "Tên sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"}, 0
         ) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -121,21 +131,50 @@ public class OrderView extends javax.swing.JPanel {
         };
 
         for (Map<String, Object> detail : details) {
+            // FIX BẪY 1: Đề phòng Oracle trả về key IN HOA
+            Object pId = detail.get("product_id") != null ? detail.get("product_id") : detail.get("PRODUCT_ID");
+            Object pName = detail.get("product_name") != null ? detail.get("product_name") : detail.get("PRODUCT_NAME");
+            Object qty = detail.get("quantity") != null ? detail.get("quantity") : detail.get("QUANTITY");
+            Object price = detail.get("unit_price") != null ? detail.get("unit_price") : detail.get("UNIT_PRICE");
+            Object total = detail.get("line_total") != null ? detail.get("line_total") : detail.get("LINE_TOTAL");
+
+            // FIX BẪY 2: Xử lý an toàn cho tiền tệ để tránh lỗi Crash ngầm
+            String formattedPrice = "0";
+            String formattedTotal = "0";
+            try {
+                if (price != null) {
+                    formattedPrice = moneyFormat.format(price);
+                }
+                if (total != null) {
+                    formattedTotal = moneyFormat.format(total);
+                }
+            } catch (Exception e) {
+                formattedPrice = String.valueOf(price); // Nếu format lỗi thì in chay ra luôn
+                formattedTotal = String.valueOf(total);
+            }
+
             detailModel.addRow(new Object[]{
-                detail.get("product_id"),
-                detail.get("product_name") != null ? detail.get("product_name") : detail.get("product_id"),
-                detail.get("quantity"),
-                moneyFormat.format(detail.get("unit_price")),
-                moneyFormat.format(detail.get("line_total"))
+                pId,
+                pName != null ? pName : pId, // Nếu không có tên thì hiện đỡ mã SP
+                qty,
+                formattedPrice,
+                formattedTotal
             });
         }
 
         JTable detailTable = new JTable(detailModel);
         detailTable.setAutoCreateRowSorter(true);
+        detailTable.setRowHeight(30); // Cho dòng cao lên dễ nhìn
+        detailTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+
+        // FIX BẪY 3: Ép kích thước khung nhìn cho ScrollPane
+        JScrollPane scrollPane = new JScrollPane(detailTable);
+        scrollPane.setPreferredSize(new Dimension(600, 300));
+
         JOptionPane.showMessageDialog(
                 this,
-                new JScrollPane(detailTable),
-                "Chi tiet hoa don " + orderId,
+                scrollPane,
+                "Chi tiết hóa đơn " + orderId,
                 JOptionPane.INFORMATION_MESSAGE
         );
     }
@@ -154,7 +193,7 @@ public class OrderView extends javax.swing.JPanel {
         }
 
         List<Map<String, Object>> details = OrderDetailsSql.getInstance().selectDetailRowsByOrderId(orderId);
-        
+
         try {
             com.itextpdf.kernel.pdf.PdfWriter writer = new com.itextpdf.kernel.pdf.PdfWriter(chooser.getSelectedFile().getAbsolutePath());
             com.itextpdf.kernel.pdf.PdfDocument pdf = new com.itextpdf.kernel.pdf.PdfDocument(writer);
@@ -206,7 +245,6 @@ public class OrderView extends javax.swing.JPanel {
             frame.repaint();
         }
     }
-
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -314,22 +352,24 @@ public class OrderView extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn một đơn hàng để cập nhật!");
             return;
         }
-        
+
         String orderId = jTable1.getModel().getValueAt(row, 0).toString();
         String currentStatus = jTable1.getModel().getValueAt(row, 4).toString();
-        
+
         // Tạo mảng lựa chọn khớp với DB
         String[] statuses = {"PROCESSING", "COMPLETED", "CANCELLED"};
-        String newStatus = (String) JOptionPane.showInputDialog(this, 
+        String newStatus = (String) JOptionPane.showInputDialog(this,
                 "Chọn trạng thái mới cho đơn hàng " + orderId,
-                "Cập nhật trạng thái", JOptionPane.QUESTION_MESSAGE, null, 
+                "Cập nhật trạng thái", JOptionPane.QUESTION_MESSAGE, null,
                 statuses, currentStatus);
-        
+
         if (newStatus != null && !newStatus.equals(currentStatus)) {
             try {
                 if (newStatus.equals("CANCELLED")) {
                     String reason = JOptionPane.showInputDialog(this, "Nhập lý do hủy:");
-                    if (reason == null) reason = "Admin hủy đơn";
+                    if (reason == null) {
+                        reason = "Admin hủy đơn";
+                    }
                     boolean success = business.service.PaymentService.cancelOrder(orderId, reason);
                     if (success) {
                         JOptionPane.showMessageDialog(this, "Hủy đơn hàng thành công!");
@@ -339,7 +379,7 @@ public class OrderView extends javax.swing.JPanel {
                     }
                 } else {
                     int result = OrdersSql.getInstance().updateStatus(orderId, newStatus);
-                    
+
                     if (result > 0) {
                         JOptionPane.showMessageDialog(this, "Cập nhật trạng thái thành công!");
                         loadDataToTable();
@@ -378,16 +418,20 @@ public class OrderView extends javax.swing.JPanel {
 
     private void btnIssueAnInvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIssueAnInvoiceActionPerformed
         String orderId = getSelectedOrderId();
-        if (orderId == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn đơn hàng để xuất hóa đơn!");
+
+        // 1. Kiểm tra kỹ càng cả trường hợp null VÀ trường hợp chuỗi rỗng
+        if (orderId == null || orderId.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "⚠️ Vui lòng chọn một hóa đơn trong bảng để xem chi tiết!",
+                    "Chưa chọn hóa đơn",
+                    JOptionPane.WARNING_MESSAGE // Thêm icon tam giác vàng cảnh báo
+            );
             return;
         }
-        
-        try {
-            exportInvoice(orderId);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Loi xuat hoa don: " + ex.getMessage());
-        }
+
+        // 2. Gọi hàm show pop-up chi tiết (Nhớ trim() để cắt khoảng trắng thừa nếu có)
+        showOrderDetailsDialog(orderId.trim());
     }//GEN-LAST:event_btnIssueAnInvoiceActionPerformed
 
 
