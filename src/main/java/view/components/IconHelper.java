@@ -3,6 +3,7 @@ package view.components;
 import java.awt.Image;
 import java.io.File;
 import java.net.URL;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 /**
@@ -18,6 +19,10 @@ public class IconHelper {
     // Thư mục chứa icon trong resources
     private static final String RESOURCE_PATH = "view/image/";
     private static final String FILE_PATH     = "src/main/resources/view/image/";
+
+    public static Icon getIcon(String iconPath, int i, int i0) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 
     // Không cho khởi tạo
     private IconHelper() {}
