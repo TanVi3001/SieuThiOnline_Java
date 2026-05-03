@@ -15,8 +15,8 @@ public class AdminDashboardView extends javax.swing.JFrame {
         initComponents();
         setupAdminUI();
         
-        // Mặc định khi vào hiện bảng Quản lý tài khoản (Vì màn Tạo tài khoản đã bị xóa)
-        showPanel(new view.AccountRoleAssignmentPanel()); 
+        // Mặc định khi vào Admin là quản lý cửa hàng trưởng
+        showPanel(new view.ManagerManagementView()); 
     }
 
     private void setupAdminUI() {
@@ -27,9 +27,12 @@ public class AdminDashboardView extends javax.swing.JFrame {
         // Khởi tạo Sidebar Admin
         adminSidebar = new AdminSidebar();
         
-        // NỐI CÁC MỤC MENU VỚI PANEL TƯƠNG ỨNG (ĐÃ XÓA CASE "TẠO TÀI KHOẢN")
+        // NỐI CÁC MỤC MENU VỚI PANEL TƯƠNG ỨNG
         adminSidebar.setMenuClickListener(title -> {
             switch (title) {
+                case "Quản lý cửa hàng trưởng":
+                    showPanel(new view.ManagerManagementView());
+                    break;
                 case "Quản lý tài khoản":
                     showPanel(new view.AccountRoleAssignmentPanel());
                     break;

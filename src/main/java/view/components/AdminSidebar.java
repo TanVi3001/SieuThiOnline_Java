@@ -46,12 +46,14 @@ public class AdminSidebar extends JPanel {
         brandingPanel.add(Box.createRigidArea(new Dimension(0, 4)));
         brandingPanel.add(subtitle);
 
-        // 2. Panel chứa các mục Menu (Đã xóa "Tạo tài khoản")
+        // 2. Panel chứa các mục Menu
         menuPanel = new JPanel();
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
         menuPanel.setBackground(Color.WHITE);
         menuPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
+        // ĐÃ THÊM MỤC QUẢN LÝ CỬA HÀNG TRƯỞNG
+        addMenuItem("Quản lý cửa hàng trưởng", IconHelper.employee(20));
         addMenuItem("Quản lý tài khoản", IconHelper.employee(20)); 
         addMenuItem("Quản lý phân quyền", IconHelper.customer(20));
         addMenuItem("Nhật ký hệ thống", IconHelper.barChart(20));
