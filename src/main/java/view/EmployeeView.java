@@ -274,15 +274,15 @@ public class EmployeeView extends JPanel {
 
     private void setupTableStyle() {
         tblEmployees.setRowHeight(35);
-        tblEmployees.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tblEmployees.setFont(new Font("Segoe UI", Font.BOLD, 14));
         tblEmployees.setShowVerticalLines(false);
         tblEmployees.setSelectionBackground(new Color(237, 242, 255));
         tblEmployees.setSelectionForeground(textDark);
         tblEmployees.getTableHeader().setReorderingAllowed(false);
 
         DefaultTableCellRenderer headerRenderer = new DefaultTableCellRenderer();
-        headerRenderer.setBackground(textDark);
-        headerRenderer.setForeground(Color.WHITE);
+        headerRenderer.setBackground(bgLight);
+        headerRenderer.setForeground(Color.BLACK);
         headerRenderer.setFont(new Font("Segoe UI", Font.BOLD, 14));
         headerRenderer.setHorizontalAlignment(JLabel.CENTER);
         headerRenderer.setBorder(BorderFactory.createEmptyBorder(10, 5, 10, 5));
