@@ -24,6 +24,7 @@ Quy trình quản lý nhân sự được thiết kế bảo mật chặt chẽ 
 // Ví dụ cấu hình trong EmailService.java
 final String username = "emailcuaban@gmail.com"; // Điền email của bạn
 final String password = "abcdefghijklmnop";    // Dán 16 ký tự mã ứng dụng vào đây (không có khoảng trắng)
+```
 
 ## Phần 2: Tạo Hồ sơ Nhân viên & Phân Quyền (Dành cho Quản lý)
 *Lưu ý: Quản lý cửa hàng (Manager) chỉ được phép tạo và phân quyền cho nhân viên cấp dưới.*
