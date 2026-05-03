@@ -261,35 +261,50 @@ public class ProductsSql {
     }
 
     public boolean delete(String productId) {
-        String sqlProduct = "UPDATE PRODUCTS SET is_deleted = 1 WHERE product_id = ? AND is_deleted = 0";
-        String sqlInv = "UPDATE INVENTORY SET is_deleted = 1 WHERE product_id = ? AND is_deleted = 0";
+        if (productId == null || productId.trim().isEmpty()) {
+            return false;
+        }
+        String cleanId = productId.trim(); // Dọn dẹp khoảng trắng thừa
+
+        // Dùng NVL để phòng hờ trường hợp is_deleted đang mang giá trị NULL trong DB
+        String sqlProduct = "UPDATE PRODUCTS SET is_deleted = 1 WHERE product_id = ? AND NVL(is_deleted, 0) = 0";
+        String sqlInv = "UPDATE INVENTORY SET is_deleted = 1 WHERE product_id = ? AND NVL(is_deleted, 0) = 0";
 
         try (Connection con = DatabaseConnection.getConnection()) {
-            con.setAutoCommit(false);
+            con.setAutoCommit(false); // Bắt đầu Transaction
 
             try (PreparedStatement psProd = con.prepareStatement(sqlProduct); PreparedStatement psInv = con.prepareStatement(sqlInv)) {
 
-                psProd.setString(1, productId);
+                // 1. Cập nhật bảng PRODUCTS
+                psProd.setString(1, cleanId);
                 int prodRows = psProd.executeUpdate();
 
-                psInv.setString(1, productId);
+                // 2. Cập nhật bảng INVENTORY (Không tìm thấy kho cũng không sao)
+                psInv.setString(1, cleanId);
                 psInv.executeUpdate();
 
+                // 3. Ghi Audit Log nếu xóa thành công
                 if (prodRows > 0) {
-                    logAuditWithConn(con, "DELETE_PRODUCT", "PRODUCT", productId, "is_deleted=0", "is_deleted=1", "Xoa mem san pham");
+                    logAuditWithConn(con, "DELETE_PRODUCT", "PRODUCT", cleanId, "is_deleted=0", "is_deleted=1", "Xoa mem san pham");
+                } else {
+                    System.err.println("CẢNH BÁO: Không tìm thấy SP [" + cleanId + "] hoặc SP đã bị xóa trước đó!");
                 }
 
-                con.commit();
+                con.commit(); // Chốt sổ thành công
                 return prodRows > 0;
 
             } catch (Exception e) {
                 con.rollback();
+                System.err.println("=== LỖI LOGIC KHI XÓA SẢN PHẨM ===");
+                e.printStackTrace(); // IN LỖI RA CONSOLE ĐỂ BẮT BUG
                 return false;
             } finally {
                 con.setAutoCommit(true);
             }
 
         } catch (SQLException e) {
+            System.err.println("=== LỖI KẾT NỐI KHI XÓA SẢN PHẨM ===");
+            e.printStackTrace();
             return false;
         }
     }

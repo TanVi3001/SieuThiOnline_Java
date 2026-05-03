@@ -475,4 +475,111 @@ public class AccountSql implements SqlInterface<Account> {
             if (con != null) { try { con.setAutoCommit(true); con.close(); } catch (Exception ignored) {} }
         }
     }
+    
+    // =========================================================
+    // 2 HÀM MỚI PHỤC VỤ CHO LUỒNG "MÃ KÍCH HOẠT NHÂN VIÊN"
+    // =========================================================
+
+    public java.util.Map<String, String> getEmployeeForActivation(String empId) {
+        java.util.Map<String, String> data = new java.util.HashMap<>();
+        
+        String checkExist = "SELECT 1 FROM ACCOUNTS WHERE user_id = ?";
+        String sqlEmp = "SELECT employee_name, email, phone, role_id FROM EMPLOYEES WHERE employee_id = ? AND is_deleted = 0";
+        
+        try (java.sql.Connection con = common.db.DatabaseConnection.getConnection()) {
+            try (java.sql.PreparedStatement pstCheck = con.prepareStatement(checkExist)) {
+                pstCheck.setString(1, empId);
+                try (java.sql.ResultSet rsCheck = pstCheck.executeQuery()) {
+                    if (rsCheck.next()) return null; 
+                }
+            }
+            
+            try (java.sql.PreparedStatement pst = con.prepareStatement(sqlEmp)) {
+                pst.setString(1, empId);
+                try (java.sql.ResultSet rs = pst.executeQuery()) {
+                    if (rs.next()) {
+                        data.put("name", rs.getString("employee_name"));
+                        data.put("email", rs.getString("email"));
+                        data.put("phone", rs.getString("phone"));
+                        data.put("role_id", rs.getString("role_id"));
+                        return data;
+                    }
+                }
+            }
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        }
+        return null; 
+    }
+
+    public boolean activateAccount(String empId, String username, String rawPassword) {
+        String accId = "ACC" + (System.currentTimeMillis() % 1000000);
+        String passwordHash = common.utils.PasswordUtils.hash(rawPassword);
+
+        String sqlCheckUser = "SELECT 1 FROM ACCOUNTS WHERE username = ? AND is_deleted = 0";
+        String sqlGetEmp = "SELECT employee_name, email, phone, role_id FROM EMPLOYEES WHERE employee_id = ? AND is_deleted = 0";
+        
+        String sqlUser = "INSERT INTO USERS (user_id, full_name, email, phone_number) VALUES (?, ?, ?, ?)";
+        String sqlAccount = "INSERT INTO ACCOUNTS (account_id, user_id, username, password, status) VALUES (?, ?, ?, ?, 'Hoạt động')";
+        String sqlRole = "INSERT INTO ACCOUNT_ASSIGN_ROLE (account_id, role_id) VALUES (?, ?)";
+
+        java.sql.Connection con = null;
+        try {
+            con = common.db.DatabaseConnection.getConnection();
+            con.setAutoCommit(false);
+
+            try (java.sql.PreparedStatement pst = con.prepareStatement(sqlCheckUser)) {
+                pst.setString(1, username);
+                try (java.sql.ResultSet rs = pst.executeQuery()) {
+                    if (rs.next()) return false;
+                }
+            }
+
+            String name = "", email = "", phone = "", roleId = "";
+            try (java.sql.PreparedStatement pst = con.prepareStatement(sqlGetEmp)) {
+                pst.setString(1, empId);
+                try (java.sql.ResultSet rs = pst.executeQuery()) {
+                    if (rs.next()) {
+                        name = rs.getString("employee_name");
+                        email = rs.getString("email");
+                        phone = rs.getString("phone");
+                        roleId = rs.getString("role_id");
+                    } else {
+                        return false; 
+                    }
+                }
+            }
+
+            try (java.sql.PreparedStatement pst = con.prepareStatement(sqlUser)) {
+                pst.setString(1, empId);
+                pst.setString(2, name);
+                pst.setString(3, email);
+                pst.setString(4, phone);
+                pst.executeUpdate();
+            }
+
+            try (java.sql.PreparedStatement pst = con.prepareStatement(sqlAccount)) {
+                pst.setString(1, accId);
+                pst.setString(2, empId); 
+                pst.setString(3, username);
+                pst.setString(4, passwordHash);
+                pst.executeUpdate();
+            }
+
+            try (java.sql.PreparedStatement pst = con.prepareStatement(sqlRole)) {
+                pst.setString(1, accId);
+                pst.setString(2, roleId);
+                pst.executeUpdate();
+            }
+
+            con.commit();
+            return true;
+        } catch (Exception e) {
+            if (con != null) { try { con.rollback(); } catch (Exception ignored) {} }
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (con != null) { try { con.setAutoCommit(true); con.close(); } catch (Exception ignored) {} }
+        }
+    }
 }

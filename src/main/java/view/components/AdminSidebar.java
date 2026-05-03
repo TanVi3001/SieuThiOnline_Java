@@ -19,12 +19,10 @@ public class AdminSidebar extends JPanel {
 
         setLayout(new BorderLayout());
         
-        // --- CHÌA KHÓA FIX LỖI Ở ĐÂY ---
         // Khóa chết chiều rộng ở 260px, không cho phép Layout bóp méo khi thu nhỏ cửa sổ
         setPreferredSize(new Dimension(260, 0));
         setMinimumSize(new Dimension(260, 0));
         setMaximumSize(new Dimension(260, Integer.MAX_VALUE));
-        // -------------------------------
         
         setBackground(Color.WHITE); 
         setBorder(new MatteBorder(0, 0, 0, 1, new Color(230, 230, 230))); 
@@ -54,12 +52,12 @@ public class AdminSidebar extends JPanel {
         menuPanel.setBackground(Color.WHITE);
         menuPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
-        // THÊM CÁC MỤC MENU TIẾNG VIỆT
-        addMenuItem("Tạo tài khoản");
-        addMenuItem("Quản lý tài khoản"); 
-        addMenuItem("Quản lý phân quyền");
-        addMenuItem("Nhật ký hệ thống");
-        addMenuItem("Cài đặt");
+        // ĐÃ THÊM MỤC QUẢN LÝ CỬA HÀNG TRƯỞNG
+        addMenuItem("Quản lý cửa hàng trưởng", IconHelper.employee(20));
+        addMenuItem("Quản lý tài khoản", IconHelper.employee(20)); 
+        addMenuItem("Quản lý phân quyền", IconHelper.customer(20));
+        addMenuItem("Nhật ký hệ thống", IconHelper.barChart(20));
+        addMenuItem("Cài đặt", IconHelper.settings(20));
 
         JScrollPane scrollPane = new JScrollPane(menuPanel);
         scrollPane.setBorder(null);
@@ -71,7 +69,7 @@ public class AdminSidebar extends JPanel {
         bottomPanel.setBackground(Color.WHITE);
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
 
-        MenuItem logoutItem = new MenuItem("Đăng xuất", () -> {
+        MenuItem logoutItem = new MenuItem("Đăng xuất", IconHelper.logout(20), () -> {
             if (listener != null) {
                 listener.onMenuClick("Đăng xuất");
             }
@@ -88,9 +86,9 @@ public class AdminSidebar extends JPanel {
         }
     }
 
-    private void addMenuItem(final String title) {
+    private void addMenuItem(final String title, ImageIcon icon) {
         final MenuItem[] itemHolder = new MenuItem[1];
-        MenuItem item = new MenuItem(title, () -> {
+        MenuItem item = new MenuItem(title, icon, () -> {
             for (MenuItem m : menuItems) {
                 m.setActive(false);
             }
@@ -114,10 +112,11 @@ public class AdminSidebar extends JPanel {
     }
 
     // =========================================================
-    // INNER CLASS: ĐỊNH NGHĨA LẠI THẺ MENU THEO CHUẨN DESIGN MỚI
+    // INNER CLASS: ĐỊNH NGHĨA LẠI THẺ MENU CÓ HỖ TRỢ ICON
     // =========================================================
     class MenuItem extends JPanel {
         private String title;
+        private ImageIcon icon; 
         private boolean isActive = false;
         private boolean isHovered = false;
         private boolean isFramed = false; 
@@ -135,20 +134,18 @@ public class AdminSidebar extends JPanel {
         private final Color COLOR_LOGOUT_BG = new Color(220, 53, 69);
         private final Color COLOR_LOGOUT_HOVER = new Color(200, 35, 51);
 
-        public MenuItem(String title, Runnable onClickAction) {
+        public MenuItem(String title, ImageIcon icon, Runnable onClickAction) {
             this.title = title;
+            this.icon = icon;
             setLayout(new BorderLayout());
             
-            // --- KHÓA KÍCH THƯỚC CỦA TỪNG THẺ MENU ---
             setPreferredSize(new Dimension(260, 45));
             setMinimumSize(new Dimension(260, 45));
             setMaximumSize(new Dimension(260, 45));
-            // -----------------------------------------
             
             setOpaque(false); 
             setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-            // Bắt sự kiện chuột
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseEntered(MouseEvent e) {
@@ -195,37 +192,48 @@ public class AdminSidebar extends JPanel {
                 g2.setColor(Color.WHITE);
                 g2.setFont(new Font("Segoe UI", Font.BOLD, 14));
                 FontMetrics fm = g2.getFontMetrics();
-                int textX = (w - fm.stringWidth(title)) / 2; // Căn giữa
+                
+                int iconWidth = (icon != null) ? icon.getIconWidth() + 10 : 0;
+                int totalWidth = iconWidth + fm.stringWidth(title);
+                int startX = (w - totalWidth) / 2;
+                
+                if (icon != null) {
+                    icon.paintIcon(this, g2, startX, (h - icon.getIconHeight()) / 2);
+                    startX += iconWidth;
+                }
+                
                 int textY = ((h - fm.getHeight()) / 2) + fm.getAscent();
-                g2.drawString(title, textX, textY);
+                g2.drawString(title, startX, textY);
+                
             } else {
                 // --- VẼ THẺ MENU BÌNH THƯỜNG ---
                 if (isActive) {
-                    // Nền xanh lơ nhạt
                     g2.setColor(COLOR_ACTIVE_BG);
                     g2.fillRect(0, 0, w, h);
                     
-                    // Vẽ cái vạch xanh dương ở lề trái (Active Indicator)
                     g2.setColor(COLOR_ACTIVE_LINE);
-                    g2.fillRoundRect(0, 5, 4, h - 10, 4, 4); // Rộng 4px, cách viền trên dưới 5px
+                    g2.fillRoundRect(0, 5, 4, h - 10, 4, 4); 
                     
-                    // Chữ xanh đậm in đậm
                     g2.setColor(COLOR_ACTIVE_TEXT);
                     g2.setFont(new Font("Segoe UI", Font.BOLD, 14));
                 } else {
-                    // Nền trắng hoặc Hover xám nhạt
                     g2.setColor(isHovered ? COLOR_HOVER_BG : COLOR_INACTIVE_BG);
                     g2.fillRect(0, 0, w, h);
                     
-                    // Chữ xám in thường
                     g2.setColor(COLOR_INACTIVE_TEXT);
                     g2.setFont(new Font("Segoe UI", Font.PLAIN, 14));
                 }
 
-                // In chữ lệch vào lề 35px
+                int iconX = 25; 
+                int textX = 60; 
+                
+                if (icon != null) {
+                    icon.paintIcon(this, g2, iconX, (h - icon.getIconHeight()) / 2);
+                }
+
                 FontMetrics fm = g2.getFontMetrics();
                 int textY = ((h - fm.getHeight()) / 2) + fm.getAscent();
-                g2.drawString(title, 35, textY);
+                g2.drawString(title, textX, textY);
             }
             g2.dispose();
         }
