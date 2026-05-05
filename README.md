@@ -1,16 +1,19 @@
 <p align="center"><img width="454" height="126" alt="image" src="https://github.com/user-attachments/assets/2036c003-62d1-42f1-9817-6cca86de0fc8" /> </p>
 
-
 ## GIỚI THIỆU ĐỒ ÁN
 
-* **Đề tài:** Xây dựng phần mềm quản lý Siêu thị Online
+* **Đề tài:** Xây dựng phần mềm quản lý Siêu thị Online (Smart Supermarket - Store Portal)
 * **Repository:** [LẬP TRÌNH JAVA - SIÊU THỊ ONLINE](https://github.com/TanVi3001/SieuThiOnline_Java)
-* **Mô tả:** Đề tài "Xây dựng Hệ thống Quản trị Siêu thị Online" là một dự án phần mềm Desktop toàn diện, được thiết kế chuyên biệt để giải quyết bài toán vận hành của mô hình bán lẻ hiện đại. Không chỉ dừng lại ở các nghiệp vụ quản lý cơ bản, hệ thống đóng vai trò như một cổng thông tin cửa hàng (Store Portal) tập trung, hỗ trợ bộ phận quản lý và nhân viên xử lý đồng bộ các khâu: Bán hàng trực tuyến (Telesale), Quản lý kho, Chăm sóc khách hàng và Quản trị nhân sự.
-Điểm sáng giá nhất của dự án là việc áp dụng kiến trúc N-Tier chuẩn mực, kết hợp cùng công nghệ đồng bộ dữ liệu thời gian thực (Real-time) qua mạng LAN, giúp mọi thay đổi về tồn kho hay doanh thu đều được cập nhật lập tức trên toàn hệ thống mà không cần tải lại trang.
+* **Mô tả tổng quan:** Đề tài "Xây dựng Hệ thống Quản trị Siêu thị Online" là một dự án phần mềm Desktop toàn diện, được thiết kế chuyên biệt để giải quyết bài toán vận hành của mô hình bán lẻ trực tuyến hiện đại. Khác với các hệ thống POS quét mã vạch truyền thống tại quầy, hệ thống này đóng vai trò là một **Cổng thông tin điều phối (Store Portal)** tập trung[cite: 2]. Phần mềm hỗ trợ đắc lực cho bộ phận quản lý, nhân viên Telesale và bộ phận kho xử lý đồng bộ các khâu: Tiếp nhận đơn hàng trực tuyến, Quản lý tồn kho đa đơn vị tính, Chăm sóc khách hàng và Quản trị nhân sự[cite: 2].
+Điểm sáng giá nhất của dự án là việc áp dụng kiến trúc **N-Tier** chuẩn mực kết hợp với hệ quản trị cơ sở dữ liệu **Oracle**[cite: 2]. Đặc biệt, hệ thống tích hợp công nghệ **đồng bộ dữ liệu thời gian thực (Real-time)** qua mạng LAN bằng WebSocket, giúp mọi thay đổi về số lượng tồn kho hay doanh thu đều được cập nhật chớp nhoáng trên toàn bộ các máy trạm tham gia hệ thống mà không cần người dùng thao tác tải lại trang[cite: 2].
 
 ## CÁC TÍNH NĂNG VÀ NGHIỆP VỤ NỔI BẬT
 Hệ thống được chia thành các phân hệ lõi với hàm lượng kỹ thuật cao:
-* **Bán hàng & Xử lý Đơn hàng (Sales & Order Management):** Xây dựng luồng tạo đơn hàng nội bộ chuyên nghiệp với giỏ hàng, tích hợp tính toán giảm giá (Promotion), đa dạng hình thức thanh toán (Tiền mặt, Chuyển khoản) và phương thức nhận hàng (Giao tận nơi, Nhận tại quầy).
+* **Bán hàng & Xử lý Đơn hàng trực tuyến (Telesale & Order Management):** Xây dựng luồng tạo đơn hàng nội bộ tốc độ cao với thanh tìm kiếm thông minh thay vì quét mã[cite: 2]. Tích hợp giỏ hàng, tính toán giảm giá (Promotion), đa dạng hình thức thanh toán và tối ưu cho luồng Online với các tùy chọn giao nhận: Giao tận nơi (Home Delivery) hoặc Khách lấy tại quầy (Store Pickup)[cite: 2]. Toàn bộ giao dịch (Transaction) được đảm bảo tính toàn vẹn dữ liệu nghiêm ngặt[cite: 2].
+* **Quản lý Kho & Sản phẩm (Inventory & Product):** Hỗ trợ cấu hình tỷ lệ quy đổi Đơn vị tính (Unit of Measure) linh hoạt cho từng mặt hàng[cite: 2]. Cung cấp công cụ Import/Export dữ liệu hàng loạt thông qua file CSV/Excel và tự động cảnh báo tồn kho[cite: 2].
+* **Bảo mật & Phân quyền chuẩn Doanh nghiệp (RBAC Security):** Triển khai cơ chế phân quyền RBAC (Role-Based Access Control) chặt chẽ, ẩn/hiện giao diện và tính năng dựa trên cấp bậc của nhân viên[cite: 2]. Tích hợp hệ thống mã hóa mật khẩu bảo mật, kiểm soát phiên đăng nhập bằng Timer[cite: 2]. Đặc biệt, tự động hóa việc cấp phát tài khoản bằng cách gửi Mã kích hoạt qua Email sử dụng luồng chạy ngầm (Background Thread) với JavaMail API[cite: 2].
+* **Quản trị Nhân sự & Khách hàng (HR & Customer Management):** Quản lý hồ sơ nhân viên, phân quyền phòng ban[cite: 2]. Theo dõi thông tin liên hệ và lịch sử của khách hàng, tích hợp tính năng tự động điền (Auto-complete) để tăng tốc độ tạo đơn cho nhân viên Telesale[cite: 2].
+* **Dashboard & Thống kê Thời gian thực:** Giao diện tổng quan trực quan với các chỉ số hoạt động kinh doanh (Doanh thu, Đơn hàng, Tồn kho)[cite: 2]. Ứng dụng mô hình hướng sự kiện (Event-Driven) để Dashboard tự động lắng nghe và nhảy số liệu ngay lập tức khi có bất kỳ giao dịch nào phát sinh từ các máy trạm khác[cite: 2].
 
 
 ## CÔNG NGHỆ VÀ CÔNG CỤ SỬ DỤNG
@@ -32,6 +35,7 @@ Hệ thống được chia thành các phân hệ lõi với hàm lượng kỹ 
 
 * [Apache POI](https://poi.apache.org/) - Xử lý và xuất báo cáo file Excel (.xlsx)
 * [iText 7](https://itextpdf.com/products/itext-7) - Công cụ xuất báo cáo/hóa đơn định dạng PDF (Unicode)
+
 
 ## CẤU TRÚC DỰ ÁN
 
