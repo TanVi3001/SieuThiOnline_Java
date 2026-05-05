@@ -499,14 +499,6 @@ public class LoginView extends javax.swing.JFrame {
         });
         card.add(lblRegisterLink);
 
-        // ── Nhóm 12 - IS216.Q22 ────────────────────────────────────────────────────
-        javax.swing.JLabel lblTeam = new javax.swing.JLabel("Nhóm 12 - IS216.Q22");
-        lblTeam.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 11));
-        lblTeam.setForeground(new java.awt.Color(176, 190, 197));
-        lblTeam.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblTeam.setBounds(75, 415, 250, 14);
-        card.add(lblTeam);
-
         rightOuter.add(card);
 
         this.getContentPane().add(leftPanel, java.awt.BorderLayout.WEST);

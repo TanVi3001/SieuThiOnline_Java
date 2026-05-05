@@ -35,7 +35,7 @@ public class DashboardView extends JFrame {
                 // Nếu có bất kỳ thay đổi data nào, và user đang xem Tổng quan hoặc Thống kê thì tự động load lại
                 if ("Tổng quan".equals(currentMenu)) {
                     showPanel(new TongQuanPanel());
-                } else if ("Thống kê".equals(currentMenu)) {
+                } else if ("Báo cáo & Thống kê".equals(currentMenu)) {
                     // Nếu user có quyền vô thống kê thì mới refresh
                     if (business.service.AuthorizationService.canAccessStatisticsAndEmployees()) {
                         showPanel(new StatisticView());
@@ -100,7 +100,7 @@ public class DashboardView extends JFrame {
                 case "Hóa đơn":
                     showPanel(new OrderView());
                     break;
-                case "Thống kê":
+                case "Báo cáo & Thống kê":
                     if (!canAccessStatistics) {
                         JOptionPane.showMessageDialog(this, "Bạn không có quyền truy cập chức năng này!", "Từ chối truy cập", JOptionPane.WARNING_MESSAGE);
                     } else {
