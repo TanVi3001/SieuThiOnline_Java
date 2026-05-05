@@ -13,7 +13,7 @@ Tài liệu này hướng dẫn các thành viên cách thiết lập cơ sở d
 2. Điền các thông tin kết nối máy chủ (Máy host DB):
    * **Host:** `localhost` (Nếu bạn là máy chủ) hoặc `Địa_chỉ_IP_LAN_của_máy_chủ` (Ví dụ: `10.0.23x.4x`).
    * **Port:** `1521` (Cổng mặc định của Oracle).
-   * **SID / Service Name:** Tùy phiên bản Oracle bạn cài (Thường là `xe`, `orcl` hoặc `FREE`).
+   * **SID / Service Name:** Tùy phiên bản Oracle bạn cài (Thường là `xe`, `orcl` hoặc `FREE`) --> chọn orcl.
    * **User/Password:** Nhập tài khoản quản trị Oracle của bạn (VD: `system` / `Admin123`).
 3. Bấm **Test Connection**. Nếu hiện dấu tick xanh là thành công. Bấm **OK** để lưu.
 
