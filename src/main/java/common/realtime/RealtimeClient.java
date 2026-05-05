@@ -15,11 +15,20 @@ public final class RealtimeClient {
     private static volatile WebSocketClient client;
     private static volatile URI serverUri;
 
+    // ÉP CỨNG IP LAN LÚC DEMO CHO AN TOÀN
+    // Nhớ thay chữ 'x' bằng IP thật của máy ông!
+    private static final String DEFAULT_LAN_WS_URL = "ws://10.0.247.43:9999"; 
+
     private RealtimeClient() {
     }
 
     public static void connect(String wsUrl) {
         try {
+            // Chốt chặn: Nếu wsUrl truyền vào bị rỗng hoặc đang là localhost, ép nó về IP LAN luôn
+            if (wsUrl == null || wsUrl.isEmpty() || wsUrl.contains("localhost") || wsUrl.contains("127.0.0.1")) {
+                wsUrl = DEFAULT_LAN_WS_URL;
+            }
+
             serverUri = URI.create(wsUrl);
 
             client = new WebSocketClient(serverUri) {
@@ -30,7 +39,6 @@ public final class RealtimeClient {
 
                 @Override
                 public void onMessage(String message) {
-                    // Map message -> EventBus
                     if ("PRODUCTS_CHANGED".equalsIgnoreCase(message)) {
                         EventBus.publish(new AppDataChangedEvent(AppEventType.PRODUCTS, "realtime"));
                     } else if ("INVENTORY_CHANGED".equalsIgnoreCase(message)) {
@@ -69,7 +77,8 @@ public final class RealtimeClient {
             try {
                 if (client == null || !client.isOpen()) {
                     System.out.println("[RT] reconnecting to " + serverUri);
-                    connect(serverUri.toString());
+                    // Dùng lại URI đã được chốt ở hàm connect
+                    connect(serverUri.toString()); 
                 }
             } catch (Exception ignored) {
             }

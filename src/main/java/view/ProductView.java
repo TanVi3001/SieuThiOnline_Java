@@ -68,10 +68,15 @@ public class ProductView extends JPanel {
         initEvents();
         loadDataToTable();
 
-        // Khi app khác bắn event (từ WebSocket hoặc SyncWatcher) -> refresh ngay
+        // ---------------------------------------------------------
+        // ĐÃ FIX LỖI REAL-TIME Ở ĐÂY: Bọc SwingUtilities.invokeLater
+        // ---------------------------------------------------------
         EventBus.subscribe(AppDataChangedEvent.class, e -> {
             if (e.getType() == AppEventType.PRODUCTS || e.getType() == AppEventType.INVENTORY) {
-                refreshTable();
+                // Bắt buộc phải dùng invokeLater để đưa luồng phụ về luồng UI chính
+                SwingUtilities.invokeLater(() -> {
+                    refreshTable();
+                });
             }
         });
 

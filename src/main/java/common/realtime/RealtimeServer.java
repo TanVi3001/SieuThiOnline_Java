@@ -9,7 +9,8 @@ import java.net.InetSocketAddress;
 public final class RealtimeServer extends WebSocketServer {
 
     public RealtimeServer(int port) {
-        // 0.0.0.0 => listen all interfaces (LAN + localhost)
+        // 0.0.0.0: Lắng nghe trên mọi IP của máy (Bao gồm cả localhost và 10.0.23x.4x)
+        // Đây là setting chuẩn nhất để chạy LAN!
         super(new InetSocketAddress("0.0.0.0", port));
     }
 
@@ -19,7 +20,6 @@ public final class RealtimeServer extends WebSocketServer {
             server.start();
             System.out.println("[RT] WebSocket server started on 0.0.0.0:" + port);
         } catch (Exception e) {
-            // Thường là BindException do port đã được app khác mở -> không sao
             System.out.println("[RT] WebSocket server not started (maybe already running): " + e.getMessage());
         }
     }
@@ -36,7 +36,6 @@ public final class RealtimeServer extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket conn, String message) {
-        // broadcast cho tất cả, kể cả sender (không sao)
         System.out.println("[RT] msg: " + message);
         broadcast(message);
     }
@@ -48,7 +47,6 @@ public final class RealtimeServer extends WebSocketServer {
 
     @Override
     public void onStart() {
-        // Optional: set connection lost timeout
         setConnectionLostTimeout(30);
         System.out.println("[RT] server onStart");
     }
