@@ -35,11 +35,11 @@ Tìm chuỗi kết nối `URL` và thay đổi địa chỉ IP trỏ về máy c
 
 ```java
 // Nếu chạy độc lập trên 1 máy:
-private static final String URL = "jdbc:oracle:thin:@localhost:1521:orcl";
+private static final String url = "jdbc:oracle:thin:@localhost:1521:orcl";
 
 // LÚC DEMO NHÓM (Chạy qua mạng LAN):
 // Thay localhost bằng IP của máy tính đang chạy Oracle Database
-private static final String URL = "jdbc:oracle:thin:@10.0.23x.4x:1521:orcl";
+private static final String url = "jdbc:oracle:thin:@10.0.23x.4x:1521:orcl";
 
 // Lưu ý: Cập nhật lại USER và PASSWORD cho đúng với máy chủ
 private static final String USER = "your_oracle_user";
