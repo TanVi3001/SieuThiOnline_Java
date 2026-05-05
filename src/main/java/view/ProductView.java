@@ -32,15 +32,15 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import view.components.IconHelper;
 
-// MỨC 1 + 2
+// Events + realtime + sync
 import common.events.AppDataChangedEvent;
 import common.events.AppEventType;
 import common.events.EventBus;
+import common.realtime.RealtimeClient;
 import common.sync.SyncVersionDao;
 
 public class ProductView extends JPanel {
 
-    // --- CẤU HÌNH MÀU SẮC CHUẨN MODERN UI ---
     private final Color bgLight = new Color(244, 246, 250);
     private final Color cardWhite = Color.WHITE;
     private final Color primaryBlue = new Color(67, 97, 238);
@@ -48,7 +48,6 @@ public class ProductView extends JPanel {
     private final Color textGray = new Color(163, 174, 208);
     private final Color borderGray = new Color(230, 235, 241);
 
-    // --- KHAI BÁO UI COMPONENTS ---
     private JTextField txtName, txtPrice, txtQuantity;
     private JComboBox<String> cbCategory, cbSearch;
 
@@ -69,7 +68,7 @@ public class ProductView extends JPanel {
         initEvents();
         loadDataToTable();
 
-        // MỨC 2: Khi watcher phát hiện DB đổi version -> bắn event -> ProductView tự refresh
+        // Khi app khác bắn event (từ WebSocket hoặc SyncWatcher) -> refresh ngay
         EventBus.subscribe(AppDataChangedEvent.class, e -> {
             if (e.getType() == AppEventType.PRODUCTS || e.getType() == AppEventType.INVENTORY) {
                 refreshTable();
@@ -128,7 +127,6 @@ public class ProductView extends JPanel {
         styleSearchBox(cbSearch, "Nhập tên sản phẩm để tìm...");
         setupAutoComplete(cbSearch, productNameList);
 
-        // KHUNG BO TRÒN CHO Ô TÌM KIẾM
         JPanel searchFieldWrapper = new JPanel(new BorderLayout(5, 0));
         searchFieldWrapper.setBackground(Color.WHITE);
         searchFieldWrapper.setPreferredSize(new Dimension(300, 45));
@@ -140,7 +138,6 @@ public class ProductView extends JPanel {
         searchFieldWrapper.add(searchIconLabel, BorderLayout.WEST);
         searchFieldWrapper.add(cbSearch, BorderLayout.CENTER);
 
-        // CÁC NÚT TREN TOOLBAR
         btnSearch = createCustomButton("Tìm kiếm", primaryBlue, Color.WHITE, null);
         btnExportPDF = createCustomButton("Xuất Excel", new Color(0, 163, 108), Color.WHITE, null);
         btnImport = createCustomButton("Nhập CSV", new Color(103, 58, 183), Color.WHITE, null);
@@ -204,7 +201,6 @@ public class ProductView extends JPanel {
         gbc.insets = new Insets(0, 0, 30, 0);
         formCard.add(cbCategory, gbc);
 
-        // CÁC NÚT THAO TÁC CÓ ICON
         btnAdd = createCustomButton("Thêm", primaryBlue, Color.WHITE, IconHelper.add(20));
         btnUpdate = createCustomButton("Cập nhật", new Color(255, 153, 0), Color.BLACK, IconHelper.edit(20));
         btnDelete = createCustomButton("Xóa", new Color(220, 53, 69), Color.WHITE, IconHelper.delete(20));
@@ -447,10 +443,12 @@ public class ProductView extends JPanel {
             if (confirm == JOptionPane.YES_OPTION) {
                 if (dao.addQuantity(existingProduct.getProductId(), p.getQuantity(), existingProduct.getStoreId())) {
 
-                    // MỨC 2: bump version (tồn kho thay đổi)
                     SyncVersionDao.bumpVersion("INVENTORY");
-                    // optional: nếu muốn coi danh mục cũng thay đổi
                     SyncVersionDao.bumpVersion("PRODUCTS");
+
+                    // REALTIME
+                    RealtimeClient.send("PRODUCTS_CHANGED");
+                    RealtimeClient.send("INVENTORY_CHANGED");
 
                     JOptionPane.showMessageDialog(this, "✅ Đã cộng dồn số lượng thành công!");
                     loadDataToTable();
@@ -473,9 +471,12 @@ public class ProductView extends JPanel {
 
             if (dao.insert(p)) {
 
-                // MỨC 2: bump version (thêm mới + có quantity)
                 SyncVersionDao.bumpVersion("PRODUCTS");
                 SyncVersionDao.bumpVersion("INVENTORY");
+
+                // REALTIME
+                RealtimeClient.send("PRODUCTS_CHANGED");
+                RealtimeClient.send("INVENTORY_CHANGED");
 
                 JOptionPane.showMessageDialog(this, "✅ Thêm sản phẩm mới thành công!\nMã tự cấp: " + p.getProductId());
                 loadDataToTable();
@@ -506,9 +507,12 @@ public class ProductView extends JPanel {
 
         if (ProductsSql.getInstance().update(p)) {
 
-            // MỨC 2: bump version (metadata + qty có thể đổi)
             SyncVersionDao.bumpVersion("PRODUCTS");
             SyncVersionDao.bumpVersion("INVENTORY");
+
+            // REALTIME
+            RealtimeClient.send("PRODUCTS_CHANGED");
+            RealtimeClient.send("INVENTORY_CHANGED");
 
             JOptionPane.showMessageDialog(this, "✅ Cập nhật sản phẩm thành công!");
             loadDataToTable();
@@ -539,9 +543,12 @@ public class ProductView extends JPanel {
 
             if (ProductsSql.getInstance().delete(id)) {
 
-                // MỨC 2: bump version
                 SyncVersionDao.bumpVersion("PRODUCTS");
                 SyncVersionDao.bumpVersion("INVENTORY");
+
+                // REALTIME
+                RealtimeClient.send("PRODUCTS_CHANGED");
+                RealtimeClient.send("INVENTORY_CHANGED");
 
                 if (usedInOrders) {
                     JOptionPane.showMessageDialog(this,
@@ -716,6 +723,7 @@ public class ProductView extends JPanel {
         if (viewRow < 0) {
             return null;
         }
+
         int modelRow = tblProducts.convertRowIndexToModel(viewRow);
         Object value = tblProducts.getModel().getValueAt(modelRow, 0);
         return value == null ? null : value.toString().trim();
@@ -848,8 +856,10 @@ public class ProductView extends JPanel {
 
                 boolean ok = new UnitOfMeasureService().configureProductUnit(productId, uName, rate, chkBase.isSelected());
                 if (ok) {
-                    // bump để đồng bộ "metadata sản phẩm"
                     SyncVersionDao.bumpVersion("PRODUCTS");
+
+                    // REALTIME: báo “product metadata” đổi
+                    RealtimeClient.send("PRODUCTS_CHANGED");
 
                     JOptionPane.showMessageDialog(dialog, "✅ Đã lưu cấu hình đơn vị tính thành công!");
                     loadProductUnits(productId, unitModel);
@@ -949,10 +959,13 @@ public class ProductView extends JPanel {
                         + "Thất bại: " + failCount + " (Có thể trùng mã hoặc sai định dạng)",
                         "Thông báo Import", JOptionPane.INFORMATION_MESSAGE);
 
-                // bump 1 lần sau import (tránh bump mỗi dòng)
                 if (successCount > 0) {
                     SyncVersionDao.bumpVersion("PRODUCTS");
                     SyncVersionDao.bumpVersion("INVENTORY");
+
+                    // REALTIME
+                    RealtimeClient.send("PRODUCTS_CHANGED");
+                    RealtimeClient.send("INVENTORY_CHANGED");
                 }
 
                 loadDataToTable();
