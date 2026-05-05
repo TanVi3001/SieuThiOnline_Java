@@ -11,10 +11,10 @@ Tài liệu này hướng dẫn các thành viên cách thiết lập cơ sở d
 ### 1. Tạo kết nối (Connection) mới trong DataGrip
 1. Mở DataGrip, bấm vào dấu **+** ở góc trái trên cùng (Database Explorer) -> **Data Source** -> **Oracle**.
 2. Điền các thông tin kết nối máy chủ (Máy host DB):
-   * **Host:** `localhost` (Nếu bạn là máy chủ) hoặc `Địa_chỉ_IP_LAN_của_máy_chủ` (Ví dụ: `10.0.23x.4x`).
-   * **Port:** `1521` (Cổng mặc định của Oracle).
-   * **SID / Service Name:** Tùy phiên bản Oracle bạn cài (Thường là `xe`, `orcl` hoặc `FREE`) --> chọn orcl.
-   * **User/Password:** Nhập tài khoản quản trị Oracle của bạn (VD: `system` / `Admin123`).
+   * **Host:** `localhost` (Nếu bạn là máy chủ) hoặc `Địa_chỉ_IP_LAN_của_máy_chủ` (Ví dụ: `10.0.23x.4x`).
+   * **Port:** `1521` (Cổng mặc định của Oracle).
+   * **SID / Service Name:** Tùy phiên bản Oracle bạn cài (Thường là `xe`, `orcl` hoặc `FREE`) --> chọn `orcl`.
+   * **User/Password:** Nhập tài khoản quản trị Oracle của bạn (VD: `system` / `Admin123`).
 3. Bấm **Test Connection**. Nếu hiện dấu tick xanh là thành công. Bấm **OK** để lưu.
 
 ### 2. Chạy Script Khởi Tạo Dữ Liệu
@@ -26,23 +26,23 @@ Sau khi kết nối thành công, bạn cần chạy các file SQL để tạo b
 
 ## PHẦN 2: CẤU HÌNH MÃ NGUỒN JAVA
 
-Để các máy trong nhóm có thể kết nối với nhau, cần chỉnh sửa cấu hình IP trong 2 file cốt lõi của dự án.
+Để các máy trong nhóm có thể kết nối với nhau, cần chỉnh sửa cấu hình IP trong các file cốt lõi của dự án.
 
-### 1. Cấu hình Database Connection
+**Quy tắc:** Nhóm chọn ra 1 máy mạnh nhất làm **Máy Chủ (Host)** để chạy Oracle Database và Realtime Server. Các máy còn lại sẽ đóng vai trò là **Máy Trạm (Client)**.
+
+### 1. Cấu hình Database Connection (Tất cả các máy đều phải sửa)
 Mở file `src/main/java/common/db/DatabaseConnection.java`.
 
-Tìm chuỗi kết nối `URL` và thay đổi địa chỉ IP trỏ về máy chủ đang chạy Oracle:
+Tìm chuỗi kết nối `URL` và thay đổi địa chỉ IP trỏ về Máy Chủ đang chạy Oracle:
 
 ```java
-// Nếu chạy độc lập trên 1 máy:
+// Nếu code ở nhà (Chạy độc lập trên 1 máy):
 private static final String url = "jdbc:oracle:thin:@localhost:1521:orcl";
 
 // LÚC DEMO NHÓM (Chạy qua mạng LAN):
-// Thay localhost bằng IP của máy tính đang chạy Oracle Database
+// Thay localhost bằng IP LAN của máy tính đang làm MÁY CHỦ
 private static final String url = "jdbc:oracle:thin:@10.0.23x.4x:1521:orcl";
 
-// Lưu ý: Cập nhật lại USER và PASSWORD cho đúng với máy chủ
+// Lưu ý: Cập nhật lại USER và PASSWORD cho đúng với tài khoản Oracle của Máy Chủ
 private static final String USER = "your_oracle_user";
 private static final String PASS = "your_oracle_password";
-
-bổ sung thêm cách thiết kế lại 2 file RealtimeClient với RealtimeSever luôn nha
