@@ -17,7 +17,7 @@ public final class RealtimeClient {
 
     // ÉP CỨNG IP LAN LÚC DEMO CHO AN TOÀN
     // Nhớ thay chữ 'x' bằng IP thật của máy ông!
-    private static final String DEFAULT_LAN_WS_URL = "ws://10.0.247.43:9999"; 
+    private static final String DEFAULT_LAN_WS_URL = "ws://10.0.247.43:9999";
 
     private RealtimeClient() {
     }
@@ -47,6 +47,11 @@ public final class RealtimeClient {
                         EventBus.publish(new AppDataChangedEvent(AppEventType.SYSTEM_CONFIG, "realtime"));
                     } else if ("ACCOUNT_SECURITY_CHANGED".equalsIgnoreCase(message)) {
                         EventBus.publish(new AppDataChangedEvent(AppEventType.ACCOUNT_SECURITY, "realtime"));
+                    } // THÊM 2 DÒNG NÀY VÀO NÈ VĨ:
+                    else if ("CUSTOMERS_CHANGED".equalsIgnoreCase(message)) {
+                        EventBus.publish(new AppDataChangedEvent(AppEventType.CUSTOMERS, "realtime"));
+                    } else if ("EMPLOYEES_CHANGED".equalsIgnoreCase(message)) {
+                        EventBus.publish(new AppDataChangedEvent(AppEventType.EMPLOYEES, "realtime"));
                     }
                 }
 
@@ -78,7 +83,7 @@ public final class RealtimeClient {
                 if (client == null || !client.isOpen()) {
                     System.out.println("[RT] reconnecting to " + serverUri);
                     // Dùng lại URI đã được chốt ở hàm connect
-                    connect(serverUri.toString()); 
+                    connect(serverUri.toString());
                 }
             } catch (Exception ignored) {
             }

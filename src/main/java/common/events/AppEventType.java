@@ -9,5 +9,5 @@ public enum AppEventType {
     ACCOUNT_SECURITY,
     PRODUCTS,
     INVENTORY,
-    UNKNOWN
+    UNKNOWN, EMPLOYEES, CUSTOMERS
 }
