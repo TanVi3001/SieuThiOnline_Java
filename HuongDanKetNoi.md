@@ -1,48 +1,215 @@
 # Hướng Dẫn Cấu Hình Kết Nối Oracle Database & Real-time (Mạng LAN)
+
 **Dự án:** Smart Supermarket - Store Portal
 **Công cụ:** Oracle Database, DataGrip, Java Swing, WebSocket
 
-Tài liệu này hướng dẫn các thành viên cách thiết lập cơ sở dữ liệu trên DataGrip và cấu hình mã nguồn Java để có thể chạy ứng dụng đồng bộ Real-time trên nhiều máy tính khác nhau thông qua mạng LAN (Wi-Fi chung).
+---
+
+## GIỚI THIỆU
+
+Tài liệu này hướng dẫn cách:
+
+* Kết nối Oracle bằng DataGrip
+* Setup database
+* Cấu hình Java để chạy realtime
+* Kết nối nhiều máy qua LAN
 
 ---
 
-## PHẦN 1: CÀI ĐẶT CƠ SỞ DỮ LIỆU BẰNG DATAGRIP
+# PHẦN 1: CÀI ĐẶT DATABASE (DATAGRIP)
 
-### 1. Tạo kết nối (Connection) mới trong DataGrip
-1. Mở DataGrip, bấm vào dấu **+** ở góc trái trên cùng (Database Explorer) -> **Data Source** -> **Oracle**.
-2. Điền các thông tin kết nối máy chủ (Máy host DB):
-   * **Host:** `localhost` (Nếu bạn là máy chủ) hoặc `Địa_chỉ_IP_LAN_của_máy_chủ` (Ví dụ: `10.0.23x.4x`).
-   * **Port:** `1521` (Cổng mặc định của Oracle).
-   * **SID / Service Name:** Tùy phiên bản Oracle bạn cài (Thường là `xe`, `orcl` hoặc `FREE`) --> chọn `orcl`.
-   * **User/Password:** Nhập tài khoản quản trị Oracle của bạn (VD: `system` / `Admin123`).
-3. Bấm **Test Connection**. Nếu hiện dấu tick xanh là thành công. Bấm **OK** để lưu.
+## 1. Tạo Connection
 
-### 2. Chạy Script Khởi Tạo Dữ Liệu
-Sau khi kết nối thành công, bạn cần chạy các file SQL để tạo bảng và nạp dữ liệu mồi:
-1. Mở file `database/KhoiTaoCacBang.sql`, bôi đen toàn bộ lệnh và bấm **Run** (Nút tam giác xanh) để tạo cấu trúc bảng.
-2. Mở file `database/seed_data.sql` và chạy để nạp dữ liệu mẫu (Data Seeding) cho các danh mục, sản phẩm, nhân viên ban đầu.
+* Mở DataGrip
+* Nhấn `+` → **Data Source → Oracle**
+
+### Nhập thông tin:
+
+* **Host:**
+
+  * `localhost` (máy chủ)
+  * hoặc `IP LAN` (VD: `10.0.23x.4x`)
+
+* **Port:** `1521`
+
+* **Service Name:** `orcl`
+
+* **User/Password:** ví dụ `system / Admin123`
+
+👉 Nhấn **Test Connection** → OK
 
 ---
 
-## PHẦN 2: CẤU HÌNH MÃ NGUỒN JAVA
+## 2. Chạy Script
 
-Để các máy trong nhóm có thể kết nối với nhau, cần chỉnh sửa cấu hình IP trong các file cốt lõi của dự án.
+### Tạo bảng:
 
-**Quy tắc:** Nhóm chọn ra 1 máy mạnh nhất làm **Máy Chủ (Host)** để chạy Oracle Database và Realtime Server. Các máy còn lại sẽ đóng vai trò là **Máy Trạm (Client)**.
+```
+database/KhoiTaoCacBang.sql
+```
 
-### 1. Cấu hình Database Connection (Tất cả các máy đều phải sửa)
-Mở file `src/main/java/common/db/DatabaseConnection.java`.
+### Seed data:
 
-Tìm chuỗi kết nối `URL` và thay đổi địa chỉ IP trỏ về Máy Chủ đang chạy Oracle:
+```
+database/seed_data.sql
+```
+
+---
+
+# PHẦN 2: CẤU HÌNH JAVA
+
+## QUY TẮC
+
+* 1 máy → **HOST**
+* Máy còn lại → **CLIENT**
+
+---
+
+## 1. Database Connection (TẤT CẢ MÁY)
+
+File:
+
+```
+src/main/java/common/db/DatabaseConnection.java
+```
 
 ```java
-// Nếu code ở nhà (Chạy độc lập trên 1 máy):
+// LOCAL
 private static final String url = "jdbc:oracle:thin:@localhost:1521:orcl";
 
-// LÚC DEMO NHÓM (Chạy qua mạng LAN):
-// Thay localhost bằng IP LAN của máy tính đang làm MÁY CHỦ
+// LAN
 private static final String url = "jdbc:oracle:thin:@10.0.23x.4x:1521:orcl";
 
-// Lưu ý: Cập nhật lại USER và PASSWORD cho đúng với tài khoản Oracle của Máy Chủ
 private static final String USER = "your_oracle_user";
 private static final String PASS = "your_oracle_password";
+```
+
+---
+
+## 2. File Main
+
+File:
+
+```
+src/main/java/business/main/SieuThiOnline.java
+```
+
+```java
+String serverIp = "ws://10.0.23x.4x:9999";
+```
+
+---
+
+## 3. WebSocket Server (MÁY CHỦ)
+
+File:
+
+```
+src/main/java/common/realtime/RealtimeServer.java
+```
+
+```java
+InetSocketAddress address = new InetSocketAddress("0.0.0.0", 9999);
+RealtimeServer server = new RealtimeServer(address);
+server.start();
+```
+
+👉 `0.0.0.0` = cho phép toàn LAN connect
+
+---
+
+## 4. WebSocket Client (MÁY TRẠM)
+
+File:
+
+```
+src/main/java/common/realtime/RealtimeClient.java
+```
+
+```java
+// LOCAL
+private static final String WS_URL = "ws://localhost:9999";
+
+// LAN
+private static final String WS_URL = "ws://10.0.23x.4x:9999";
+```
+
+---
+
+# PHẦN 3: FIX LỖI LAN
+
+## 1. Tắt Firewall (MÁY CHỦ)
+
+* Mở `Windows Defender Firewall`
+* Chọn:
+
+  * Turn off Private
+  * Turn off Public
+
+👉 Nhớ bật lại sau demo
+
+---
+
+## 2. Mở Oracle Listener
+
+File:
+
+```
+C:\app\...\network\admin\listener.ora
+```
+
+Sửa:
+
+```
+HOST = localhost
+```
+
+→ thành:
+
+```
+HOST = 0.0.0.0
+```
+
+---
+
+## 3. Restart Service
+
+* Mở:
+
+```
+services.msc
+```
+
+* Tìm:
+
+```
+OracleXETNSListener
+```
+
+→ Restart
+
+---
+
+# TỔNG KẾT
+
+| Thành phần       | Máy chủ | Máy trạm |
+| ---------------- | ------- | -------- |
+| Oracle DB        | ✅       | ❌        |
+| WebSocket Server | ✅       | ❌        |
+| WebSocket Client | ✅       | ✅        |
+| DataGrip         | ✅       | ✅        |
+
+---
+
+# LƯU Ý
+
+* Tất cả máy cùng Wi-Fi
+* IP phải trỏ về máy chủ
+* Port:
+
+  * `1521` → Oracle
+  * `9999` → Realtime
+
+---
+
+🔥 Copy file này vào `HuongDanKetNoi.md` là chạy được ngay.
