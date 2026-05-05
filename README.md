@@ -5,7 +5,13 @@
 
 * **Đề tài:** Xây dựng phần mềm quản lý Siêu thị Online
 * **Repository:** [LẬP TRÌNH JAVA - SIÊU THỊ ONLINE](https://github.com/TanVi3001/SieuThiOnline_Java)
-* **Mô tả:** Đề tài "Xây dựng phần mềm quản lý Siêu thị Online" là một đồ án môn học được thực hiện với mục tiêu xây dựng một hệ thống phần mềm Desktop hỗ trợ công tác quản lý bán hàng, nhập kho, và thông tin khách hàng tại siêu thị một cách hiệu quả và dễ sử dụng. Hệ thống được thiết kế theo mô hình kiến trúc N-Tier chuẩn mực, bao gồm các chức năng chính như quản lý sản phẩm, nhân viên, khách hàng, tạo hóa đơn và thống kê báo cáo. Trong quá trình triển khai, nhóm đã vận dụng các kiến thức về lập trình hướng đối tượng (OOP), phân tích thiết kế hệ thống thông tin, kết hợp với kỹ năng làm việc nhóm qua Git để hoàn thiện sản phẩm.
+* **Mô tả:** Đề tài "Xây dựng Hệ thống Quản trị Siêu thị Online" là một dự án phần mềm Desktop toàn diện, được thiết kế chuyên biệt để giải quyết bài toán vận hành của mô hình bán lẻ hiện đại. Không chỉ dừng lại ở các nghiệp vụ quản lý cơ bản, hệ thống đóng vai trò như một cổng thông tin cửa hàng (Store Portal) tập trung, hỗ trợ bộ phận quản lý và nhân viên xử lý đồng bộ các khâu: Bán hàng trực tuyến (Telesale), Quản lý kho, Chăm sóc khách hàng và Quản trị nhân sự.
+Điểm sáng giá nhất của dự án là việc áp dụng kiến trúc N-Tier chuẩn mực, kết hợp cùng công nghệ đồng bộ dữ liệu thời gian thực (Real-time) qua mạng LAN, giúp mọi thay đổi về tồn kho hay doanh thu đều được cập nhật lập tức trên toàn hệ thống mà không cần tải lại trang.
+
+## CÁC TÍNH NĂNG VÀ NGHIỆP VỤ NỔI BẬT
+Hệ thống được chia thành các phân hệ lõi với hàm lượng kỹ thuật cao:
+* **Bán hàng & Xử lý Đơn hàng (Sales & Order Management):** Xây dựng luồng tạo đơn hàng nội bộ chuyên nghiệp với giỏ hàng, tích hợp tính toán giảm giá (Promotion), đa dạng hình thức thanh toán (Tiền mặt, Chuyển khoản) và phương thức nhận hàng (Giao tận nơi, Nhận tại quầy).
+
 
 ## CÔNG NGHỆ VÀ CÔNG CỤ SỬ DỤNG
 
