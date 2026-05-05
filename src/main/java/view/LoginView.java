@@ -753,7 +753,7 @@ public class LoginView extends javax.swing.JFrame {
         System.out.println("STARTUP CLEANUP deleted = " + deletedNow);
 
         business.service.TokenCleanupService.start();
-
+        common.sync.SyncWatcher.start(2); // poll mỗi 2 giây  
         java.awt.EventQueue.invokeLater(() -> {
             LoginView login = new LoginView();
             login.setLocationRelativeTo(null);

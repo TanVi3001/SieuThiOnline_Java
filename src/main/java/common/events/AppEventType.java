@@ -8,5 +8,6 @@ public enum AppEventType {
     SYSTEM_CONFIG,
     ACCOUNT_SECURITY,
     PRODUCTS,
+    INVENTORY,
     UNKNOWN
 }

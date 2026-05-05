@@ -5,6 +5,7 @@ import business.sql.prod_inventory.ProductUnitsSql;
 import business.service.UnitOfMeasureService;
 import business.service.AuthorizationService;
 import common.utils.Validator;
+
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -15,17 +16,27 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+
 import model.product.Product;
 import model.product.ProductUnit;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.nio.charset.StandardCharsets;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
 import view.components.IconHelper;
+
+// MỨC 1 + 2
+import common.events.AppDataChangedEvent;
+import common.events.AppEventType;
+import common.events.EventBus;
+import common.sync.SyncVersionDao;
 
 public class ProductView extends JPanel {
 
@@ -57,6 +68,13 @@ public class ProductView extends JPanel {
         initUI();
         initEvents();
         loadDataToTable();
+
+        // MỨC 2: Khi watcher phát hiện DB đổi version -> bắn event -> ProductView tự refresh
+        EventBus.subscribe(AppDataChangedEvent.class, e -> {
+            if (e.getType() == AppEventType.PRODUCTS || e.getType() == AppEventType.INVENTORY) {
+                refreshTable();
+            }
+        });
 
         if (AuthorizationService.isCashier()) {
             btnAdd.setVisible(false);
@@ -122,7 +140,7 @@ public class ProductView extends JPanel {
         searchFieldWrapper.add(searchIconLabel, BorderLayout.WEST);
         searchFieldWrapper.add(cbSearch, BorderLayout.CENTER);
 
-        // CÁC NÚT TREN TOOLBAR (Đã bỏ đoạn lặp lại)
+        // CÁC NÚT TREN TOOLBAR
         btnSearch = createCustomButton("Tìm kiếm", primaryBlue, Color.WHITE, null);
         btnExportPDF = createCustomButton("Xuất Excel", new Color(0, 163, 108), Color.WHITE, null);
         btnImport = createCustomButton("Nhập CSV", new Color(103, 58, 183), Color.WHITE, null);
@@ -418,7 +436,7 @@ public class ProductView extends JPanel {
             return;
         }
 
-        business.sql.prod_inventory.ProductsSql dao = business.sql.prod_inventory.ProductsSql.getInstance();
+        ProductsSql dao = ProductsSql.getInstance();
         Product existingProduct = dao.findByExactName(p.getProductName());
 
         if (existingProduct != null) {
@@ -428,6 +446,12 @@ public class ProductView extends JPanel {
 
             if (confirm == JOptionPane.YES_OPTION) {
                 if (dao.addQuantity(existingProduct.getProductId(), p.getQuantity(), existingProduct.getStoreId())) {
+
+                    // MỨC 2: bump version (tồn kho thay đổi)
+                    SyncVersionDao.bumpVersion("INVENTORY");
+                    // optional: nếu muốn coi danh mục cũng thay đổi
+                    SyncVersionDao.bumpVersion("PRODUCTS");
+
                     JOptionPane.showMessageDialog(this, "✅ Đã cộng dồn số lượng thành công!");
                     loadDataToTable();
                     btnClearActionPerformed();
@@ -448,6 +472,11 @@ public class ProductView extends JPanel {
             }
 
             if (dao.insert(p)) {
+
+                // MỨC 2: bump version (thêm mới + có quantity)
+                SyncVersionDao.bumpVersion("PRODUCTS");
+                SyncVersionDao.bumpVersion("INVENTORY");
+
                 JOptionPane.showMessageDialog(this, "✅ Thêm sản phẩm mới thành công!\nMã tự cấp: " + p.getProductId());
                 loadDataToTable();
                 if (!productNameList.contains(p.getProductName())) {
@@ -476,6 +505,11 @@ public class ProductView extends JPanel {
         p.setProductId(idOld);
 
         if (ProductsSql.getInstance().update(p)) {
+
+            // MỨC 2: bump version (metadata + qty có thể đổi)
+            SyncVersionDao.bumpVersion("PRODUCTS");
+            SyncVersionDao.bumpVersion("INVENTORY");
+
             JOptionPane.showMessageDialog(this, "✅ Cập nhật sản phẩm thành công!");
             loadDataToTable();
             btnClearActionPerformed();
@@ -494,21 +528,36 @@ public class ProductView extends JPanel {
         String id = tblProducts.getValueAt(row, 0).toString().trim();
         String name = tblProducts.getValueAt(row, 1).toString().trim();
 
-        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn ngừng kinh doanh và xóa sản phẩm: " + name + " (" + id + ")?", "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Bạn có chắc chắn muốn ngừng kinh doanh và xóa sản phẩm: " + name + " (" + id + ")?",
+                "Xác nhận xóa",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
 
         if (confirm == JOptionPane.YES_OPTION) {
             boolean usedInOrders = ProductsSql.getInstance().isUsedInOrders(id);
 
             if (ProductsSql.getInstance().delete(id)) {
+
+                // MỨC 2: bump version
+                SyncVersionDao.bumpVersion("PRODUCTS");
+                SyncVersionDao.bumpVersion("INVENTORY");
+
                 if (usedInOrders) {
-                    JOptionPane.showMessageDialog(this, "Sản phẩm [" + name + "] đã từng được bán/nhập kho.\nHệ thống đã chuyển sang trạng thái ẨN (Ngừng kinh doanh) thay vì xóa mất dữ liệu.", "Đã ẩn sản phẩm an toàn", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this,
+                            "Sản phẩm [" + name + "] đã từng được bán/nhập kho.\nHệ thống đã chuyển sang trạng thái ẨN (Ngừng kinh doanh) thay vì xóa mất dữ liệu.",
+                            "Đã ẩn sản phẩm an toàn",
+                            JOptionPane.INFORMATION_MESSAGE);
                 } else {
                     JOptionPane.showMessageDialog(this, "✅ Xóa sản phẩm [" + name + "] thành công!");
                 }
                 loadDataToTable();
                 btnClearActionPerformed();
             } else {
-                JOptionPane.showMessageDialog(this, "❌ Không thể xóa sản phẩm.\nVui lòng kiểm tra cửa sổ Output Console để xem lỗi chi tiết!", "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                        "❌ Không thể xóa sản phẩm.\nVui lòng kiểm tra cửa sổ Output Console để xem lỗi chi tiết!",
+                        "Lỗi hệ thống",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -679,14 +728,12 @@ public class ProductView extends JPanel {
             return;
         }
 
-        // 1. TẠO CỬA SỔ POP-UP (JDIALOG) MỚI
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Cấu hình Đơn vị tính", true);
         dialog.setSize(600, 550);
         dialog.setLocationRelativeTo(this);
         dialog.setLayout(new BorderLayout());
-        dialog.getContentPane().setBackground(bgLight); // Dùng màu nền xám nhạt của project
+        dialog.getContentPane().setBackground(bgLight);
 
-        // --- TOP: TIÊU ĐỀ ---
         int selectedRow = tblProducts.getSelectedRow();
         String productName = tblProducts.getValueAt(selectedRow, 1).toString();
 
@@ -696,7 +743,6 @@ public class ProductView extends JPanel {
         lblTitle.setBorder(new EmptyBorder(15, 20, 10, 20));
         dialog.add(lblTitle, BorderLayout.NORTH);
 
-        // --- CENTER: BẢNG DANH SÁCH ĐƠN VỊ ---
         RoundedPanel tablePanel = new RoundedPanel(15, Color.WHITE);
         tablePanel.setLayout(new BorderLayout());
         tablePanel.setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -717,7 +763,7 @@ public class ProductView extends JPanel {
         unitTable.setSelectionBackground(new Color(237, 242, 255));
         unitTable.setSelectionForeground(textDark);
 
-        loadProductUnits(productId, unitModel); // Đổ dữ liệu vào bảng
+        loadProductUnits(productId, unitModel);
 
         JScrollPane scrollPane = new JScrollPane(unitTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -730,7 +776,6 @@ public class ProductView extends JPanel {
         centerWrapper.add(tablePanel, BorderLayout.CENTER);
         dialog.add(centerWrapper, BorderLayout.CENTER);
 
-        // --- SOUTH: FORM NHẬP LIỆU BÊN DƯỚI ---
         RoundedPanel formPanel = new RoundedPanel(15, Color.WHITE);
         formPanel.setLayout(new GridBagLayout());
         formPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
@@ -746,7 +791,6 @@ public class ProductView extends JPanel {
         chkBase.setFont(new Font("Segoe UI", Font.BOLD, 13));
         chkBase.setForeground(textDark);
 
-        // LOGIC THÔNG MINH: Nếu tích vào ĐV gốc -> Khóa tỷ lệ lại bằng 1
         chkBase.addActionListener(e -> {
             if (chkBase.isSelected()) {
                 txtRate.setText("1");
@@ -777,18 +821,16 @@ public class ProductView extends JPanel {
         gbc.gridwidth = 2;
         formPanel.add(chkBase, gbc);
 
-        // --- CÁC NÚT BẤM (ĐÓNG / LƯU) ---
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         btnPanel.setOpaque(false);
 
         JButton btnCancel = createCustomButton("Đóng", new Color(165, 177, 194), Color.WHITE, null);
         btnCancel.setPreferredSize(new Dimension(100, 40));
-        btnCancel.addActionListener(e -> dialog.dispose()); // Nút đóng cửa sổ
+        btnCancel.addActionListener(e -> dialog.dispose());
 
         JButton btnSave = createCustomButton("Lưu đơn vị", primaryBlue, Color.WHITE, IconHelper.add(18));
         btnSave.setPreferredSize(new Dimension(140, 40));
 
-        // Sự kiện lưu đơn vị vào Database
         btnSave.addActionListener(e -> {
             String uName = txtUnitName.getText().trim();
             String uRate = txtRate.getText().trim();
@@ -804,13 +846,14 @@ public class ProductView extends JPanel {
                     return;
                 }
 
-                // Gọi API backend lưu xuống Database
                 boolean ok = new UnitOfMeasureService().configureProductUnit(productId, uName, rate, chkBase.isSelected());
                 if (ok) {
-                    JOptionPane.showMessageDialog(dialog, "✅ Đã lưu cấu hình đơn vị tính thành công!");
-                    loadProductUnits(productId, unitModel); // Tự động load lại bảng
+                    // bump để đồng bộ "metadata sản phẩm"
+                    SyncVersionDao.bumpVersion("PRODUCTS");
 
-                    // Xóa form chuẩn bị nhập tiếp
+                    JOptionPane.showMessageDialog(dialog, "✅ Đã lưu cấu hình đơn vị tính thành công!");
+                    loadProductUnits(productId, unitModel);
+
                     txtUnitName.setText("");
                     txtRate.setText("");
                     chkBase.setSelected(false);
@@ -838,8 +881,6 @@ public class ProductView extends JPanel {
         southWrapper.add(formPanel, BorderLayout.CENTER);
 
         dialog.add(southWrapper, BorderLayout.SOUTH);
-
-        // Hiển thị dialog
         dialog.setVisible(true);
     }
 
@@ -908,6 +949,12 @@ public class ProductView extends JPanel {
                         + "Thất bại: " + failCount + " (Có thể trùng mã hoặc sai định dạng)",
                         "Thông báo Import", JOptionPane.INFORMATION_MESSAGE);
 
+                // bump 1 lần sau import (tránh bump mỗi dòng)
+                if (successCount > 0) {
+                    SyncVersionDao.bumpVersion("PRODUCTS");
+                    SyncVersionDao.bumpVersion("INVENTORY");
+                }
+
                 loadDataToTable();
 
             } catch (Exception e) {
@@ -917,7 +964,6 @@ public class ProductView extends JPanel {
         }
     }
 
-    // Hàm bốc hơi cái mũi tên dropdown và viền để biến ComboBox thành ô Search phẳng
     private void styleSearchBox(JComboBox<String> cb, String placeholder) {
         cb.setEditable(true);
         cb.setBorder(null);
