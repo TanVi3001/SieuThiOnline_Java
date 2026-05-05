@@ -25,7 +25,7 @@ public final class RealtimeClient {
     public static void connect(String wsUrl) {
         try {
             // Chốt chặn: Nếu wsUrl truyền vào bị rỗng hoặc đang là localhost, ép nó về IP LAN luôn
-            if (wsUrl == null || wsUrl.isEmpty() || wsUrl.contains("localhost") || wsUrl.contains("127.0.0.1")) {
+            if (wsUrl == null || wsUrl.isEmpty() || wsUrl.contains("localhost") || wsUrl.contains("192.168.88.210")) {
                 wsUrl = DEFAULT_LAN_WS_URL;
             }
 
