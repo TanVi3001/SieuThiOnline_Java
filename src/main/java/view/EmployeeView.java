@@ -493,35 +493,46 @@ public class EmployeeView extends JPanel {
                 SyncVersionDao.bumpVersion("EMPLOYEES");
                 RealtimeClient.send("EMPLOYEES_CHANGED");
 
+                // 1) Tạo token trong DB
                 try {
                     new ActivationTokenService().issueToken(emp.getEmployeeId());
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(this,
-                            "Tạo hồ sơ nhân viên thành công nhưng KHÔNG tạo được mã kích hoạt trong hệ thống!\n"
-                            + "Vui lòng thử lại hoặc kiểm tra bảng ACTIVATION_TOKENS.\nChi tiết: " + ex.getMessage(),
-                            "Lỗi cấp mã kích hoạt",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
+                            "Tạo hồ sơ thành công nhưng KHÔNG tạo được mã kích hoạt trong hệ thống!\nChi tiết: " + ex.getMessage(),
+                            "Lỗi cấp mã kích hoạt", JOptionPane.ERROR_MESSAGE);
+                    loadDataToTable();
+                    clearForm();
+                    return; // Dừng lại, không gửi mail
                 }
 
-                new Thread(() -> {
-                    boolean mailSent = business.service.EmailService.sendActivationEmail(
-                            emp.getEmail(),
-                            emp.getEmployeeName(),
-                            emp.getEmployeeId()
-                    );
-                    if (!mailSent) {
-                        System.err.println("Cảnh báo: Không thể gửi mail kích hoạt đến " + emp.getEmail());
-                    }
-                }).start();
+                // 2) Bắt cứng các biến trước khi đưa vào Thread để tránh lỗi mất data
+                final String targetEmail = emp.getEmail();
+                final String targetName = emp.getEmployeeName();
+                final String activationCode = emp.getEmployeeId(); // CODE chính là EMP...
 
-                JOptionPane.showMessageDialog(this,
-                        "Tạo hồ sơ nhân viên thành công!\nHệ thống đã tự động gửi Mã Kích Hoạt đến email: " + emp.getEmail(),
-                        "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                // 3) Chạy luồng gửi mail và BÁO KẾT QUẢ TRỰC TIẾP LÊN MÀN HÌNH
+                new Thread(() -> {
+                    boolean mailSent = business.service.EmailService.sendActivationEmail(targetEmail, targetName, activationCode);
+                    
+                    // Gọi ngược lại UI để hiển thị Popup
+                    SwingUtilities.invokeLater(() -> {
+                        if (mailSent) {
+                            JOptionPane.showMessageDialog(this,
+                                    "Tạo hồ sơ thành công!\nĐã gửi Mã Kích Hoạt đến email: " + targetEmail,
+                                    "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                        } else {
+                            JOptionPane.showMessageDialog(this,
+                                    "Hồ sơ đã lưu nhưng GỬI MAIL THẤT BẠI đến " + targetEmail + "!\n" +
+                                    "Nguyên nhân có thể do Mail trường học bị chặn SMTP hoặc lỗi mạng. Hãy thử dùng @gmail.com",
+                                    "Cảnh báo Email", JOptionPane.WARNING_MESSAGE);
+                        }
+                    });
+                }).start();
 
                 if (!employeeNameList.contains(emp.getEmployeeName())) {
                     employeeNameList.add(emp.getEmployeeName());
+                    cbSearch.addItem(emp.getEmployeeName());
                 }
                 loadDataToTable();
                 clearForm();

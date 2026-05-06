@@ -22,7 +22,7 @@ public final class RealtimeClient {
         try {
             // FIX: Dùng cứng 127.0.0.1 để Windows không bị nhầm lẫn IPv6
             if (wsUrl == null || wsUrl.isEmpty() || wsUrl.contains("localhost")) {
-                wsUrl = "ws://10.0.250.60:9999";
+                wsUrl = "ws://192.168.88.210";
             }
 
             serverUri = URI.create(wsUrl);
