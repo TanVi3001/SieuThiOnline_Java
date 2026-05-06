@@ -20,7 +20,6 @@ public class DashboardView extends JFrame {
     private boolean isLoggingOut = false;
     private JPanel mainContentPanel;
 
-    // Biến lưu trữ tab hiện tại đang mở để Real-time biết đường mà refresh
     private String currentMenu = "Tổng quan";
 
     public DashboardView() {
@@ -28,16 +27,12 @@ public class DashboardView extends JFrame {
         startSessionCheck();
 
         common.security.SecurityGuard.attach(mainContentPanel);
-        // ==========================================
-        // GẮN "MÁY NGHE LÉN" REAL-TIME CHO TOÀN BỘ DASHBOARD
-        // ==========================================
+
         EventBus.subscribe(AppDataChangedEvent.class, e -> {
             SwingUtilities.invokeLater(() -> {
-                // Nếu có bất kỳ thay đổi data nào, và user đang xem Tổng quan hoặc Thống kê thì tự động load lại
                 if ("Tổng quan".equals(currentMenu)) {
                     showPanel(new TongQuanPanel());
                 } else if ("Báo cáo & Thống kê".equals(currentMenu)) {
-                    // Nếu user có quyền vô thống kê thì mới refresh
                     if (business.service.AuthorizationService.canAccessStatisticsAndEmployees()) {
                         showPanel(new StatisticView());
                     }
@@ -47,21 +42,17 @@ public class DashboardView extends JFrame {
     }
 
     private void setupUI() {
-        // 1. LẤY THÔNG TIN USER ĐỂ HIỂN THỊ TRÊN TIÊU ĐỀ CỬA SỔ
         model.account.Account u = business.service.LoginService.getCurrentUser();
         String tk = business.service.LoginService.getToken();
         String username = "";
 
         if (u != null) {
             username = u.getUsername().trim();
-            System.out.println("SESSION USER = " + username);
-            System.out.println("SESSION TOKEN = " + tk);
             this.setTitle("SMART SUPERMARKET - STORE PORTAL | Chào, " + username);
         } else {
             this.setTitle("SMART SUPERMARKET - STORE PORTAL");
         }
 
-        // 2. CẤU HÌNH CỬA SỔ CHÍNH
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setMinimumSize(new Dimension(1024, 768));
         this.setLocationRelativeTo(null);
@@ -71,26 +62,27 @@ public class DashboardView extends JFrame {
         mainContentPanel = new JPanel(new BorderLayout());
         mainContentPanel.setBackground(new java.awt.Color(245, 245, 247));
 
-        // 3. KIỂM TRA PHÂN QUYỀN TRƯỚC KHI GẮN VÀO SIDEBAR
-        boolean canAccessEmployee = business.service.AuthorizationService.canAccessStatisticsAndEmployees();
-        boolean canAccessStatistics = business.service.AuthorizationService.canAccessStatisticsAndEmployees();
-        String roleForSidebar = business.service.AuthorizationService.currentRoleForUi();
+        String roleForSidebar = common.auth.UserSession.getInstance().getUserRole();
+        boolean isStaff = "R_STAFF_SALE".equals(roleForSidebar);
 
-        // 4. KHỞI TẠO SIDEBAR BÊN TRÁI
         Sidebar newSidebar = new Sidebar(roleForSidebar);
         newSidebar.setMenuClickListener(title -> {
-            currentMenu = title; // Cập nhật tab đang mở
+            currentMenu = title;
 
             switch (title) {
                 case "Tổng quan":
                     showPanel(new TongQuanPanel());
                     break;
                 case "Quản lý sản phẩm":
-                    showPanel(new ProductView());
+                    if (isStaff) {
+                        JOptionPane.showMessageDialog(this, "Bạn không có quyền truy cập!", "Từ chối", JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        showPanel(new ProductView());
+                    }
                     break;
                 case "Quản lý nhân viên":
-                    if (!canAccessEmployee) {
-                        JOptionPane.showMessageDialog(this, "Bạn không có quyền truy cập chức năng này!", "Từ chối truy cập", JOptionPane.WARNING_MESSAGE);
+                    if (isStaff) {
+                        JOptionPane.showMessageDialog(this, "Bạn không có quyền truy cập!", "Từ chối", JOptionPane.WARNING_MESSAGE);
                     } else {
                         showPanel(new view.EmployeeView());
                     }
@@ -102,8 +94,8 @@ public class DashboardView extends JFrame {
                     showPanel(new OrderView());
                     break;
                 case "Báo cáo & Thống kê":
-                    if (!canAccessStatistics) {
-                        JOptionPane.showMessageDialog(this, "Bạn không có quyền truy cập chức năng này!", "Từ chối truy cập", JOptionPane.WARNING_MESSAGE);
+                    if (isStaff) {
+                        JOptionPane.showMessageDialog(this, "Bạn không có quyền truy cập!", "Từ chối", JOptionPane.WARNING_MESSAGE);
                     } else {
                         showPanel(new StatisticView());
                     }
@@ -117,17 +109,12 @@ public class DashboardView extends JFrame {
             }
         });
 
-        // 5. RÁP 2 KHỐI VÀO NHAU (SIDEBAR TRÁI - CONTENT PHẢI)
         this.getContentPane().add(newSidebar, BorderLayout.WEST);
         this.getContentPane().add(mainContentPanel, BorderLayout.CENTER);
 
-        // Mặc định khi vừa login sẽ hiển thị Tổng Quan
         showPanel(new TongQuanPanel());
     }
 
-    // ========================================================
-    // CÁC HÀM XỬ LÝ GIAO DIỆN & LOGIC
-    // ========================================================
     public void showPanel(JPanel childPanel) {
         mainContentPanel.removeAll();
         mainContentPanel.add(childPanel, BorderLayout.CENTER);
@@ -147,6 +134,9 @@ public class DashboardView extends JFrame {
             String tk = business.service.LoginService.getToken();
             business.sql.rbac.TokenSql.getInstance().revokeToken(tk);
             business.service.LoginService.logout();
+
+            // TUI ĐÃ THÊM DÒNG NÀY ĐỂ XÓA SẠCH GỐC RỄ PHÂN QUYỀN TRONG CACHE SESSION
+            common.auth.UserSession.getInstance().clear();
 
             java.awt.EventQueue.invokeLater(() -> {
                 view.LoginView login = new view.LoginView();
@@ -171,7 +161,11 @@ public class DashboardView extends JFrame {
             if (!isValid) {
                 if (!isLoggingOut) {
                     ((Timer) e.getSource()).stop();
-                    JOptionPane.showMessageDialog(this, "Phiên đăng nhập của bạn đã hết hạn!", "Thông báo bảo mật", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Phiên đăng nhập của bạn đã hết hạn hoặc quyền truy cập đã thay đổi!", "Thông báo bảo mật", JOptionPane.ERROR_MESSAGE);
+
+                    // TUI ĐÃ THÊM DÒNG NÀY ĐỂ XÓA SẠCH GỐC RỄ PHÂN QUYỀN TRONG CACHE SESSION
+                    common.auth.UserSession.getInstance().clear();
+                    business.service.LoginService.logout();
 
                     java.awt.EventQueue.invokeLater(() -> {
                         view.LoginView login = new view.LoginView();
@@ -186,9 +180,6 @@ public class DashboardView extends JFrame {
         sessionTimer.start();
     }
 
-    // ========================================================
-    // HÀM MAIN KHỞI ĐỘNG
-    // ========================================================
     public static void main(String args[]) {
         System.setProperty("sun.java2d.uiScale", "1.5");
         try {

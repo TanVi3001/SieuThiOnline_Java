@@ -15,17 +15,15 @@ public final class RealtimeClient {
     private static volatile WebSocketClient client;
     private static volatile URI serverUri;
 
-    // ÉP CỨNG IP LAN LÚC DEMO CHO AN TOÀN
-    private static final String DEFAULT_LAN_WS_URL = "ws://192.168.88.210";
-
     private RealtimeClient() {
     }
 
     public static void connect(String wsUrl) {
         try {
-            // Chốt chặn: Nếu wsUrl truyền vào bị rỗng hoặc đang là localhost, ép nó về IP LAN luôn
-            if (wsUrl == null || wsUrl.isEmpty() || wsUrl.contains("localhost") || wsUrl.contains("10.0.250.60")) {
-                wsUrl = DEFAULT_LAN_WS_URL;
+            // ĐÃ FIX: Xóa chốt chặn ép cứng IP LAN. 
+            // Nếu không truyền url hoặc url rỗng, mặc định xài localhost:9999
+            if (wsUrl == null || wsUrl.isEmpty()) {
+                wsUrl = "ws://localhost:9999";
             }
 
             serverUri = URI.create(wsUrl);
@@ -46,8 +44,7 @@ public final class RealtimeClient {
                         EventBus.publish(new AppDataChangedEvent(AppEventType.SYSTEM_CONFIG, "realtime"));
                     } else if ("ACCOUNT_SECURITY_CHANGED".equalsIgnoreCase(message)) {
                         EventBus.publish(new AppDataChangedEvent(AppEventType.ACCOUNT_SECURITY, "realtime"));
-                    } // THÊM 2 DÒNG NÀY VÀO NÈ VĨ:
-                    else if ("CUSTOMERS_CHANGED".equalsIgnoreCase(message)) {
+                    } else if ("CUSTOMERS_CHANGED".equalsIgnoreCase(message)) {
                         EventBus.publish(new AppDataChangedEvent(AppEventType.CUSTOMERS, "realtime"));
                     } else if ("EMPLOYEES_CHANGED".equalsIgnoreCase(message)) {
                         EventBus.publish(new AppDataChangedEvent(AppEventType.EMPLOYEES, "realtime"));
@@ -81,7 +78,7 @@ public final class RealtimeClient {
             try {
                 if (client == null || !client.isOpen()) {
                     System.out.println("[RT] reconnecting to " + serverUri);
-                    // Dùng lại URI đã được chốt ở hàm connect
+                    // Dùng lại URI đã được thiết lập ở trên
                     connect(serverUri.toString());
                 }
             } catch (Exception ignored) {
