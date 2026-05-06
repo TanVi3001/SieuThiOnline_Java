@@ -1,10 +1,17 @@
 package view;
 
+import business.service.EmailService;
 import business.sql.hr_kpi.EmployeeSql;
+import business.sql.rbac.ActivationTokenSql;
+import common.db.DatabaseConnection;
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -13,6 +20,8 @@ import model.employee.Employee;
 import view.components.IconHelper;
 
 public class ManagerManagementView extends JPanel {
+
+    private static final Logger logger = Logger.getLogger(ManagerManagementView.class.getName());
 
     // --- BẢNG MÀU & THÔNG SỐ UI ---
     private final Color bgLight = new Color(244, 246, 250);
@@ -267,28 +276,55 @@ public class ManagerManagementView extends JPanel {
 
             emp.setEmployeeId("MNG" + System.currentTimeMillis());
 
-            if (employeeSql.insert(emp) > 0) {
-                // CHẠY NGẦM VIỆC GỬI EMAIL TỰ ĐỘNG BẰNG LUỒNG MỚI
-                new Thread(() -> {
-                    boolean mailSent = business.service.EmailService.sendActivationEmail(
-                            emp.getEmail(), 
-                            emp.getEmployeeName(), 
-                            emp.getEmployeeId()
-                    );
-                    if (!mailSent) {
-                        System.err.println("Cảnh báo: Không thể gửi mail kích hoạt đến " + emp.getEmail());
-                    }
-                }).start();
+            // 1) Insert EMPLOYEES (handles its own committed transaction)
+            if (employeeSql.insert(emp) <= 0) {
+                JOptionPane.showMessageDialog(this, "Thêm hồ sơ thất bại! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-                JOptionPane.showMessageDialog(this, 
-                        "Cấp tài khoản Quản lý thành công!\nHệ thống đã tự động gửi Mã Kích Hoạt đến email: " + emp.getEmail(), 
-                        "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                
+            // 2) Generate a UUID activation code and insert into ACTIVATION_TOKENS
+            final String activationCode = UUID.randomUUID().toString();
+            ActivationTokenSql tokenSql = new ActivationTokenSql();
+            try (Connection con = DatabaseConnection.getConnection()) {
+                if (con == null) throw new SQLException("Không thể kết nối DB.");
+                boolean oldAutoCommit = con.getAutoCommit();
+                con.setAutoCommit(false);
+                try {
+                    tokenSql.createToken(con, emp.getEmployeeId(), activationCode, 24);
+                    con.commit();
+                } catch (SQLException ex) {
+                    try { con.rollback(); } catch (SQLException ignore) {}
+                    throw ex;
+                } finally {
+                    try { con.setAutoCommit(oldAutoCommit); } catch (SQLException ignore) {}
+                }
+            } catch (Exception ex) {
+                logger.severe("Lỗi khi tạo mã kích hoạt cho " + emp.getEmployeeId() + ": " + ex.getMessage());
+                JOptionPane.showMessageDialog(this,
+                        "Hồ sơ đã thêm nhưng không thể tạo mã kích hoạt.\nLỗi: " + ex.getMessage(),
+                        "Lỗi tạo mã kích hoạt", JOptionPane.ERROR_MESSAGE);
                 loadDataToTable();
                 clearForm();
-            } else {
-                JOptionPane.showMessageDialog(this, "Thêm hồ sơ thất bại! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
             }
+
+            // 3) Send email AFTER token is committed — same code that is in ACTIVATION_TOKENS
+            final String finalEmail = emp.getEmail();
+            final String finalName = emp.getEmployeeName();
+            new Thread(() -> {
+                boolean mailSent = EmailService.sendActivationEmail(finalEmail, finalName, activationCode);
+                if (!mailSent) {
+                    logger.warning("Cảnh báo: Không thể gửi mail kích hoạt đến " + finalEmail
+                            + " (mã đã lưu DB, liên hệ admin nếu cần gửi lại)");
+                }
+            }).start();
+
+            JOptionPane.showMessageDialog(this,
+                    "Cấp tài khoản Quản lý thành công!\nHệ thống đã tự động gửi Mã Kích Hoạt đến email: " + emp.getEmail(),
+                    "Thành công", JOptionPane.INFORMATION_MESSAGE);
+
+            loadDataToTable();
+            clearForm();
         });
 
         btnUpdate.addActionListener(e -> {
