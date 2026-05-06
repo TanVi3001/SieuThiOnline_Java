@@ -63,4 +63,14 @@ public class ActivationTokenSql {
             ps.executeUpdate();
         }
     }
+
+    public boolean existsCode(Connection con, String code) throws SQLException {
+        String sql = "SELECT 1 FROM " + TBL + " WHERE CODE = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, code);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
 }

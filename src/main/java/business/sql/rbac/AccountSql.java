@@ -541,81 +541,171 @@ public class AccountSql implements SqlInterface<Account> {
         }
     }
 
-    public java.util.Map<String, String> getEmployeeForActivation(String empId) {
+    public java.util.Map<String, String> getEmployeeForActivation(String code) {
+        if (code == null || code.isBlank()) {
+            return null;
+        }
+
         java.util.Map<String, String> data = new java.util.HashMap<>();
 
-        String checkExist = "SELECT 1 FROM ACCOUNTS WHERE user_id = ?";
-        String sqlEmp = "SELECT employee_name, email, phone, role_id FROM EMPLOYEES WHERE employee_id = ? AND is_deleted = 0";
+        String sqlToken
+                = "SELECT EMPLOYEE_ID "
+                + "FROM ACTIVATION_TOKENS "
+                + "WHERE CODE = ? "
+                + "AND USED_AT IS NULL "
+                + "AND EXPIRES_AT >= SYSDATE";
 
-        try (java.sql.Connection con = common.db.DatabaseConnection.getConnection()) {
-            try (java.sql.PreparedStatement pstCheck = con.prepareStatement(checkExist)) {
+        String sqlCheckExistAcc
+                = "SELECT 1 FROM ACCOUNTS WHERE user_id = ? AND NVL(is_deleted,0)=0";
+
+        String sqlEmp
+                = "SELECT employee_name, email, phone, role_id "
+                + "FROM EMPLOYEES "
+                + "WHERE employee_id = ? AND NVL(is_deleted,0)=0";
+
+        try (Connection con = DatabaseConnection.getConnection()) {
+            if (con == null) {
+                return null;
+            }
+
+            // 1) Verify token -> lấy employeeId
+            String empId;
+            try (PreparedStatement pst = con.prepareStatement(sqlToken)) {
+                pst.setString(1, code.trim());
+                try (ResultSet rs = pst.executeQuery()) {
+                    if (!rs.next()) {
+                        return null;
+                    }
+                    empId = rs.getString("EMPLOYEE_ID");
+                }
+            }
+
+            // 2) Nếu đã có account thì không cho kích hoạt lại
+            try (PreparedStatement pstCheck = con.prepareStatement(sqlCheckExistAcc)) {
                 pstCheck.setString(1, empId);
-                try (java.sql.ResultSet rsCheck = pstCheck.executeQuery()) {
+                try (ResultSet rsCheck = pstCheck.executeQuery()) {
                     if (rsCheck.next()) {
                         return null;
                     }
                 }
             }
 
-            try (java.sql.PreparedStatement pst = con.prepareStatement(sqlEmp)) {
+            // 3) Lấy thông tin nhân viên
+            try (PreparedStatement pst = con.prepareStatement(sqlEmp)) {
                 pst.setString(1, empId);
-                try (java.sql.ResultSet rs = pst.executeQuery()) {
-                    if (rs.next()) {
-                        data.put("name", rs.getString("employee_name"));
-                        data.put("email", rs.getString("email"));
-                        data.put("phone", rs.getString("phone"));
-                        data.put("role_id", rs.getString("role_id"));
-                        return data;
+                try (ResultSet rs = pst.executeQuery()) {
+                    if (!rs.next()) {
+                        return null;
                     }
+
+                    data.put("emp_id", empId); // quan trọng: trả lại empId để stage2 dùng
+                    data.put("name", rs.getString("employee_name"));
+                    data.put("email", rs.getString("email"));
+                    data.put("phone", rs.getString("phone"));
+                    data.put("role_id", rs.getString("role_id"));
+                    return data;
                 }
             }
-        } catch (java.sql.SQLException e) {
+
+        } catch (SQLException e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
-    public boolean activateAccount(String empId, String username, String rawPassword) {
+    public boolean activateAccount(String code, String username, String rawPassword) {
+        if (code == null || code.isBlank()) {
+            return false;
+        }
+        if (username == null || username.isBlank()) {
+            return false;
+        }
+        if (rawPassword == null || rawPassword.isBlank()) {
+            return false;
+        }
+
         String accId = "ACC" + (System.currentTimeMillis() % 1000000);
-        String passwordHash = common.utils.PasswordUtils.hash(rawPassword);
 
-        String sqlCheckUser = "SELECT 1 FROM ACCOUNTS WHERE username = ? AND is_deleted = 0";
-        String sqlGetEmp = "SELECT employee_name, email, phone, role_id FROM EMPLOYEES WHERE employee_id = ? AND is_deleted = 0";
+        // đảm bảo BCrypt để qua trigger
+        String passwordHash = PasswordUtils.isBCryptHash(rawPassword)
+                ? rawPassword
+                : PasswordUtils.hash(rawPassword);
 
-        String sqlUser = "INSERT INTO USERS (user_id, full_name, email, phone_number) VALUES (?, ?, ?, ?)";
-        String sqlAccount = "INSERT INTO ACCOUNTS (account_id, user_id, username, password, status) VALUES (?, ?, ?, ?, 'Hoạt động')";
-        String sqlRole = "INSERT INTO ACCOUNT_ASSIGN_ROLE (account_id, role_id) VALUES (?, ?)";
+        String sqlToken
+                = "SELECT EMPLOYEE_ID "
+                + "FROM ACTIVATION_TOKENS "
+                + "WHERE CODE = ? AND USED_AT IS NULL AND EXPIRES_AT >= SYSDATE";
 
-        java.sql.Connection con = null;
+        String sqlMarkUsed
+                = "UPDATE ACTIVATION_TOKENS SET USED_AT = SYSDATE "
+                + "WHERE CODE = ? AND USED_AT IS NULL";
+
+        String sqlCheckUser
+                = "SELECT 1 FROM ACCOUNTS WHERE username = ? AND is_deleted = 0";
+
+        String sqlGetEmp
+                = "SELECT employee_name, email, phone, role_id "
+                + "FROM EMPLOYEES WHERE employee_id = ? AND is_deleted = 0";
+
+        String sqlUser
+                = "INSERT INTO USERS (user_id, full_name, email, phone_number) VALUES (?, ?, ?, ?)";
+
+        String sqlAccount
+                = "INSERT INTO ACCOUNTS (account_id, user_id, username, password, status) VALUES (?, ?, ?, ?, 'Hoạt động')";
+
+        String sqlRole
+                = "INSERT INTO ACCOUNT_ASSIGN_ROLE (account_id, role_id) VALUES (?, ?)";
+
+        Connection con = null;
         try {
-            con = common.db.DatabaseConnection.getConnection();
+            con = DatabaseConnection.getConnection();
+            if (con == null) {
+                return false;
+            }
             con.setAutoCommit(false);
 
-            try (java.sql.PreparedStatement pst = con.prepareStatement(sqlCheckUser)) {
-                pst.setString(1, username);
-                try (java.sql.ResultSet rs = pst.executeQuery()) {
+            // 1) Verify token -> empId
+            String empId;
+            try (PreparedStatement pst = con.prepareStatement(sqlToken)) {
+                pst.setString(1, code.trim());
+                try (ResultSet rs = pst.executeQuery()) {
+                    if (!rs.next()) {
+                        con.rollback();
+                        return false;
+                    }
+                    empId = rs.getString("EMPLOYEE_ID");
+                }
+            }
+
+            // 2) Check username duplicate
+            try (PreparedStatement pst = con.prepareStatement(sqlCheckUser)) {
+                pst.setString(1, username.trim());
+                try (ResultSet rs = pst.executeQuery()) {
                     if (rs.next()) {
+                        con.rollback();
                         return false;
                     }
                 }
             }
 
-            String name = "", email = "", phone = "", roleId = "";
-            try (java.sql.PreparedStatement pst = con.prepareStatement(sqlGetEmp)) {
+            // 3) Get employee info
+            String name, email, phone, roleId;
+            try (PreparedStatement pst = con.prepareStatement(sqlGetEmp)) {
                 pst.setString(1, empId);
-                try (java.sql.ResultSet rs = pst.executeQuery()) {
-                    if (rs.next()) {
-                        name = rs.getString("employee_name");
-                        email = rs.getString("email");
-                        phone = rs.getString("phone");
-                        roleId = rs.getString("role_id");
-                    } else {
+                try (ResultSet rs = pst.executeQuery()) {
+                    if (!rs.next()) {
+                        con.rollback();
                         return false;
                     }
+                    name = rs.getString("employee_name");
+                    email = rs.getString("email");
+                    phone = rs.getString("phone");
+                    roleId = rs.getString("role_id");
                 }
             }
 
-            try (java.sql.PreparedStatement pst = con.prepareStatement(sqlUser)) {
+            // 4) Insert USERS (user_id = empId)
+            try (PreparedStatement pst = con.prepareStatement(sqlUser)) {
                 pst.setString(1, empId);
                 pst.setString(2, name);
                 pst.setString(3, email);
@@ -623,22 +713,31 @@ public class AccountSql implements SqlInterface<Account> {
                 pst.executeUpdate();
             }
 
-            try (java.sql.PreparedStatement pst = con.prepareStatement(sqlAccount)) {
+            // 5) Insert ACCOUNTS
+            try (PreparedStatement pst = con.prepareStatement(sqlAccount)) {
                 pst.setString(1, accId);
                 pst.setString(2, empId);
-                pst.setString(3, username);
+                pst.setString(3, username.trim());
                 pst.setString(4, passwordHash);
                 pst.executeUpdate();
             }
 
-            try (java.sql.PreparedStatement pst = con.prepareStatement(sqlRole)) {
+            // 6) Assign role
+            try (PreparedStatement pst = con.prepareStatement(sqlRole)) {
                 pst.setString(1, accId);
                 pst.setString(2, roleId);
                 pst.executeUpdate();
             }
 
+            // 7) Mark token used
+            try (PreparedStatement pst = con.prepareStatement(sqlMarkUsed)) {
+                pst.setString(1, code.trim());
+                pst.executeUpdate();
+            }
+
             con.commit();
             return true;
+
         } catch (Exception e) {
             if (con != null) {
                 try {

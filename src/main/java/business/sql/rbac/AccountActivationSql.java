@@ -76,18 +76,40 @@ public class AccountActivationSql {
 
     public int insertAccount(Connection con, String userId, String username, String bcryptPasswordHash, String role)
             throws SQLException {
+
+        String accountId = "ACC" + System.currentTimeMillis();
+
         String sql
-                = "INSERT INTO " + TBL_ACC
-                + " (" + COL_ACC_USER_ID + ", " + COL_ACC_USERNAME + ", " + COL_ACC_PASSWORD + ", "
-                + COL_ACC_ROLE + ", " + COL_ACC_STATUS + ", CREATED_AT, " + COL_ACC_IS_DELETED + ") "
+                = "INSERT INTO ACCOUNTS (ACCOUNT_ID, USER_ID, USERNAME, PASSWORD, STATUS, CREATED_AT, IS_DELETED) "
                 + "VALUES (?, ?, ?, ?, ?, SYSDATE, 0)";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, accountId);
+            ps.setString(2, userId);
+            ps.setString(3, username);
+            ps.setString(4, bcryptPasswordHash);
+            ps.setString(5, "Hoạt động"); // hoặc 1 nếu DB dùng number, tùy schema bạn
+            return ps.executeUpdate();
+        }
+    }
+
+    public boolean existsUserById(Connection con, String userId) throws SQLException {
+        String sql = "SELECT 1 FROM USERS WHERE user_id = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, userId);
-            ps.setString(2, username);
-            ps.setString(3, bcryptPasswordHash); // MUST be bcrypt (trigger)
-            ps.setString(4, role);
-            ps.setInt(5, 1);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    public int insertUser(Connection con, String userId, String fullName, String email, String phone) throws SQLException {
+        String sql = "INSERT INTO USERS (user_id, full_name, email, phone_number) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, userId);
+            ps.setString(2, fullName);
+            ps.setString(3, email);
+            ps.setString(4, phone);
             return ps.executeUpdate();
         }
     }

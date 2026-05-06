@@ -1,16 +1,11 @@
 package view;
 
+import business.service.ActivationTokenService;
 import business.service.EmailService;
 import business.sql.hr_kpi.EmployeeSql;
-import business.sql.rbac.ActivationTokenSql;
-import common.db.DatabaseConnection;
 import java.awt.*;
 import java.awt.event.*;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -26,7 +21,7 @@ public class ManagerManagementView extends JPanel {
     // --- BẢNG MÀU & THÔNG SỐ UI ---
     private final Color bgLight = new Color(244, 246, 250);
     private final Color cardWhite = Color.WHITE;
-    private final Color primaryBlue = new Color(54, 92, 245);  
+    private final Color primaryBlue = new Color(54, 92, 245);
     private final Color textDark = new Color(43, 54, 116);
     private final Color textGray = new Color(163, 174, 208);
     private final Color borderGray = new Color(230, 235, 241);
@@ -34,7 +29,7 @@ public class ManagerManagementView extends JPanel {
     private JTextField txtId, txtName, txtPhone, txtEmail;
     private JRadioButton rdoMale, rdoFemale;
     private ButtonGroup btngGender;
-    
+
     private JTable tblManagers;
     private DefaultTableModel tableModel;
     private JButton btnAdd, btnUpdate, btnDelete, btnClear;
@@ -85,26 +80,38 @@ public class ManagerManagementView extends JPanel {
         gbc.weightx = 1.0;
         gbc.gridx = 0;
 
-        txtId = createTextField("Mã tự động..."); txtId.setEnabled(false);
+        txtId = createTextField("Mã tự động...");
+        txtId.setEnabled(false);
         txtName = createTextField("Nhập họ và tên...");
         txtPhone = createTextField("Nhập số điện thoại...");
         txtEmail = createTextField("Nhập email...");
 
-        rdoMale = new JRadioButton("Nam"); rdoFemale = new JRadioButton("Nữ");
-        rdoMale.setOpaque(false); rdoFemale.setOpaque(false);
+        rdoMale = new JRadioButton("Nam");
+        rdoFemale = new JRadioButton("Nữ");
+        rdoMale.setOpaque(false);
+        rdoFemale.setOpaque(false);
         rdoMale.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         rdoFemale.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        btngGender = new ButtonGroup(); btngGender.add(rdoMale); btngGender.add(rdoFemale);
-        
+        btngGender = new ButtonGroup();
+        btngGender.add(rdoMale);
+        btngGender.add(rdoFemale);
+
         JPanel genderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
-        genderPanel.setOpaque(false); genderPanel.add(rdoMale); genderPanel.add(rdoFemale);
+        genderPanel.setOpaque(false);
+        genderPanel.add(rdoMale);
+        genderPanel.add(rdoFemale);
 
         int y = 0;
-        formCard.add(createLabel("Mã quản lý"), addGbc(gbc, y++, 5)); formCard.add(txtId, addGbc(gbc, y++, 15));
-        formCard.add(createLabel("Họ và tên (*)"), addGbc(gbc, y++, 5)); formCard.add(txtName, addGbc(gbc, y++, 15));
-        formCard.add(createLabel("Số điện thoại (*)"), addGbc(gbc, y++, 5)); formCard.add(txtPhone, addGbc(gbc, y++, 15));
-        formCard.add(createLabel("Email kích hoạt (*)"), addGbc(gbc, y++, 5)); formCard.add(txtEmail, addGbc(gbc, y++, 15));
-        formCard.add(createLabel("Giới tính (*)"), addGbc(gbc, y++, 5)); formCard.add(genderPanel, addGbc(gbc, y++, 25));
+        formCard.add(createLabel("Mã quản lý"), addGbc(gbc, y++, 5));
+        formCard.add(txtId, addGbc(gbc, y++, 15));
+        formCard.add(createLabel("Họ và tên (*)"), addGbc(gbc, y++, 5));
+        formCard.add(txtName, addGbc(gbc, y++, 15));
+        formCard.add(createLabel("Số điện thoại (*)"), addGbc(gbc, y++, 5));
+        formCard.add(txtPhone, addGbc(gbc, y++, 15));
+        formCard.add(createLabel("Email kích hoạt (*)"), addGbc(gbc, y++, 5));
+        formCard.add(txtEmail, addGbc(gbc, y++, 15));
+        formCard.add(createLabel("Giới tính (*)"), addGbc(gbc, y++, 5));
+        formCard.add(genderPanel, addGbc(gbc, y++, 25));
 
         // NÚT BẤM CÓ ICON
         JPanel btnGrid = new JPanel(new GridLayout(2, 2, 12, 12));
@@ -113,9 +120,13 @@ public class ManagerManagementView extends JPanel {
         btnUpdate = createCustomButton("Cập nhật", new Color(0, 168, 140), Color.WHITE, IconHelper.edit(20));
         btnDelete = createCustomButton("Xóa hồ sơ", new Color(220, 53, 69), Color.WHITE, IconHelper.delete(20));
         btnClear = createCustomButton("Làm mới", new Color(165, 177, 194), Color.WHITE, IconHelper.refresh(20));
-        
-        btnGrid.add(btnAdd); btnGrid.add(btnUpdate); btnGrid.add(btnDelete); btnGrid.add(btnClear);
-        gbc.gridy = y++; formCard.add(btnGrid, gbc);
+
+        btnGrid.add(btnAdd);
+        btnGrid.add(btnUpdate);
+        btnGrid.add(btnDelete);
+        btnGrid.add(btnClear);
+        gbc.gridy = y++;
+        formCard.add(btnGrid, gbc);
 
         // BẢNG BÊN PHẢI (Chỉ hiển thị Manager)
         RoundedPanel tableCard = new RoundedPanel(20, cardWhite);
@@ -124,10 +135,13 @@ public class ManagerManagementView extends JPanel {
 
         // Bỏ cột chức vụ đi vì bảng này chỉ toàn là Quản lý
         tableModel = new DefaultTableModel(new Object[]{"Mã QL", "Họ và tên", "Số ĐT", "Email", "Cấp tài khoản", "Giới tính"}, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
         tblManagers = new JTable(tableModel);
-        setupTableStyle(); 
+        setupTableStyle();
 
         JScrollPane scrollPane = new JScrollPane(tblManagers);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -159,17 +173,26 @@ public class ManagerManagementView extends JPanel {
 
     private JButton createCustomButton(String t, Color bg, Color fg, ImageIcon icon) {
         JButton btn = new JButton(t);
-        if (icon != null) btn.setIcon(new ImageIcon(icon.getImage().getScaledInstance(18, 18, 1)));
+        if (icon != null) {
+            btn.setIcon(new ImageIcon(icon.getImage().getScaledInstance(18, 18, 1)));
+        }
         btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btn.setForeground(fg); btn.setBackground(bg);
+        btn.setForeground(fg);
+        btn.setBackground(bg);
         btn.setPreferredSize(new Dimension(140, 45));
-        btn.setCursor(new Cursor(12)); btn.setFocusPainted(false); btn.setBorderPainted(false); btn.setContentAreaFilled(false);
+        btn.setCursor(new Cursor(12));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(false);
         btn.setUI(new javax.swing.plaf.basic.BasicButtonUI() {
-            @Override public void paint(Graphics g, JComponent c) {
+            @Override
+            public void paint(Graphics g, JComponent c) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(c.getBackground()); g2.fillRoundRect(0, 0, c.getWidth(), c.getHeight(), 25, 25);
-                super.paint(g2, c); g2.dispose();
+                g2.setColor(c.getBackground());
+                g2.fillRoundRect(0, 0, c.getWidth(), c.getHeight(), 25, 25);
+                super.paint(g2, c);
+                g2.dispose();
             }
         });
         return btn;
@@ -225,31 +248,60 @@ public class ManagerManagementView extends JPanel {
     }
 
     private GridBagConstraints addGbc(GridBagConstraints gbc, int y, int b) {
-        gbc.gridy = y; gbc.insets = new Insets(0, 0, b, 0); return gbc;
+        gbc.gridy = y;
+        gbc.insets = new Insets(0, 0, b, 0);
+        return gbc;
     }
 
     class RoundedPanel extends JPanel {
-        private int r; private Color bg;
-        public RoundedPanel(int r, Color bg) { this.r = r; this.bg = bg; setOpaque(false); }
-        @Override protected void paintComponent(Graphics g) {
+
+        private int r;
+        private Color bg;
+
+        public RoundedPanel(int r, Color bg) {
+            this.r = r;
+            this.bg = bg;
+            setOpaque(false);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(bg); g2.fillRoundRect(0, 0, getWidth(), getHeight(), r, r);
+            g2.setColor(bg);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), r, r);
             g2.dispose();
         }
     }
 
     class RoundBorder implements javax.swing.border.Border {
-        private Color c; private int r;
-        public RoundBorder(Color c, int r) { this.c = c; this.r = r; }
-        @Override public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
+
+        private Color c;
+        private int r;
+
+        public RoundBorder(Color c, int r) {
+            this.c = c;
+            this.r = r;
+        }
+
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(this.c); g2.drawRoundRect(x, y, w - 1, h - 1, r, r);
+            g2.setColor(this.c);
+            g2.drawRoundRect(x, y, w - 1, h - 1, r, r);
             g2.dispose();
         }
-        @Override public Insets getBorderInsets(Component c) { return new Insets(1, 1, 1, 1); }
-        @Override public boolean isBorderOpaque() { return false; }
+
+        @Override
+        public Insets getBorderInsets(Component c) {
+            return new Insets(1, 1, 1, 1);
+        }
+
+        @Override
+        public boolean isBorderOpaque() {
+            return false;
+        }
     }
 
     private void initEvents() {
@@ -272,50 +324,43 @@ public class ManagerManagementView extends JPanel {
 
         btnAdd.addActionListener(e -> {
             Employee emp = getManagerFromForm();
-            if (emp == null) return;
+            if (emp == null) {
+                return;
+            }
 
             emp.setEmployeeId("MNG" + System.currentTimeMillis());
 
-            // 1) Insert EMPLOYEES (handles its own committed transaction)
+            // 1) Insert EMPLOYEES
             if (employeeSql.insert(emp) <= 0) {
                 JOptionPane.showMessageDialog(this, "Thêm hồ sơ thất bại! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            // 2) Generate a UUID activation code and insert into ACTIVATION_TOKENS
-            final String activationCode = UUID.randomUUID().toString();
-            ActivationTokenSql tokenSql = new ActivationTokenSql();
-            try (Connection con = DatabaseConnection.getConnection()) {
-                if (con == null) throw new SQLException("Không thể kết nối DB.");
-                boolean oldAutoCommit = con.getAutoCommit();
-                con.setAutoCommit(false);
-                try {
-                    tokenSql.createToken(con, emp.getEmployeeId(), activationCode, 24);
-                    con.commit();
-                } catch (SQLException ex) {
-                    try { con.rollback(); } catch (SQLException ignore) {}
-                    throw ex;
-                } finally {
-                    try { con.setAutoCommit(oldAutoCommit); } catch (SQLException ignore) {}
-                }
+            // 2) FIX: Insert ACTIVATION_TOKENS với CODE = employeeId (MNG...)
+            try {
+                new ActivationTokenService().issueToken(emp.getEmployeeId());
             } catch (Exception ex) {
                 logger.severe("Lỗi khi tạo mã kích hoạt cho " + emp.getEmployeeId() + ": " + ex.getMessage());
                 JOptionPane.showMessageDialog(this,
-                        "Hồ sơ đã thêm nhưng không thể tạo mã kích hoạt.\nLỗi: " + ex.getMessage(),
-                        "Lỗi tạo mã kích hoạt", JOptionPane.ERROR_MESSAGE);
+                        "Hồ sơ đã thêm nhưng không thể tạo mã kích hoạt trong hệ thống.\n"
+                        + "Vui lòng thử lại hoặc kiểm tra bảng ACTIVATION_TOKENS.\nLỗi: " + ex.getMessage(),
+                        "Lỗi tạo mã kích hoạt",
+                        JOptionPane.ERROR_MESSAGE);
                 loadDataToTable();
                 clearForm();
-                return;
+                return; // KHÔNG gửi mail nếu DB chưa có token
             }
 
-            // 3) Send email AFTER token is committed — same code that is in ACTIVATION_TOKENS
+            // 3) Send email AFTER token committed — code gửi mail chính là empId
             final String finalEmail = emp.getEmail();
             final String finalName = emp.getEmployeeName();
+            final String activationCode = emp.getEmployeeId(); // CODE = MNG...
+
             new Thread(() -> {
                 boolean mailSent = EmailService.sendActivationEmail(finalEmail, finalName, activationCode);
                 if (!mailSent) {
                     logger.warning("Cảnh báo: Không thể gửi mail kích hoạt đến " + finalEmail
-                            + " (mã đã lưu DB, liên hệ admin nếu cần gửi lại)");
+                            + " (mã đã lưu DB, có thể gửi lại sau)");
                 }
             }).start();
 
@@ -334,7 +379,9 @@ public class ManagerManagementView extends JPanel {
                 return;
             }
             Employee emp = getManagerFromForm();
-            if (emp == null) return;
+            if (emp == null) {
+                return;
+            }
 
             emp.setEmployeeId(id);
 
@@ -370,7 +417,7 @@ public class ManagerManagementView extends JPanel {
     private void loadDataToTable() {
         tableModel.setRowCount(0);
         List<Employee> list = employeeSql.selectAll();
-        
+
         for (Employee emp : list) {
             // LỌC CHỈ LẤY ROLE R_STORE_MNG LÊN BẢNG
             if ("R_STORE_MNG".equals(emp.getRoleId()) || "Quản lý cửa hàng".equals(emp.getRole())) {
@@ -394,9 +441,9 @@ public class ManagerManagementView extends JPanel {
         }
 
         if (!email.endsWith("@gmail.com") && !email.endsWith("@gm.uit.edu.vn")) {
-            JOptionPane.showMessageDialog(this, 
-                "Email không hợp lệ!\nHệ thống chỉ chấp nhận đuôi @gmail.com hoặc @gm.uit.edu.vn", 
-                "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Email không hợp lệ!\nHệ thống chỉ chấp nhận đuôi @gmail.com hoặc @gm.uit.edu.vn",
+                    "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
             return null;
         }
 
@@ -405,7 +452,7 @@ public class ManagerManagementView extends JPanel {
         e.setPhone(phone);
         e.setEmail(email);
         e.setGender(gender);
-        
+
         // MẶC ĐỊNH GÁN QUYỀN QUẢN LÝ (KHÔNG CHO CHỌN)
         e.setRole("R_STORE_MNG");
         e.setRoleId("R_STORE_MNG");
@@ -414,7 +461,11 @@ public class ManagerManagementView extends JPanel {
     }
 
     private void clearForm() {
-        txtId.setText(""); txtName.setText(""); txtPhone.setText(""); txtEmail.setText("");
-        btngGender.clearSelection(); tblManagers.clearSelection();
+        txtId.setText("");
+        txtName.setText("");
+        txtPhone.setText("");
+        txtEmail.setText("");
+        btngGender.clearSelection();
+        tblManagers.clearSelection();
     }
 }

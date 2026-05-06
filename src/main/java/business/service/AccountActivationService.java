@@ -16,27 +16,35 @@ public class AccountActivationService {
 
     private Connection getConnection() throws SQLException {
         Connection con = DatabaseConnection.getConnection();
-        if (con == null) throw new SQLException("Không thể kết nối DB.");
+        if (con == null) {
+            throw new SQLException("Không thể kết nối DB.");
+        }
         return con;
     }
 
     /**
-     * Stage 1: Nhân viên nhập CODE (token) từ email.
-     * - token hợp lệ + chưa used + chưa hết hạn
-     * - employee tồn tại + chưa deleted
-     * - chưa có account
+     * Stage 1: Nhân viên nhập CODE (token) từ email. - token hợp lệ + chưa used
+     * + chưa hết hạn - employee tồn tại + chưa deleted - chưa có account
      */
     public ActivationEmployeeInfo checkAndFetchActivation(String code) throws SQLException {
-        if (code == null || code.isBlank()) return null;
+        if (code == null || code.isBlank()) {
+            return null;
+        }
 
         try (Connection con = getConnection()) {
             String empId = tokenSql.getEmployeeIdIfValid(con, code.trim());
-            if (empId == null) return null;
+            if (empId == null) {
+                return null;
+            }
 
             ActivationEmployeeInfo info = accountSql.getEmployeeInfo(con, empId);
-            if (info == null) return null;
+            if (info == null) {
+                return null;
+            }
 
-            if (accountSql.existsAccountByUserId(con, empId)) return null;
+            if (accountSql.existsAccountByUserId(con, empId)) {
+                return null;
+            }
 
             return info;
         }
@@ -44,12 +52,19 @@ public class AccountActivationService {
 
     /**
      * Stage 2: Nhân viên dùng CODE để kích hoạt (không dùng empId trực tiếp).
-     * Backend sẽ BCrypt password rồi insert ACCOUNTS, sau đó mark token USED_AT.
+     * Backend sẽ BCrypt password rồi insert ACCOUNTS, sau đó mark token
+     * USED_AT.
      */
     public void activateAccountByCode(String code, String username, String passwordPlain) throws SQLException {
-        if (code == null || code.isBlank()) throw new IllegalArgumentException("Mã kích hoạt không được rỗng.");
-        if (username == null || username.isBlank()) throw new IllegalArgumentException("Username không được rỗng.");
-        if (passwordPlain == null || passwordPlain.isBlank()) throw new IllegalArgumentException("Password không được rỗng.");
+        if (code == null || code.isBlank()) {
+            throw new IllegalArgumentException("Mã kích hoạt không được rỗng.");
+        }
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("Username không được rỗng.");
+        }
+        if (passwordPlain == null || passwordPlain.isBlank()) {
+            throw new IllegalArgumentException("Password không được rỗng.");
+        }
 
         final String defaultRole = "R_STAFF_SALE"; // TODO: chỉnh theo convention role của bạn
 
@@ -82,6 +97,14 @@ public class AccountActivationService {
             // BCrypt hash để qua trigger
             String bcryptHash = BCrypt.hashpw(passwordPlain, BCrypt.gensalt(10));
 
+            // đảm bảo USERS tồn tại để qua FK
+            if (!accountSql.existsUserById(con, empId)) {
+                int u = accountSql.insertUser(con, empId, info.getFullName(), info.getEmail(), info.getPhone());
+                if (u != 1) {
+                    throw new IllegalStateException("Không thể tạo USERS cho nhân viên.");
+                }
+            }
+            
             int inserted = accountSql.insertAccount(con, empId, username.trim(), bcryptHash, defaultRole);
             if (inserted != 1) {
                 throw new IllegalStateException("Tạo tài khoản thất bại.");
@@ -92,14 +115,21 @@ public class AccountActivationService {
             con.commit();
         } catch (SQLException | RuntimeException ex) {
             if (con != null) {
-                try { con.rollback(); } catch (SQLException ignore) {}
+                try {
+                    con.rollback();
+                } catch (SQLException ignore) {
+                }
             }
             throw ex;
         } finally {
             if (con != null) {
-                try { con.setAutoCommit(oldAutoCommit); } catch (SQLException ignore) {}
+                try {
+                    con.setAutoCommit(oldAutoCommit);
+                } catch (SQLException ignore) {
+                }
                 DatabaseConnection.closeConnection(con);
             }
         }
     }
+
 }

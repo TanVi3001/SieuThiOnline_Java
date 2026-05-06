@@ -16,6 +16,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import model.employee.Employee;
 import view.components.IconHelper;
+import business.service.ActivationTokenService;
 
 public class EmployeeView extends JPanel {
 
@@ -498,11 +499,24 @@ public class EmployeeView extends JPanel {
                 SyncVersionDao.bumpVersion("EMPLOYEES");
                 RealtimeClient.send("EMPLOYEES_CHANGED");
 
+                // === FIX: tạo token trong DB trước khi gửi mail ===
+                try {
+                    new ActivationTokenService().issueToken(emp.getEmployeeId());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this,
+                            "Tạo hồ sơ nhân viên thành công nhưng KHÔNG tạo được mã kích hoạt trong hệ thống!\n"
+                            + "Vui lòng thử lại hoặc kiểm tra bảng ACTIVATION_TOKENS.\nChi tiết: " + ex.getMessage(),
+                            "Lỗi cấp mã kích hoạt",
+                            JOptionPane.ERROR_MESSAGE);
+                    return; // KHÔNG gửi mail nếu DB chưa có token
+                }
+
                 new Thread(() -> {
                     boolean mailSent = business.service.EmailService.sendActivationEmail(
                             emp.getEmail(),
                             emp.getEmployeeName(),
-                            emp.getEmployeeId()
+                            emp.getEmployeeId() // CODE chính là EMP...
                     );
                     if (!mailSent) {
                         System.err.println("Cảnh báo: Không thể gửi mail kích hoạt đến " + emp.getEmail());
