@@ -149,34 +149,71 @@ public class DashboardView extends JFrame {
     }
 
     private void startSessionCheck() {
-        sessionTimer = new Timer(1000, e -> {
+        sessionTimer = new Timer(2000, e -> {
             if (isLoggingOut) {
                 ((Timer) e.getSource()).stop();
                 return;
             }
 
-            String currentToken = business.service.LoginService.getToken();
-            boolean isValid = business.sql.rbac.TokenSql.getInstance().isTokenValid(currentToken);
+            // Đưa việc quét DB vào Thread ngầm để không làm giật lag giao diện
+            new Thread(() -> {
+                // 1. Kiểm tra Token
+                String currentToken = business.service.LoginService.getToken();
+                boolean isValid = business.sql.rbac.TokenSql.getInstance().isTokenValid(currentToken);
 
-            if (!isValid) {
-                if (!isLoggingOut) {
-                    ((Timer) e.getSource()).stop();
-                    JOptionPane.showMessageDialog(this, "Phiên đăng nhập của bạn đã hết hạn hoặc quyền truy cập đã thay đổi!", "Thông báo bảo mật", JOptionPane.ERROR_MESSAGE);
+                // 2. RADAR BẢO MẬT: Kiểm tra xem quyền có bị Admin đổi ngầm dưới DB không
+                boolean roleChanged = false;
+                model.account.Account currentUser = business.service.LoginService.getCurrentUser();
 
-                    // TUI ĐÃ THÊM DÒNG NÀY ĐỂ XÓA SẠCH GỐC RỄ PHÂN QUYỀN TRONG CACHE SESSION
-                    common.auth.UserSession.getInstance().clear();
-                    business.service.LoginService.logout();
+                if (currentUser != null) {
+                    try {
+                        String[] latestData = business.sql.rbac.AccountSql.getInstance().getAccountDetails(currentUser.getAccountId());
+                        if (latestData != null) {
+                            String dbRoleId = latestData[4]; // Quyền đang lưu dưới DB
+                            boolean isActive = "0".equals(latestData[5]);
 
-                    java.awt.EventQueue.invokeLater(() -> {
-                        view.LoginView login = new view.LoginView();
-                        login.setVisible(true);
-                        login.setLocationRelativeTo(null);
-                    });
-
-                    this.dispose();
+                            // So sánh quyền DB với quyền lúc vừa đăng nhập (nếu lệch là bị đá)
+                            if (!isActive || !dbRoleId.equals(currentUser.getRoleValue())) {
+                                roleChanged = true;
+                            }
+                        } else {
+                            roleChanged = true; // Tài khoản bị xóa thẳng tay
+                        }
+                    } catch (Exception ex) {
+                        // Bỏ qua lỗi DB tạm thời nếu mạng giật
+                    }
                 }
-            }
+
+                // NẾU PHÁT HIỆN BẤT THƯỜNG -> KICK NGAY LẬP TỨC
+                if (!isValid || roleChanged) {
+                    SwingUtilities.invokeLater(() -> {
+                        if (!isLoggingOut) {
+                            isLoggingOut = true;
+                            if (sessionTimer != null) {
+                                sessionTimer.stop();
+                            }
+
+                            JOptionPane.showMessageDialog(this, "Phiên đăng nhập đã hết hạn hoặc Quyền truy cập đã bị thay đổi!\nVui lòng đăng nhập lại.", "Thông báo bảo mật", JOptionPane.ERROR_MESSAGE);
+
+                            // Xóa sạch thông tin cũ
+                            try {
+                                common.auth.UserSession.getInstance().clear();
+                            } catch (Exception ignored) {
+                            }
+                            business.service.LoginService.logout();
+
+                            // Văng ra màn hình Login
+                            view.LoginView login = new view.LoginView();
+                            login.setVisible(true);
+                            login.setLocationRelativeTo(null);
+
+                            this.dispose(); // Tắt Dashboard hiện tại
+                        }
+                    });
+                }
+            }).start();
         });
+
         sessionTimer.start();
     }
 

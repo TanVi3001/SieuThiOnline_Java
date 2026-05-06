@@ -20,10 +20,9 @@ public final class RealtimeClient {
 
     public static void connect(String wsUrl) {
         try {
-            // ĐÃ FIX: Xóa chốt chặn ép cứng IP LAN. 
-            // Nếu không truyền url hoặc url rỗng, mặc định xài localhost:9999
-            if (wsUrl == null || wsUrl.isEmpty()) {
-                wsUrl = "ws://localhost:9999";
+            // FIX: Dùng cứng 127.0.0.1 để Windows không bị nhầm lẫn IPv6
+            if (wsUrl == null || wsUrl.isEmpty() || wsUrl.contains("localhost")) {
+                wsUrl = "ws://10.0.250.60:9999";
             }
 
             serverUri = URI.create(wsUrl);
@@ -36,6 +35,7 @@ public final class RealtimeClient {
 
                 @Override
                 public void onMessage(String message) {
+                    System.out.println("[RT] Client nhận được lệnh: " + message);
                     if ("PRODUCTS_CHANGED".equalsIgnoreCase(message)) {
                         EventBus.publish(new AppDataChangedEvent(AppEventType.PRODUCTS, "realtime"));
                     } else if ("INVENTORY_CHANGED".equalsIgnoreCase(message)) {
@@ -78,7 +78,6 @@ public final class RealtimeClient {
             try {
                 if (client == null || !client.isOpen()) {
                     System.out.println("[RT] reconnecting to " + serverUri);
-                    // Dùng lại URI đã được thiết lập ở trên
                     connect(serverUri.toString());
                 }
             } catch (Exception ignored) {
@@ -90,6 +89,9 @@ public final class RealtimeClient {
         try {
             if (client != null && client.isOpen()) {
                 client.send(message);
+                System.out.println("[RT] Đã gửi thành công lệnh lên Server: " + message);
+            } else {
+                System.err.println("[RT] Lỗi: Client chưa kết nối, không thể gửi WebSocket!");
             }
         } catch (Exception e) {
             System.out.println("[RT] send failed: " + e.getMessage());
