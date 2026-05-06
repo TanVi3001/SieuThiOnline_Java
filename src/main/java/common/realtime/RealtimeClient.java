@@ -16,7 +16,7 @@ public final class RealtimeClient {
     private static volatile URI serverUri;
 
     // ÉP CỨNG IP LAN LÚC DEMO CHO AN TOÀN
-    private static final String DEFAULT_LAN_WS_URL = "ws://10.0.250.60:9999";
+    private static final String DEFAULT_LAN_WS_URL = "ws://192.168.88.210";
 
     private RealtimeClient() {
     }
