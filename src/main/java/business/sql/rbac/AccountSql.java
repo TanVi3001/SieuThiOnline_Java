@@ -757,4 +757,8 @@ public class AccountSql implements SqlInterface<Account> {
             }
         }
     }
+
+    public void insertAccount(Connection conn, String username, String hashedPassword, String empId) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }
