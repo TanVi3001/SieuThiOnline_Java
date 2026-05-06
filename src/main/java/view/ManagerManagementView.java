@@ -6,6 +6,7 @@ import business.service.StoreManagerService; // ĐÃ THÊM: Service mới để 
 import business.sql.hr_kpi.EmployeeSql;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -36,22 +37,27 @@ public class ManagerManagementView extends JPanel {
     private final Color borderGray = new Color(230, 235, 241);
 
     private JTextField txtId, txtName, txtPhone, txtEmail;
+    private JComboBox<String> cbSearch;
     private JRadioButton rdoMale, rdoFemale;
     private ButtonGroup btngGender;
 
     private JTable tblManagers;
     private DefaultTableModel tableModel;
-    private JButton btnAdd, btnUpdate, btnDelete, btnClear;
+    private JButton btnAdd, btnUpdate, btnDelete, btnClear, btnSearch;
 
     // KẾT NỐI DATABASE & SERVICE
     private final EmployeeSql employeeSql = new EmployeeSql();
     private final StoreManagerService managerService = new StoreManagerService(); // ĐÃ THÊM
+
+    // Auto-complete list cho Manager
+    private List<String> managerNameList = new ArrayList<>();
 
     public ManagerManagementView() {
         setLayout(new BorderLayout(20, 20));
         setBackground(bgLight);
         setBorder(new EmptyBorder(20, 30, 20, 30));
 
+        loadAutoCompleteData();
         initUI();
         initEvents();
         loadDataToTable();
@@ -78,6 +84,21 @@ public class ManagerManagementView extends JPanel {
         }
     }
 
+    private void loadAutoCompleteData() {
+        managerNameList.clear();
+        try {
+            List<Employee> list = employeeSql.selectAll();
+            for (Employee e : list) {
+                if (("R_STORE_MNG".equals(e.getRoleId()) || "Quản lý cửa hàng".equals(e.getRole())) 
+                        && e.getEmployeeName() != null && !e.getEmployeeName().isEmpty()) {
+                    managerNameList.add(e.getEmployeeName());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void initUI() {
         // --- HEADER ---
         JPanel headerPanel = new JPanel(new BorderLayout());
@@ -94,7 +115,32 @@ public class ManagerManagementView extends JPanel {
         titlePanel.add(lblTitle);
         titlePanel.add(lblSub);
 
+        // THÊM TOOL PANEL CHỨA THANH SEARCH
+        JPanel toolPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 10));
+        toolPanel.setOpaque(false);
+
+        cbSearch = new JComboBox<>();
+        styleSearchBox(cbSearch);
+        setupAutoComplete(cbSearch, managerNameList);
+
+        JPanel searchFieldWrapper = new JPanel(new BorderLayout(5, 0));
+        searchFieldWrapper.setBackground(Color.WHITE);
+        searchFieldWrapper.setPreferredSize(new Dimension(450, 45));
+        searchFieldWrapper.setBorder(BorderFactory.createCompoundBorder(
+                new RoundBorder(new Color(220, 225, 235), 25),
+                new EmptyBorder(0, 15, 0, 15)
+        ));
+
+        JLabel searchIconLabel = new JLabel(IconHelper.search(16));
+        searchFieldWrapper.add(searchIconLabel, BorderLayout.WEST);
+        searchFieldWrapper.add(cbSearch, BorderLayout.CENTER);
+
+        btnSearch = createCustomButton("Tìm kiếm", primaryBlue, Color.WHITE, null);
+        toolPanel.add(searchFieldWrapper);
+        toolPanel.add(btnSearch);
+
         headerPanel.add(titlePanel, BorderLayout.WEST);
+        headerPanel.add(toolPanel, BorderLayout.EAST);
         add(headerPanel, BorderLayout.NORTH);
 
         // --- BỐ CỤC CHÍNH ---
@@ -182,6 +228,31 @@ public class ManagerManagementView extends JPanel {
         centerPanel.add(formCard, BorderLayout.WEST);
         centerPanel.add(tableCard, BorderLayout.CENTER);
         add(centerPanel, BorderLayout.CENTER);
+    }
+
+    // =================================================================================
+    // CÁC HÀM TIỆN ÍCH UI 
+    // =================================================================================
+    private void styleSearchBox(JComboBox<String> cb) {
+        cb.setEditable(true);
+        cb.setBorder(null);
+        cb.setBackground(Color.WHITE);
+        ((JTextField) cb.getEditor().getEditorComponent()).setBorder(new EmptyBorder(0, 5, 0, 5));
+    }
+
+    private void setupAutoComplete(JComboBox<String> cb, List<String> items) {
+        for (String i : items) {
+            cb.addItem(i);
+        }
+        cb.setSelectedItem("");
+        cb.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    btnSearch.doClick();
+                }
+            }
+        });
     }
 
     private JLabel createLabel(String text) {
@@ -335,6 +406,9 @@ public class ManagerManagementView extends JPanel {
         }
     }
 
+    // =================================================================================
+    // LOGIC & SỰ KIỆN 
+    // =================================================================================
     private void initEvents() {
         tblManagers.addMouseListener(new MouseAdapter() {
             @Override
@@ -361,13 +435,15 @@ public class ManagerManagementView extends JPanel {
 
             emp.setEmployeeId("MNG" + System.currentTimeMillis());
 
-            // 1) Insert EMPLOYEES
             if (employeeSql.insert(emp) <= 0) {
                 JOptionPane.showMessageDialog(this, "Thêm hồ sơ thất bại! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
+<<<<<<< HEAD
             // 2) Tạo Token kích hoạt
+=======
+>>>>>>> 5f9dbd721966666e25dd452bd55cdfb29e974b7f
             try {
                 new ActivationTokenService().issueToken(emp.getEmployeeId());
             } catch (Exception ex) {
@@ -379,6 +455,7 @@ public class ManagerManagementView extends JPanel {
                         JOptionPane.ERROR_MESSAGE);
                 loadDataToTable();
                 clearForm();
+<<<<<<< HEAD
                 return;
             }
 
@@ -386,6 +463,14 @@ public class ManagerManagementView extends JPanel {
             final String finalEmail = emp.getEmail();
             final String finalName = emp.getEmployeeName();
             final String activationCode = emp.getEmployeeId();
+=======
+                return; 
+            }
+
+            final String finalEmail = emp.getEmail();
+            final String finalName = emp.getEmployeeName();
+            final String activationCode = emp.getEmployeeId(); 
+>>>>>>> 5f9dbd721966666e25dd452bd55cdfb29e974b7f
 
             new Thread(() -> {
                 boolean mailSent = EmailService.sendActivationEmail(finalEmail, finalName, activationCode);
@@ -398,6 +483,10 @@ public class ManagerManagementView extends JPanel {
                     "Cấp tài khoản Quản lý thành công!\nHệ thống đã tự động gửi Mã Kích Hoạt đến email: " + emp.getEmail(),
                     "Thành công", JOptionPane.INFORMATION_MESSAGE);
 
+            if (!managerNameList.contains(emp.getEmployeeName())) {
+                managerNameList.add(emp.getEmployeeName());
+                cbSearch.addItem(emp.getEmployeeName());
+            }
             loadDataToTable();
             clearForm();
         });
@@ -442,12 +531,20 @@ public class ManagerManagementView extends JPanel {
         });
 
         btnClear.addActionListener(e -> clearForm());
+
+        // BẮT SỰ KIỆN TÌM KIẾM
+        btnSearch.addActionListener(e -> {
+            JTextField searchEditor = (JTextField) cbSearch.getEditor().getEditorComponent();
+            String keyword = searchEditor.getText().trim();
+            updateTable(employeeSql.search(keyword));
+        });
     }
 
     // =========================================================
     // HÀM ĐÃ ĐƯỢC CHỈNH SỬA ĐỂ LOAD DỮ LIỆU TỪ DTO MỚI (JOIN 2 BẢNG)
     // =========================================================
     private void loadDataToTable() {
+<<<<<<< HEAD
         tableModel.setRowCount(0);
 
         // Gọi thẳng qua Service mới thay vì dùng selectAll() cồng kềnh của EmployeeSql
@@ -462,6 +559,22 @@ public class ManagerManagementView extends JPanel {
                 mng.getAccountStatus(), // Hệ thống tự biết "Chưa cấp/Đã cấp" dựa trên LEFT JOIN
                 mng.getGender()
             });
+=======
+        updateTable(employeeSql.selectAll());
+    }
+
+    // HÀM HIỂN THỊ LÊN BẢNG SAU KHI LỌC/TÌM KIẾM
+    private void updateTable(List<Employee> list) {
+        tableModel.setRowCount(0);
+        for (Employee emp : list) {
+            // LỌC CHỈ LẤY ROLE R_STORE_MNG LÊN BẢNG DÙ KẾT QUẢ TÌM KIẾM TRẢ VỀ GÌ ĐI NỮA
+            if ("R_STORE_MNG".equals(emp.getRoleId()) || "Quản lý cửa hàng".equals(emp.getRole())) {
+                tableModel.addRow(new Object[]{
+                    emp.getEmployeeId(), emp.getEmployeeName(), emp.getPhone(),
+                    emp.getEmail(), emp.getAccountStatus(), emp.getGender()
+                });
+            }
+>>>>>>> 5f9dbd721966666e25dd452bd55cdfb29e974b7f
         }
     }
 
@@ -502,6 +615,13 @@ public class ManagerManagementView extends JPanel {
         txtEmail.setText("");
         btngGender.clearSelection();
         tblManagers.clearSelection();
+        if (cbSearch != null) {
+            ((JTextField) cbSearch.getEditor().getEditorComponent()).setText("");
+        }
     }
+<<<<<<< HEAD
 
 }
+=======
+}
+>>>>>>> 5f9dbd721966666e25dd452bd55cdfb29e974b7f
