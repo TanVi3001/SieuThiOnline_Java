@@ -2,6 +2,7 @@ package view;
 
 import business.service.ActivationTokenService;
 import business.service.EmailService;
+import business.service.StoreManagerService; // ĐÃ THÊM: Service mới để lấy dữ liệu JOIN
 import business.sql.hr_kpi.EmployeeSql;
 import java.awt.*;
 import java.awt.event.*;
@@ -11,8 +12,16 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import model.account.StoreManagerDTO; // ĐÃ THÊM: DTO chứa dữ liệu đã được xử lý
 import model.employee.Employee;
 import view.components.IconHelper;
+import common.realtime.RealtimeClient;
+import common.events.EventBus;
+import common.events.AppEventType;
+import common.events.AppDataChangedEvent;
+import java.awt.Window;
+import javax.swing.SwingUtilities;
+import common.security.SecurityGuard;
 
 public class ManagerManagementView extends JPanel {
 
@@ -34,7 +43,9 @@ public class ManagerManagementView extends JPanel {
     private DefaultTableModel tableModel;
     private JButton btnAdd, btnUpdate, btnDelete, btnClear;
 
+    // KẾT NỐI DATABASE & SERVICE
     private final EmployeeSql employeeSql = new EmployeeSql();
+    private final StoreManagerService managerService = new StoreManagerService(); // ĐÃ THÊM
 
     public ManagerManagementView() {
         setLayout(new BorderLayout(20, 20));
@@ -44,6 +55,27 @@ public class ManagerManagementView extends JPanel {
         initUI();
         initEvents();
         loadDataToTable();
+
+        setupRealtimeSync();
+        // --- KÍCH HOẠT BẢO VỆ NGAY KHI VIEW HIỂN THỊ ---
+        SecurityGuard.attach(this);
+    }
+
+    private void setupRealtimeSync() {
+        try {
+            // Đăng ký lắng nghe nguyên cái Class sự kiện
+            EventBus.subscribe(AppDataChangedEvent.class, event -> {
+                // Kiểm tra xem sự kiện bắn ra có phải là cập nhật Tài khoản hoặc Nhân viên không
+                if (event.getType() == AppEventType.ACCOUNT_SECURITY
+                        || event.getType() == AppEventType.EMPLOYEES) {
+
+                    // EventBus đã tự bọc invokeLater rồi nên gọi thẳng hàm luôn, cực kỳ gọn!
+                    loadDataToTable();
+                }
+            });
+        } catch (Exception e) {
+            System.err.println("Lỗi đăng ký EventBus: " + e.getMessage());
+        }
     }
 
     private void initUI() {
@@ -128,12 +160,11 @@ public class ManagerManagementView extends JPanel {
         gbc.gridy = y++;
         formCard.add(btnGrid, gbc);
 
-        // BẢNG BÊN PHẢI (Chỉ hiển thị Manager)
+        // BẢNG BÊN PHẢI
         RoundedPanel tableCard = new RoundedPanel(20, cardWhite);
         tableCard.setLayout(new BorderLayout());
         tableCard.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // Bỏ cột chức vụ đi vì bảng này chỉ toàn là Quản lý
         tableModel = new DefaultTableModel(new Object[]{"Mã QL", "Họ và tên", "Số ĐT", "Email", "Cấp tài khoản", "Giới tính"}, 0) {
             @Override
             public boolean isCellEditable(int r, int c) {
@@ -202,7 +233,7 @@ public class ManagerManagementView extends JPanel {
         tblManagers.setRowHeight(35);
         tblManagers.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         tblManagers.setShowVerticalLines(false);
-        tblManagers.setSelectionBackground(new Color(212, 237, 218)); // Xanh nhạt cho Manager
+        tblManagers.setSelectionBackground(new Color(212, 237, 218));
         tblManagers.setSelectionForeground(new Color(25, 135, 84));
         tblManagers.getTableHeader().setReorderingAllowed(false);
 
@@ -228,10 +259,10 @@ public class ManagerManagementView extends JPanel {
                 // Bôi màu trạng thái cấp tài khoản
                 if (column == 4) {
                     if ("Chưa cấp".equals(accStatus)) {
-                        setForeground(new Color(220, 53, 69));
+                        setForeground(new Color(220, 53, 69)); // Đỏ
                         setFont(new Font("Segoe UI", Font.BOLD, 14));
                     } else if ("Đã cấp".equals(accStatus)) {
-                        setForeground(new Color(25, 135, 84));
+                        setForeground(new Color(25, 135, 84)); // Xanh lá
                         setFont(new Font("Segoe UI", Font.BOLD, 14));
                     }
                 } else {
@@ -336,31 +367,30 @@ public class ManagerManagementView extends JPanel {
                 return;
             }
 
-            // 2) FIX: Insert ACTIVATION_TOKENS với CODE = employeeId (MNG...)
+            // 2) Tạo Token kích hoạt
             try {
                 new ActivationTokenService().issueToken(emp.getEmployeeId());
             } catch (Exception ex) {
                 logger.severe("Lỗi khi tạo mã kích hoạt cho " + emp.getEmployeeId() + ": " + ex.getMessage());
                 JOptionPane.showMessageDialog(this,
                         "Hồ sơ đã thêm nhưng không thể tạo mã kích hoạt trong hệ thống.\n"
-                        + "Vui lòng thử lại hoặc kiểm tra bảng ACTIVATION_TOKENS.\nLỗi: " + ex.getMessage(),
+                        + "Lỗi: " + ex.getMessage(),
                         "Lỗi tạo mã kích hoạt",
                         JOptionPane.ERROR_MESSAGE);
                 loadDataToTable();
                 clearForm();
-                return; // KHÔNG gửi mail nếu DB chưa có token
+                return;
             }
 
-            // 3) Send email AFTER token committed — code gửi mail chính là empId
+            // 3) Send email
             final String finalEmail = emp.getEmail();
             final String finalName = emp.getEmployeeName();
-            final String activationCode = emp.getEmployeeId(); // CODE = MNG...
+            final String activationCode = emp.getEmployeeId();
 
             new Thread(() -> {
                 boolean mailSent = EmailService.sendActivationEmail(finalEmail, finalName, activationCode);
                 if (!mailSent) {
-                    logger.warning("Cảnh báo: Không thể gửi mail kích hoạt đến " + finalEmail
-                            + " (mã đã lưu DB, có thể gửi lại sau)");
+                    logger.warning("Cảnh báo: Không thể gửi mail kích hoạt đến " + finalEmail);
                 }
             }).start();
 
@@ -414,18 +444,24 @@ public class ManagerManagementView extends JPanel {
         btnClear.addActionListener(e -> clearForm());
     }
 
+    // =========================================================
+    // HÀM ĐÃ ĐƯỢC CHỈNH SỬA ĐỂ LOAD DỮ LIỆU TỪ DTO MỚI (JOIN 2 BẢNG)
+    // =========================================================
     private void loadDataToTable() {
         tableModel.setRowCount(0);
-        List<Employee> list = employeeSql.selectAll();
 
-        for (Employee emp : list) {
-            // LỌC CHỈ LẤY ROLE R_STORE_MNG LÊN BẢNG
-            if ("R_STORE_MNG".equals(emp.getRoleId()) || "Quản lý cửa hàng".equals(emp.getRole())) {
-                tableModel.addRow(new Object[]{
-                    emp.getEmployeeId(), emp.getEmployeeName(), emp.getPhone(),
-                    emp.getEmail(), emp.getAccountStatus(), emp.getGender()
-                });
-            }
+        // Gọi thẳng qua Service mới thay vì dùng selectAll() cồng kềnh của EmployeeSql
+        List<StoreManagerDTO> list = managerService.getStoreManagerList();
+
+        for (StoreManagerDTO mng : list) {
+            tableModel.addRow(new Object[]{
+                mng.getManagerId(),
+                mng.getFullName(),
+                mng.getPhone(),
+                mng.getEmail(),
+                mng.getAccountStatus(), // Hệ thống tự biết "Chưa cấp/Đã cấp" dựa trên LEFT JOIN
+                mng.getGender()
+            });
         }
     }
 
@@ -453,7 +489,6 @@ public class ManagerManagementView extends JPanel {
         e.setEmail(email);
         e.setGender(gender);
 
-        // MẶC ĐỊNH GÁN QUYỀN QUẢN LÝ (KHÔNG CHO CHỌN)
         e.setRole("R_STORE_MNG");
         e.setRoleId("R_STORE_MNG");
 
@@ -468,4 +503,5 @@ public class ManagerManagementView extends JPanel {
         btngGender.clearSelection();
         tblManagers.clearSelection();
     }
+
 }
