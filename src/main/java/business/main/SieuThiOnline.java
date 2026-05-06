@@ -26,7 +26,7 @@ import business.sql.sales_order.DeliveryManagementSql;
 import business.service.PaymentService;
 import common.realtime.RealtimeServer;
 
-public class SieuThiThongMinh {
+public class SieuThiOnline {
 
     public static void main(String[] args) {
         RealtimeServer.tryStart(9999);
