@@ -2,9 +2,9 @@
 
 ## [GIỚI THIỆU ĐỒ ÁN](#)
 
-* **Đề tài:** Xây dựng phần mềm quản lý Siêu thị Online (Smart Supermarket - Store Portal)
-* **Repository:** [LẬP TRÌNH JAVA - SIÊU THỊ ONLINE](https://github.com/TanVi3001/SieuThiOnline_Java)
-* **Mô tả tổng quan:** Đề tài "Xây dựng Hệ thống Quản trị Siêu thị Online" là một dự án phần mềm Desktop toàn diện, được thiết kế chuyên biệt để giải quyết bài toán vận hành của mô hình bán lẻ trực tuyến hiện đại. Khác với các hệ thống POS quét mã vạch truyền thống tại quầy, hệ thống này đóng vai trò là một **Cổng thông tin điều phối (Store Portal)** tập trung. Phần mềm hỗ trợ đắc lực cho bộ phận quản lý, nhân viên Telesale và bộ phận kho xử lý đồng bộ các khâu: Tiếp nhận đơn hàng trực tuyến, Quản lý tồn kho đa đơn vị tính, Chăm sóc khách hàng và Quản trị nhân sự.
+* **Đề tài:** Xây dựng phần mềm quản lý Siêu thị Thông Minh(Smart Supermarket - Store Portal)
+* **Repository:** [LẬP TRÌNH JAVA - SIÊU THỊ THÔNG MINH](https://github.com/TanVi3001/SieuThiOnline_Java)
+* **Mô tả tổng quan:** Đề tài "Xây dựng Hệ thống Quản trị Siêu thị Thông Minh" là một dự án phần mềm Desktop toàn diện, được thiết kế chuyên biệt để giải quyết bài toán vận hành của mô hình bán lẻ trực tuyến hiện đại. Khác với các hệ thống POS quét mã vạch truyền thống tại quầy, hệ thống này đóng vai trò là một **Cổng thông tin điều phối (Store Portal)** tập trung. Phần mềm hỗ trợ đắc lực cho bộ phận quản lý, nhân viên Telesale và bộ phận kho xử lý đồng bộ các khâu: Tiếp nhận đơn hàng trực tuyến, Quản lý tồn kho đa đơn vị tính, Chăm sóc khách hàng và Quản trị nhân sự.
 Điểm sáng giá nhất của dự án là việc áp dụng kiến trúc **N-Tier** chuẩn mực kết hợp với hệ quản trị cơ sở dữ liệu **Oracle**. Đặc biệt, hệ thống tích hợp công nghệ **đồng bộ dữ liệu thời gian thực (Real-time)** qua mạng LAN bằng WebSocket, giúp mọi thay đổi về số lượng tồn kho hay doanh thu đều được cập nhật chớp nhoáng trên toàn bộ các máy trạm tham gia hệ thống mà không cần người dùng thao tác tải lại trang.
 
 ## [CÁC TÍNH NĂNG VÀ NGHIỆP VỤ NỔI BẬT](#)
