@@ -16,8 +16,7 @@ public final class RealtimeClient {
     private static volatile URI serverUri;
 
     // ÉP CỨNG IP LAN LÚC DEMO CHO AN TOÀN
-    // Nhớ thay chữ 'x' bằng IP thật của máy ông!
-    private static final String DEFAULT_LAN_WS_URL = "ws://10.0.247.43:9999";
+    private static final String DEFAULT_LAN_WS_URL = "ws://10.0.250.60:9999";
 
     private RealtimeClient() {
     }
@@ -25,7 +24,7 @@ public final class RealtimeClient {
     public static void connect(String wsUrl) {
         try {
             // Chốt chặn: Nếu wsUrl truyền vào bị rỗng hoặc đang là localhost, ép nó về IP LAN luôn
-            if (wsUrl == null || wsUrl.isEmpty() || wsUrl.contains("localhost") || wsUrl.contains("192.168.88.210")) {
+            if (wsUrl == null || wsUrl.isEmpty() || wsUrl.contains("localhost") || wsUrl.contains("10.0.250.60")) {
                 wsUrl = DEFAULT_LAN_WS_URL;
             }
 
